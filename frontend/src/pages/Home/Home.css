@@ -1,0 +1,326 @@
+/* frontend/src/pages/Home/Home.css */
+
+/* Import font Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ===== HOME CONTAINER ===== */
+.home-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.hero-content {
+  max-width: 1000px;
+  width: 100%;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.15;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+}
+
+.hero-highlight {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-desc {
+  font-size: 1.35rem;
+  color: #4b5563;
+  line-height: 1.9;
+  margin-bottom: 3rem;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+/* Input Area - Override InputArea styles */
+.hero-input-area {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* ✅ Style cho InputArea trong Home */
+.hero-input-area .input-area {
+  padding: 0;
+  border-top: none;
+  background: transparent;
+}
+
+.hero-input-area .input-container {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.hero-input-area .input-container:focus-within {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+  background: #ffffff;
+}
+
+.hero-input-area .input-text {
+  font-size: 1rem;
+  min-height: 40px;
+}
+
+.hero-input-area .btn-send {
+  min-width: 44px;
+  height: 44px;
+  font-size: 1.2rem;
+}
+
+.hero-input-area .btn-send.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+}
+
+/* Feature Tags */
+.feature-tags {
+  display: flex;
+  gap: 0.85rem;
+  margin-top: 1.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.feature-tag {
+  padding: 0.6rem 1.4rem;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 28px;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.feature-tag:hover {
+  background: #f3f4f6;
+  border-color: #8b5cf6;
+  color: #111827;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.feature-tag.active {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 3.8rem;
+  }
+  
+  .hero-desc {
+    font-size: 1.2rem;
+  }
+  
+  .hero-input-area {
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 2.8rem;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    padding: 0 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-input-area {
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .hero-input-area .input-container {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  .hero-input-area .input-text {
+    width: 100%;
+    font-size: 0.95rem;
+    min-height: 36px;
+  }
+
+  .hero-input-area .btn-send {
+    width: 100%;
+    min-width: 100%;
+    height: 44px;
+    border-radius: 12px;
+    margin-top: 0.3rem;
+  }
+
+  .feature-tags {
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+  }
+
+  .feature-tag {
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-desc {
+    font-size: 0.95rem;
+  }
+
+  .hero-section {
+    padding: 1rem;
+  }
+
+  .hero-input-area .input-container {
+    padding: 0.4rem;
+    border-radius: 12px;
+  }
+
+  .hero-input-area .input-text {
+    font-size: 0.9rem;
+    min-height: 32px;
+  }
+
+  .hero-input-area .btn-send {
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .feature-tag {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+  }
+}
+
+/* Màn hình thấp */
+@media (max-height: 750px) {
+  .hero-title {
+    font-size: 3.2rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .hero-desc {
+    font-size: 1.1rem;
+    margin-bottom: 1.8rem;
+    line-height: 1.6;
+  }
+  
+  .hero-section {
+    padding: 1.2rem;
+  }
+  
+  .feature-tags {
+    margin-top: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .feature-tag {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .hero-input-area .input-container {
+    padding: 0.3rem 0.5rem;
+  }
+
+  .hero-input-area .input-text {
+    font-size: 0.95rem;
+    min-height: 32px;
+  }
+
+  .hero-input-area .btn-send {
+    min-width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .hero-desc {
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.5;
+  }
+  
+  .hero-section {
+    padding: 0.8rem;
+  }
+  
+  .feature-tags {
+    margin-top: 0.6rem;
+    gap: 0.4rem;
+  }
+  
+  .feature-tag {
+    padding: 0.25rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .hero-input-area .input-container {
+    padding: 0.2rem 0.4rem;
+    border-radius: 12px;
+  }
+
+  .hero-input-area .input-text {
+    font-size: 0.85rem;
+    min-height: 28px;
+  }
+
+  .hero-input-area .btn-send {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}

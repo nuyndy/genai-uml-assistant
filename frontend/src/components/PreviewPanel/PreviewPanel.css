@@ -1,0 +1,105 @@
+/* frontend/src/components/PreviewPanel/PreviewPanel.css */
+
+.preview-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.preview-panel:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-icon {
+  font-size: 1rem;
+}
+
+.panel-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.panel-badge {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+}
+
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.diagram-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: none;
+  background: #ffffff;
+}
+
+.diagram-container {
+  flex: 1;
+  background: #ffffff;
+  padding: 1rem;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.diagram-container .mermaid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-container .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .diagram-container {
+    min-height: 200px;
+  }
+}
