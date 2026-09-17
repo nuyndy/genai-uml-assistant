@@ -19,4 +19,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // File này export cả component (AuthProvider) lẫn hook (useAuth) theo thiết
+    // kế, điều đó là hợp lệ với React và không ảnh hưởng tới fast refresh.
+    files: ['src/auth/AuthContext.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

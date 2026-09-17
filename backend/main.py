@@ -1,15 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from routers.requirement import router as requirement_router
+from routers.auth import router as auth_router
+from database.db import Base, engine
+from database import models
 app = FastAPI(title="GenAI UML Assistant")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:4173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Base.metadata.create_all(bind=engine)
+
+app.include_router(auth_router)
+app.include_router(requirement_router)
 
 @app.get("/")
 async def root():
