@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 from database.db import Base
 
 class User(Base):
@@ -11,18 +10,19 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     google_id = Column(String, unique=True, nullable=True, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
-    
-    projects = relationship("Project", back_populates="owner")
 
 
 class Project(Base):
     __tablename__ = "project"
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", name="fk_project_user_id_users"),
+        nullable=True,
+        index=True,
+    )
     name = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
-
-    owner = relationship("User", back_populates="projects")
 
 
 class RawRequirement(Base):
@@ -46,10 +46,43 @@ class UserStory(Base):
 class Specification(Base):
     __tablename__ = "specification"
     id = Column(Integer, primary_key=True, index=True)
-    user_story_id = Column(Integer, ForeignKey("user_story.id"), nullable=False)
+    user_story_id = Column(Integer, ForeignKey("user_story.id"), nullable=True)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=True, index=True)
     type = Column(String)
     content = Column(Text, nullable=False)
     version = Column(Integer, default=1)
+
+    __table_args__ = (
+        Index(
+            "uq_specification_story_type",
+            "user_story_id",
+            "type",
+            unique=True,
+            sqlite_where=user_story_id.is_not(None),
+            postgresql_where=user_story_id.is_not(None),
+        ),
+        Index(
+            "uq_specification_project_type",
+            "project_id",
+            "type",
+            unique=True,
+            sqlite_where=project_id.is_not(None),
+            postgresql_where=project_id.is_not(None),
+        ),
+    )
+
+
+class SrsDocument(Base):
+    __tablename__ = "srs_document"
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, unique=True)
+    intro_purpose = Column(Text, nullable=False, default="")
+    intro_scope = Column(Text, nullable=False, default="")
+    intro_definitions = Column(Text, nullable=False, default="")
+    overview_user_classes = Column(Text, nullable=False, default="")
+    overview_environment = Column(Text, nullable=False, default="")
+    appendix_notes = Column(Text, nullable=False, default="")
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
 
 class UseCase(Base):

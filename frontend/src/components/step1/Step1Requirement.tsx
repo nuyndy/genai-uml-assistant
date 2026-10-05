@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type {
   RequirementInput,
   RequirementRecord,
@@ -14,7 +14,7 @@ import ValidationCard from "./ValidationCard";
 import EarsPreviewCard from "./EarsPreviewCard";
 import ContextDiagramCard from "./ContextDiagramCard";
 import RequirementsBoard from "./RequirementsBoard";
-import { saveRequirement } from "../../services/requirementService";
+import { createRequirement } from "../../services/requirementService";
 
 export type { Specification } from "./types";
 
@@ -37,9 +37,6 @@ export default function Step1Requirement({
   const [records, setRecords] = useState<RequirementRecord[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  // Bộ đếm id tăng dần (tránh gọi Date.now() trong lúc render — hàm không thuần).
-  const nextId = useRef(1);
-
   const handleChange = (field: keyof RequirementInput, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -57,41 +54,37 @@ export default function Step1Requirement({
   const handleSave = async () => {
     const result = validateRequirement(form);
     if (!result.isComplete) return;
-
-    const feature = form.action || "Chức năng mới";
-    const record: RequirementRecord = {
-      ...form,
-      id: nextId.current++,
-      feature,
-      content: buildSpecification(form),
-    };
-
-    // Lưu lên backend (yêu cầu đăng nhập). Nếu chưa có project_id hoặc lỗi
-    // mạng/phiên, vẫn giữ bản ghi cục bộ để không chặn luồng người dùng.
-    if (projectId) {
-      try {
-        await saveRequirement({
-          project_id: projectId,
-          actor: form.actor,
-          feature,
-          benefit: form.purpose,
-          precondition: null,
-          constraint: null,
-        });
-        setNotice("Đã lưu yêu cầu lên máy chủ.");
-      } catch (e) {
-        setNotice(
-          e instanceof Error
-            ? `Chưa lưu được lên máy chủ (${e.message}). Đã lưu tạm trên trình duyệt.`
-            : "Chưa lưu được lên máy chủ. Đã lưu tạm trên trình duyệt.",
-        );
-      }
-    } else {
-      setNotice("Đã lưu yêu cầu trên trình duyệt.");
+    if (!projectId) {
+      setError("Không thể lưu yêu cầu khi chưa có dự án trong cơ sở dữ liệu.");
+      return;
     }
 
-    setRecords((prev) => [...prev, record]);
-    handleReset();
+    const feature = `${form.action} ${form.targetObject}`.trim();
+    try {
+      const saved = await createRequirement(projectId, {
+          actor: form.actor,
+          action: form.action,
+          target_object: form.targetObject,
+          purpose: form.purpose,
+          pre_conditions: [],
+          business_rules: [],
+      });
+      const record: RequirementRecord = {
+        ...form,
+        id: saved.id,
+        feature,
+        content: buildSpecification(form),
+      };
+      setNotice("Đã lưu yêu cầu vào cơ sở dữ liệu.");
+      setRecords((prev) => [...prev, record]);
+      handleReset();
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? `Không lưu được yêu cầu: ${reason.message}`
+          : "Không lưu được yêu cầu.",
+      );
+    }
   };
 
   const handleRemove = (id: number) => {

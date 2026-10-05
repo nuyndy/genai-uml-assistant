@@ -28,14 +28,14 @@ describe("apiFetch – đính kèm Authorization", () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 5 }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const data = await apiFetch<{ id: number }>("/api/requirements", {
+    const data = await apiFetch<{ id: number }>("/api/projects/7/requirements", {
       method: "POST",
       body: JSON.stringify({ a: 1 }),
     });
 
     expect(data).toEqual({ id: 5 });
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/requirements",
+      "http://localhost:8000/api/projects/7/requirements",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer tok-1" }),
@@ -47,7 +47,7 @@ describe("apiFetch – đính kèm Authorization", () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await apiFetch("/api/requirements");
+    await apiFetch("/api/projects/7/requirements");
 
     const headers = fetchMock.mock.calls[0][1].headers as Record<string, string>;
     expect(headers.Authorization).toBeUndefined();
@@ -112,7 +112,7 @@ describe("apiFetch – lỗi 401", () => {
       vi.fn().mockResolvedValue(jsonResponse({ detail: "hết hạn" }, 401)),
     );
 
-    await expect(apiFetch("/api/requirements")).rejects.toBeInstanceOf(ApiError);
+    await expect(apiFetch("/api/projects/7/requirements")).rejects.toBeInstanceOf(ApiError);
     expect(getToken()).toBeNull();
     expect(onExpired).toHaveBeenCalledTimes(1);
 

@@ -1,0 +1,1849 @@
+import json
+import logging
+import re
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import ValidationError
+from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from database.db import get_db
+from database.models import (
+    Actor,
+    ClassRelation,
+    ClassEntity,
+    Diagram,
+    Project,
+    RawRequirement,
+    Specification,
+    UcActorRelation,
+    UseCase,
+    User,
+    UserStory,
+)
+from routers.auth import get_current_user
+from routers.ownership import require_project_owner
+from routers.requirement import _require_project
+from schemas.uml import (
+    ActorCreate,
+    ActorRecord,
+    ActorRelationInput,
+    ActorRelationRecord,
+    ActorUpdate,
+    ClassCreate,
+    ClassDiagramSuggestion,
+    ClassEntityRecord,
+    ClassRelationInput,
+    ClassRelationRecord,
+    ClassUpdate,
+    DiagramRecord,
+    DiagramUpdate,
+    ExtractActorsUseCasesResult,
+    ExtractProjectActorsUseCasesResult,
+    InteractionDiagramInput,
+    ProjectUmlState,
+    SaveActorUseCasesBatch,
+    SaveActorUseCasesBatchResult,
+    SpecificationWithStoryRecord,
+    UseCaseCreate,
+    UseCaseRecord,
+    UseCaseScenarioSuggestion,
+    UseCaseScenarioBatchItem,
+    UseCaseScenarioBatchResult,
+    UseCaseUpdate,
+)
+from services.ollama import AIServiceError, generate_content
+from services.plantuml import PlantUMLRenderError, render_plantuml
+
+router = APIRouter(
+    tags=["uml"],
+    dependencies=[Depends(require_project_owner)],
+)
+logger = logging.getLogger(__name__)
+
+
+def _project_for_specification(db: Session, specification_id: int) -> int:
+    try:
+        row = (
+            db.query(RawRequirement.project_id)
+            .join(UserStory, UserStory.requirement_id == RawRequirement.id)
+            .join(Specification, Specification.user_story_id == UserStory.id)
+            .filter(Specification.id == specification_id)
+            .first()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not resolve specification project")
+        raise HTTPException(status_code=500, detail="Không thể đọc dự án của đặc tả.") from exc
+    if row is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả.")
+    return row[0]
+
+
+def _use_case(db: Session, use_case_id: int) -> UseCase:
+    try:
+        use_case = db.query(UseCase).filter(UseCase.id == use_case_id).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read use case")
+        raise HTTPException(status_code=500, detail="Không thể đọc use case.") from exc
+    if use_case is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy use case.")
+    return use_case
+
+
+def _project_for_use_case(db: Session, use_case_id: int) -> int:
+    try:
+        row = (
+            db.query(RawRequirement.project_id)
+            .join(UserStory, UserStory.requirement_id == RawRequirement.id)
+            .join(Specification, Specification.user_story_id == UserStory.id)
+            .join(UseCase, UseCase.specification_id == Specification.id)
+            .filter(UseCase.id == use_case_id)
+            .first()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not resolve use case project")
+        raise HTTPException(status_code=500, detail="Không thể đọc dự án của use case.") from exc
+    if row is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án của use case.")
+    return row[0]
+
+
+def _decode_lines(value: str | None) -> list[str]:
+    if not value:
+        return []
+    try:
+        decoded = json.loads(value)
+    except json.JSONDecodeError:
+        return [line.strip() for line in value.splitlines() if line.strip()]
+    if isinstance(decoded, list) and all(isinstance(item, str) for item in decoded):
+        return [item.strip() for item in decoded if item.strip()]
+    return [line.strip() for line in value.splitlines() if line.strip()]
+
+
+def _encode_lines(values: list[str]) -> str:
+    return json.dumps([value.strip() for value in values], ensure_ascii=False)
+
+
+def _use_case_record(use_case: UseCase) -> UseCaseRecord:
+    return UseCaseRecord(
+        id=use_case.id,
+        specification_id=use_case.specification_id,
+        name=use_case.name,
+        main_flow=_decode_lines(use_case.main_flow),
+        alt_flow=_decode_lines(use_case.alt_flow),
+        exception_flow=_decode_lines(use_case.exception_flow),
+    )
+
+
+def _ai_json(prompt: str, model: type) -> object:
+    try:
+        response = generate_content(prompt, json_response=True)
+    except AIServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    text = response.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
+    try:
+        payload = json.loads(text)
+        return model.model_validate(payload)
+    except (json.JSONDecodeError, ValidationError, TypeError, ValueError) as exc:
+        logger.warning("AI returned JSON that did not match %s", model.__name__)
+        raise HTTPException(
+            status_code=502,
+            detail="AI trả về dữ liệu không đúng định dạng yêu cầu.",
+        ) from exc
+
+
+def _render_and_save_diagram(
+    db: Session,
+    project_id: int,
+    diagram_type: str,
+    source_code: str,
+    use_case_id: int | None = None,
+) -> Diagram:
+    try:
+        image_url = render_plantuml(source_code)
+    except PlantUMLRenderError as exc:
+        _new_project_diagram(
+            db,
+            project_id,
+            diagram_type,
+            source_code,
+            image_url=None,
+            use_case_id=use_case_id,
+        )
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return _new_project_diagram(
+        db,
+        project_id,
+        diagram_type,
+        source_code,
+        image_url,
+        use_case_id=use_case_id,
+    )
+
+
+def _quoted(value: str) -> str:
+    clean = " ".join(value.replace("\r", " ").replace("\n", " ").split())
+    clean = clean.replace('"', '\\"').replace("@", "＠")
+    return clean[:500]
+
+
+def _safe_member(value: str) -> str:
+    clean = " ".join(value.replace("\r", " ").replace("\n", " ").split())
+    clean = clean.replace("{", "(").replace("}", ")").replace("@", "＠")
+    return clean[:500]
+
+
+def _new_project_diagram(
+    db: Session, project_id: int, diagram_type: str, source_code: str, image_url: str | None,
+    use_case_id: int | None = None,
+) -> Diagram:
+    version_query = db.query(func.max(Diagram.version)).filter(
+        Diagram.project_id == project_id,
+        Diagram.type == diagram_type,
+    )
+    if use_case_id is None:
+        version_query = version_query.filter(Diagram.use_case_id.is_(None))
+    else:
+        version_query = version_query.filter(Diagram.use_case_id == use_case_id)
+    try:
+        version = (version_query.scalar() or 0) + 1
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read diagram versions")
+        raise HTTPException(status_code=500, detail="Không thể đọc phiên bản biểu đồ.") from exc
+    diagram = Diagram(
+        project_id=project_id,
+        use_case_id=use_case_id,
+        type=diagram_type,
+        source_code=source_code,
+        image_url=image_url,
+        version=version,
+    )
+    try:
+        db.add(diagram)
+        db.commit()
+        db.refresh(diagram)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save diagram")
+        raise HTTPException(status_code=500, detail="Không thể lưu biểu đồ.") from exc
+    return diagram
+
+
+def _class_diagram_source(
+    classes: list[ClassEntity], relations: list[ClassRelation]
+) -> str:
+    aliases = {item.id: f"C{index + 1}" for index, item in enumerate(classes)}
+    lines = ["@startuml", "hide empty members"]
+    for item in classes:
+        lines.append(f'class "{_quoted(item.name)}" as {aliases[item.id]} {{')
+        lines.extend(f"  {_safe_member(value)}" for value in _decode_lines(item.attributes))
+        lines.extend(f"  {_safe_member(value)}" for value in _decode_lines(item.methods))
+        lines.append("}")
+    relation_arrows = {
+        "inheritance": "--|>",
+        "composition": "*--",
+        "aggregation": "o--",
+        "dependency": "..>",
+        "association": "--",
+    }
+    for relation in relations:
+        arrow = relation_arrows.get((relation.relation_type or "").lower(), "--")
+        lines.append(
+            f'{aliases[relation.class_a_id]} {arrow} {aliases[relation.class_b_id]} '
+            f': {_quoted(relation.relation_type or "association")}'
+        )
+    lines.append("@enduml")
+    return "\n".join(lines)
+
+
+def _interaction_diagram_source(
+    use_case: UseCase,
+    project: Project,
+    actors: list[Actor],
+    diagram_type: str,
+) -> str:
+    main_flow = _decode_lines(use_case.main_flow)
+    alt_flow = _decode_lines(use_case.alt_flow)
+    if not main_flow and not alt_flow:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Use case {use_case.id} chưa có kịch bản.",
+        )
+    if not actors:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Use case {use_case.id} chưa được liên kết với tác nhân.",
+        )
+    alias = "A1"
+    actor_name = actors[0].name
+    lines = ["@startuml"]
+    if diagram_type == "sequence":
+        lines.extend(
+            [
+                f'actor "{_quoted(actor_name)}" as {alias}',
+                f'participant "{_quoted(project.name)}" as SYS',
+            ]
+        )
+        for index, item in enumerate(main_flow, start=1):
+            lines.append(f'{alias} -> SYS : {_quoted(f"{index}. {item}")}')
+            lines.extend(["activate SYS", f"{alias} <-- SYS : Hoàn tất bước {index}", "deactivate SYS"])
+        for index, item in enumerate(alt_flow, start=1):
+            lines.extend(
+                [
+                    f"alt Luồng phụ {index}: {_quoted(item)}",
+                    f'{alias} -> SYS : Xử lý luồng phụ {index}',
+                    "else Tiếp tục luồng chính",
+                    "end",
+                ]
+            )
+    else:
+        lines.extend(
+            [
+                f'actor "{_quoted(actor_name)}" as {alias}',
+                f'object "{_quoted(project.name)}" as SYS',
+            ]
+        )
+        for index, item in enumerate(main_flow, start=1):
+            lines.append(f'{alias} -> SYS : {index}. {_quoted(item)}')
+        for index, item in enumerate(alt_flow, start=1):
+            lines.append(f'{alias} ..> SYS : Luồng phụ {index}: {_quoted(item)}')
+    lines.extend([f'title {_quoted(use_case.name)}', "@enduml"])
+    return "\n".join(lines)
+
+
+def _render_and_update_diagram(
+    db: Session, diagram: Diagram, source_code: str
+) -> Diagram:
+    try:
+        image_url = render_plantuml(source_code)
+    except PlantUMLRenderError as exc:
+        diagram.source_code = source_code
+        diagram.image_url = None
+        diagram.version = (diagram.version or 0) + 1
+        try:
+            db.commit()
+            db.refresh(diagram)
+        except SQLAlchemyError as db_exc:
+            db.rollback()
+            logger.exception("Could not save pending diagram revision")
+            raise HTTPException(
+                status_code=500, detail="Không thể lưu mã biểu đồ đã cập nhật."
+            ) from db_exc
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    diagram.source_code = source_code
+    diagram.image_url = image_url
+    diagram.version = (diagram.version or 0) + 1
+    try:
+        db.commit()
+        db.refresh(diagram)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not update diagram")
+        raise HTTPException(status_code=500, detail="Không thể cập nhật biểu đồ.") from exc
+    return diagram
+
+
+@router.get(
+    "/api/projects/{project_id}/specifications-with-stories",
+    response_model=list[SpecificationWithStoryRecord],
+)
+def list_unmodeled_specifications(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[SpecificationWithStoryRecord]:
+    _require_project(db, project_id)
+    try:
+        rows = (
+            db.query(Specification, UserStory)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .outerjoin(UseCase, UseCase.specification_id == Specification.id)
+            .filter(RawRequirement.project_id == project_id, UseCase.id.is_(None))
+            .order_by(Specification.id.asc())
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list specifications without use cases")
+        raise HTTPException(status_code=500, detail="Không thể đọc đặc tả cần mô hình hóa.") from exc
+    return [
+        SpecificationWithStoryRecord(
+            id=specification.id,
+            user_story_id=specification.user_story_id,
+            type=specification.type,
+            content=specification.content,
+            version=specification.version,
+            user_story=story,
+        )
+        for specification, story in rows
+    ]
+
+
+@router.post(
+    "/api/specifications/{specification_id}/extract-actors-usecases",
+    response_model=ExtractActorsUseCasesResult,
+)
+def extract_actors_use_cases(
+    specification_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ExtractActorsUseCasesResult:
+    _project_for_specification(db, specification_id)
+    try:
+        specification = db.query(Specification).filter(
+            Specification.id == specification_id
+        ).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read specification for extraction")
+        raise HTTPException(status_code=500, detail="Không thể đọc đặc tả.") from exc
+    if specification is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả.")
+    prompt = (
+        "Phân tích đặc tả phần mềm sau bằng tiếng Việt. Đề xuất các tác nhân và "
+        "use case có căn cứ trực tiếp trong nội dung, không tự bịa nghiệp vụ. "
+        "Trả về JSON đúng schema: {\"suggested_actors\":[{\"name\":\"...\"}],"
+        "\"suggested_use_cases\":[{\"name\":\"...\",\"description\":\"...\"}]}. "
+        "Nếu không có mục phù hợp, trả mảng rỗng.\n\n"
+        f"ĐẶC TẢ:\n{specification.content}"
+    )
+    result = _ai_json(prompt, ExtractActorsUseCasesResult)
+    return result
+
+
+@router.post(
+    "/api/projects/{project_id}/extract-actors-usecases-batch",
+    response_model=ExtractProjectActorsUseCasesResult,
+)
+def extract_project_actors_use_cases_batch(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ExtractProjectActorsUseCasesResult:
+    _require_project(db, project_id)
+    try:
+        specifications = (
+            db.query(Specification)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(Specification.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read project specifications for batch extraction")
+        raise HTTPException(status_code=500, detail="Không thể đọc đặc tả của dự án.") from exc
+    if not specifications:
+        raise HTTPException(status_code=409, detail="Dự án chưa có đặc tả để phân tích.")
+
+    spec_context = "\n\n".join(
+        f"SPECIFICATION_ID: {item.id}\nLOẠI: {item.type}\nNỘI DUNG:\n{item.content}"
+        for item in specifications
+    )
+    prompt = (
+        "Phân tích tất cả đặc tả phần mềm của dự án bằng tiếng Việt. Tổng hợp "
+        "các tác nhân và use case không trùng lặp. Mỗi use case phải gắn với "
+        "specification_id phù hợp lấy đúng từ đầu vào. Chỉ đề xuất nội dung có "
+        "căn cứ trong đặc tả. Trả JSON đúng schema: "
+        "{\"suggested_actors\":[{\"name\":\"...\"}],"
+        "\"suggested_use_cases\":[{\"specification_id\":1,\"name\":\"...\","
+        "\"description\":\"...\"}]}. Nếu không có đề xuất, trả mảng rỗng.\n\n"
+        f"{spec_context}"
+    )
+    result = _ai_json(prompt, ExtractProjectActorsUseCasesResult)
+    valid_spec_ids = {item.id for item in specifications}
+    if any(item.specification_id not in valid_spec_ids for item in result.suggested_use_cases):
+        raise HTTPException(
+            status_code=502,
+            detail="AI gắn use case với đặc tả không thuộc dự án.",
+        )
+    actors = []
+    seen_actors: set[str] = set()
+    for item in result.suggested_actors:
+        normalized = item.name.casefold()
+        if normalized not in seen_actors:
+            seen_actors.add(normalized)
+            actors.append(item)
+    use_cases = []
+    seen_use_cases: set[tuple[int, str]] = set()
+    for item in result.suggested_use_cases:
+        key = (item.specification_id, item.name.casefold())
+        if key not in seen_use_cases:
+            seen_use_cases.add(key)
+            use_cases.append(item)
+    return ExtractProjectActorsUseCasesResult(
+        suggested_actors=actors,
+        suggested_use_cases=use_cases,
+    )
+
+
+@router.post(
+    "/api/projects/{project_id}/actors-use-cases/batch",
+    response_model=SaveActorUseCasesBatchResult,
+    status_code=status.HTTP_201_CREATED,
+)
+def save_project_actor_use_cases_batch(
+    project_id: int,
+    data: SaveActorUseCasesBatch,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> SaveActorUseCasesBatchResult:
+    _require_project(db, project_id)
+    specification_ids = {item.specification_id for item in data.use_cases}
+    try:
+        specifications = (
+            db.query(Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(
+                RawRequirement.project_id == project_id,
+                Specification.id.in_(specification_ids),
+            )
+            .all()
+        ) if specification_ids else []
+        if len(specifications) != len(specification_ids):
+            raise HTTPException(status_code=422, detail="Có đặc tả không thuộc dự án.")
+
+        actor_by_name: dict[str, Actor] = {}
+        for selection in data.actors:
+            normalized = selection.name.casefold()
+            if normalized in actor_by_name:
+                continue
+            actor = (
+                db.query(Actor)
+                .filter(
+                    Actor.project_id == project_id,
+                    func.lower(Actor.name) == normalized,
+                )
+                .first()
+            )
+            if actor is None:
+                actor = Actor(project_id=project_id, name=selection.name)
+                db.add(actor)
+                db.flush()
+            actor_by_name[normalized] = actor
+
+        use_case_by_key: dict[tuple[int, str], UseCase] = {}
+        for selection in data.use_cases:
+            key = (selection.specification_id, selection.name.casefold())
+            if key in use_case_by_key:
+                continue
+            use_case = (
+                db.query(UseCase)
+                .filter(
+                    UseCase.specification_id == selection.specification_id,
+                    func.lower(UseCase.name) == selection.name.casefold(),
+                )
+                .first()
+            )
+            if use_case is None:
+                use_case = UseCase(
+                    specification_id=selection.specification_id,
+                    name=selection.name,
+                    main_flow=_encode_lines([]),
+                    alt_flow=_encode_lines([]),
+                    exception_flow=_encode_lines([]),
+                )
+                db.add(use_case)
+                db.flush()
+            use_case_by_key[key] = use_case
+
+        relation_records: list[UcActorRelation] = []
+        for selection in data.relations:
+            key = (selection.specification_id, selection.use_case_name.casefold())
+            use_case = use_case_by_key.get(key)
+            actor = actor_by_name.get(selection.actor_name.casefold())
+            if use_case is None or actor is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Quan hệ phải tham chiếu actor và use case đã chọn.",
+                )
+            relation = (
+                db.query(UcActorRelation)
+                .filter(
+                    UcActorRelation.use_case_id == use_case.id,
+                    UcActorRelation.actor_id == actor.id,
+                )
+                .first()
+            )
+            if relation is None:
+                relation = UcActorRelation(
+                    use_case_id=use_case.id,
+                    actor_id=actor.id,
+                    relation_type=selection.relation_type,
+                )
+                db.add(relation)
+            else:
+                relation.relation_type = selection.relation_type
+            relation_records.append(relation)
+        db.commit()
+        for record in relation_records:
+            db.refresh(record)
+    except HTTPException:
+        db.rollback()
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save project actor/use-case batch")
+        raise HTTPException(status_code=500, detail="Không thể lưu actor/use case.") from exc
+
+    return SaveActorUseCasesBatchResult(
+        actors=[ActorRecord.model_validate(item) for item in actor_by_name.values()],
+        use_cases=[_use_case_record(item) for item in use_case_by_key.values()],
+        relations=[ActorRelationRecord.model_validate(item) for item in relation_records],
+    )
+
+
+@router.post(
+    "/api/projects/{project_id}/actors",
+    response_model=ActorRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_actor(
+    project_id: int,
+    data: ActorCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ActorRecord:
+    _require_project(db, project_id)
+    try:
+        actor = (
+            db.query(Actor)
+            .filter(
+                Actor.project_id == project_id,
+                func.lower(Actor.name) == data.name.lower(),
+            )
+            .first()
+        )
+        if actor is not None:
+            return ActorRecord.model_validate(actor)
+        actor = Actor(project_id=project_id, name=data.name)
+        db.add(actor)
+        db.commit()
+        db.refresh(actor)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not create project actor")
+        raise HTTPException(status_code=500, detail="Không thể lưu tác nhân.") from exc
+    return ActorRecord.model_validate(actor)
+
+
+@router.get("/api/projects/{project_id}/actors", response_model=list[ActorRecord])
+def list_actors(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[ActorRecord]:
+    _require_project(db, project_id)
+    try:
+        actors = db.query(Actor).filter(Actor.project_id == project_id).order_by(Actor.id).all()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list project actors")
+        raise HTTPException(status_code=500, detail="Không thể đọc tác nhân.") from exc
+    return [ActorRecord.model_validate(actor) for actor in actors]
+
+
+@router.patch("/api/actors/{actor_id}", response_model=ActorRecord)
+def update_actor(
+    actor_id: int,
+    data: ActorUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ActorRecord:
+    try:
+        actor = db.query(Actor).filter(Actor.id == actor_id).first()
+        if actor is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác nhân.")
+        duplicate = db.query(Actor.id).filter(
+            Actor.project_id == actor.project_id,
+            func.lower(Actor.name) == data.name.lower(),
+            Actor.id != actor_id,
+        ).first()
+        if duplicate:
+            raise HTTPException(status_code=409, detail="Tên tác nhân đã tồn tại trong dự án.")
+        actor.name = data.name
+        db.commit()
+        db.refresh(actor)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not update actor")
+        raise HTTPException(status_code=500, detail="Không thể cập nhật tác nhân.") from exc
+    return ActorRecord.model_validate(actor)
+
+
+@router.delete("/api/actors/{actor_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_actor(
+    actor_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        actor = db.query(Actor).filter(Actor.id == actor_id).first()
+        if actor is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác nhân.")
+        db.query(UcActorRelation).filter(
+            UcActorRelation.actor_id == actor_id
+        ).delete(synchronize_session=False)
+        db.delete(actor)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete actor")
+        raise HTTPException(status_code=500, detail="Không thể xóa tác nhân.") from exc
+
+
+@router.get(
+    "/api/projects/{project_id}/use-cases",
+    response_model=list[UseCaseRecord],
+)
+def list_project_use_cases(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[UseCaseRecord]:
+    _require_project(db, project_id)
+    try:
+        use_cases = (
+            db.query(UseCase)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UseCase.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list project use cases")
+        raise HTTPException(status_code=500, detail="Không thể đọc use case của dự án.") from exc
+    return [_use_case_record(use_case) for use_case in use_cases]
+
+
+@router.get("/api/use-cases/{use_case_id}", response_model=UseCaseRecord)
+def get_use_case(
+    use_case_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UseCaseRecord:
+    return _use_case_record(_use_case(db, use_case_id))
+
+
+@router.post(
+    "/api/specifications/{specification_id}/use-cases",
+    response_model=UseCaseRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_use_case(
+    specification_id: int,
+    data: UseCaseCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UseCaseRecord:
+    _project_for_specification(db, specification_id)
+    try:
+        existing = (
+            db.query(UseCase)
+            .filter(
+                UseCase.specification_id == specification_id,
+                func.lower(UseCase.name) == data.name.lower(),
+            )
+            .first()
+        )
+        if existing is not None:
+            return _use_case_record(existing)
+        use_case = UseCase(
+            specification_id=specification_id,
+            name=data.name,
+            main_flow=_encode_lines([]),
+            alt_flow=_encode_lines([]),
+            exception_flow=_encode_lines([]),
+        )
+        db.add(use_case)
+        db.commit()
+        db.refresh(use_case)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not create use case")
+        raise HTTPException(status_code=500, detail="Không thể lưu use case.") from exc
+    return _use_case_record(use_case)
+
+
+@router.delete("/api/use-cases/{use_case_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_use_case(
+    use_case_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        use_case = db.query(UseCase).filter(UseCase.id == use_case_id).first()
+        if use_case is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy use case.")
+        db.query(UcActorRelation).filter(
+            UcActorRelation.use_case_id == use_case_id
+        ).delete(synchronize_session=False)
+        db.query(Diagram).filter(Diagram.use_case_id == use_case_id).delete(
+            synchronize_session=False
+        )
+        db.delete(use_case)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete use case")
+        raise HTTPException(status_code=500, detail="Không thể xóa use case.") from exc
+
+
+@router.post(
+    "/api/use-cases/{use_case_id}/actor-relations",
+    response_model=ActorRelationRecord,
+)
+def create_actor_relation(
+    use_case_id: int,
+    data: ActorRelationInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ActorRelationRecord:
+    project_id = _project_for_use_case(db, use_case_id)
+    try:
+        actor = db.query(Actor).filter(
+            Actor.id == data.actor_id,
+            Actor.project_id == project_id,
+        ).first()
+        if actor is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Tác nhân không thuộc cùng dự án với use case.",
+            )
+        relation = db.query(UcActorRelation).filter(
+            UcActorRelation.use_case_id == use_case_id,
+            UcActorRelation.actor_id == data.actor_id,
+        ).first()
+        if relation is None:
+            relation = UcActorRelation(
+                use_case_id=use_case_id,
+                actor_id=data.actor_id,
+                relation_type=data.relation_type,
+            )
+            db.add(relation)
+        else:
+            relation.relation_type = data.relation_type
+        db.commit()
+        db.refresh(relation)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save actor use-case relation")
+        raise HTTPException(status_code=500, detail="Không thể lưu quan hệ tác nhân.") from exc
+    return ActorRelationRecord.model_validate(relation)
+
+
+@router.get(
+    "/api/use-cases/{use_case_id}/actor-relations",
+    response_model=list[ActorRelationRecord],
+)
+def list_use_case_actor_relations(
+    use_case_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[ActorRelationRecord]:
+    _use_case(db, use_case_id)
+    try:
+        relations = (
+            db.query(UcActorRelation)
+            .filter(UcActorRelation.use_case_id == use_case_id)
+            .order_by(UcActorRelation.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list use-case actor relations")
+        raise HTTPException(status_code=500, detail="Không thể đọc quan hệ tác nhân.") from exc
+    return [ActorRelationRecord.model_validate(item) for item in relations]
+
+
+@router.delete(
+    "/api/actor-relations/{relation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_actor_relation(
+    relation_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        relation = db.query(UcActorRelation).filter(
+            UcActorRelation.id == relation_id
+        ).first()
+        if relation is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy quan hệ tác nhân.")
+        db.delete(relation)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete actor relation")
+        raise HTTPException(status_code=500, detail="Không thể xóa quan hệ tác nhân.") from exc
+
+
+@router.post(
+    "/api/projects/{project_id}/diagrams/use-case",
+    response_model=DiagramRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def generate_use_case_diagram(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    project = _require_project(db, project_id)
+    try:
+        actors = db.query(Actor).filter(Actor.project_id == project_id).order_by(Actor.id).all()
+        use_cases = (
+            db.query(UseCase)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UseCase.id)
+            .all()
+        )
+        if not actors or not use_cases:
+            raise HTTPException(
+                status_code=409,
+                detail="Cần ít nhất một tác nhân và một use case để sinh biểu đồ.",
+            )
+        links = (
+            db.query(UcActorRelation)
+            .join(UseCase, UcActorRelation.use_case_id == UseCase.id)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .all()
+        )
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        logger.exception("Could not load project UML model")
+        raise HTTPException(status_code=500, detail="Không thể đọc dữ liệu biểu đồ.") from exc
+
+    actor_aliases = {actor.id: f"A{index + 1}" for index, actor in enumerate(actors)}
+    use_case_aliases = {item.id: f"UC{index + 1}" for index, item in enumerate(use_cases)}
+    lines = ["@startuml", "left to right direction"]
+    lines.extend(
+        f'actor "{_quoted(actor.name)}" as {actor_aliases[actor.id]}'
+        for actor in actors
+    )
+    lines.append(f'rectangle "{_quoted(project.name)}" {{')
+    lines.extend(
+        f'  usecase "{_quoted(item.name)}" as {use_case_aliases[item.id]}'
+        for item in use_cases
+    )
+    lines.append("}")
+    relation_arrows = {
+        "association": "-->",
+        "include": "..>",
+        "extend": "..>",
+        "generalization": "--|>",
+    }
+    for relation in links:
+        arrow = relation_arrows[relation.relation_type]
+        label = (
+            f' : <<{relation.relation_type}>>'
+            if relation.relation_type != "association"
+            else ""
+        )
+        lines.append(
+            f"{actor_aliases[relation.actor_id]} {arrow} "
+            f"{use_case_aliases[relation.use_case_id]}{label}"
+        )
+    lines.append("@enduml")
+    source_code = "\n".join(lines)
+    diagram = _render_and_save_diagram(
+        db, project_id, "use_case", source_code
+    )
+    return DiagramRecord.model_validate(diagram)
+
+
+@router.post(
+    "/api/use-cases/{use_case_id}/generate-scenario",
+    response_model=UseCaseRecord,
+)
+def generate_use_case_scenario(
+    use_case_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UseCaseRecord:
+    use_case = _use_case(db, use_case_id)
+    try:
+        specification = db.query(Specification).filter(
+            Specification.id == use_case.specification_id
+        ).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read scenario specification")
+        raise HTTPException(status_code=500, detail="Không thể đọc đặc tả liên quan.") from exc
+    if specification is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả liên quan.")
+    prompt = (
+        "Tạo kịch bản use case bằng tiếng Việt, chỉ dựa trên đặc tả và tên use case. "
+        "Không bịa quy tắc hoặc dữ liệu; nếu thiếu chi tiết, nêu giả định cần xác nhận "
+        "ngay trong bước liên quan. Trả JSON đúng schema: "
+        "{\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
+        "\"exception_flow\":[\"...\"]}. Mỗi phần tử là một bước ngắn.\n\n"
+        f"USE CASE: {use_case.name}\nĐẶC TẢ:\n{specification.content}"
+    )
+    result = _ai_json(prompt, UseCaseScenarioSuggestion)
+    use_case.main_flow = _encode_lines(result.main_flow)
+    use_case.alt_flow = _encode_lines(result.alt_flow)
+    use_case.exception_flow = _encode_lines(result.exception_flow)
+    try:
+        db.commit()
+        db.refresh(use_case)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save generated use-case scenario")
+        raise HTTPException(status_code=500, detail="Không thể lưu kịch bản use case.") from exc
+    return _use_case_record(use_case)
+
+
+@router.post(
+    "/api/projects/{project_id}/use-cases/generate-scenarios-batch",
+    response_model=UseCaseScenarioBatchResult,
+)
+def generate_project_use_case_scenarios_batch(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UseCaseScenarioBatchResult:
+    _require_project(db, project_id)
+    try:
+        rows = (
+            db.query(UseCase, Specification)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(
+                RawRequirement.project_id == project_id,
+                (UseCase.main_flow.is_(None)) | (UseCase.main_flow == "[]"),
+            )
+            .order_by(UseCase.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list use cases without main flow")
+        raise HTTPException(status_code=500, detail="Không thể đọc use case cần sinh kịch bản.") from exc
+    if not rows:
+        return UseCaseScenarioBatchResult(results=[])
+
+    inputs = "\n\n".join(
+        f"USE_CASE_ID: {use_case.id}\nTÊN: {use_case.name}\nĐẶC TẢ:\n{specification.content}"
+        for use_case, specification in rows
+    )
+    prompt = (
+        "Sinh kịch bản cho tất cả use case dưới đây bằng tiếng Việt, chỉ dựa vào "
+        "tên use case và đặc tả tương ứng. Mỗi main_flow có ít nhất một bước. "
+        "Không bịa dữ kiện; ghi rõ điểm cần xác nhận nếu thông tin chưa đủ. "
+        "Trả JSON theo schema: {\"results\":[{\"use_case_id\":1,"
+        "\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
+        "\"exception_flow\":[\"...\"]}]}. Phải trả đúng một kết quả cho mỗi ID.\n\n"
+        f"{inputs}"
+    )
+    result = _ai_json(prompt, UseCaseScenarioBatchResult)
+    expected_ids = {use_case.id for use_case, _ in rows}
+    result_ids = [item.use_case_id for item in result.results]
+    if set(result_ids) != expected_ids or len(result_ids) != len(expected_ids):
+        raise HTTPException(
+            status_code=502,
+            detail="AI không trả đúng một kịch bản cho mỗi use case.",
+        )
+    by_id = {use_case.id: use_case for use_case, _ in rows}
+    try:
+        for item in result.results:
+            use_case = by_id[item.use_case_id]
+            use_case.main_flow = _encode_lines(item.main_flow)
+            use_case.alt_flow = _encode_lines(item.alt_flow)
+            use_case.exception_flow = _encode_lines(item.exception_flow)
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save use-case scenario batch")
+        raise HTTPException(status_code=500, detail="Không thể lưu kịch bản.") from exc
+    return result
+
+
+@router.patch("/api/use-cases/{use_case_id}", response_model=UseCaseRecord)
+def update_use_case(
+    use_case_id: int,
+    data: UseCaseUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UseCaseRecord:
+    use_case = _use_case(db, use_case_id)
+    changes = data.model_dump(exclude_unset=True)
+    if not changes:
+        raise HTTPException(status_code=422, detail="Cần cung cấp ít nhất một trường để cập nhật.")
+    try:
+        if data.name is not None:
+            duplicate = db.query(UseCase.id).filter(
+                UseCase.specification_id == use_case.specification_id,
+                func.lower(UseCase.name) == data.name.lower(),
+                UseCase.id != use_case_id,
+            ).first()
+            if duplicate:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Tên use case đã tồn tại trong cùng đặc tả.",
+                )
+            use_case.name = data.name
+        if data.main_flow is not None:
+            use_case.main_flow = _encode_lines(data.main_flow)
+        if data.alt_flow is not None:
+            use_case.alt_flow = _encode_lines(data.alt_flow)
+        if data.exception_flow is not None:
+            use_case.exception_flow = _encode_lines(data.exception_flow)
+        db.commit()
+        db.refresh(use_case)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not update use-case scenario")
+        raise HTTPException(status_code=500, detail="Không thể cập nhật kịch bản.") from exc
+    return _use_case_record(use_case)
+
+
+@router.post(
+    "/api/use-cases/{use_case_id}/diagrams",
+    response_model=DiagramRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def generate_interaction_diagram(
+    use_case_id: int,
+    data: InteractionDiagramInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    use_case = _use_case(db, use_case_id)
+    project_id = _project_for_use_case(db, use_case_id)
+    main_flow = _decode_lines(use_case.main_flow)
+    alt_flow = _decode_lines(use_case.alt_flow)
+    if not main_flow and not alt_flow:
+        raise HTTPException(
+            status_code=409,
+            detail="Hãy sinh hoặc lưu kịch bản trước khi tạo biểu đồ tương tác.",
+        )
+    try:
+        actors = (
+            db.query(Actor)
+            .join(UcActorRelation, UcActorRelation.actor_id == Actor.id)
+            .filter(UcActorRelation.use_case_id == use_case_id)
+            .order_by(Actor.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read use-case actors")
+        raise HTTPException(status_code=500, detail="Không thể đọc tác nhân của use case.") from exc
+    if not actors:
+        raise HTTPException(
+            status_code=409,
+            detail="Liên kết ít nhất một tác nhân với use case trước khi sinh biểu đồ.",
+        )
+    actor_name = actors[0].name
+    try:
+        project = db.query(Project).filter(Project.id == project_id).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read interaction diagram project")
+        raise HTTPException(status_code=500, detail="Không thể đọc dự án.") from exc
+    if project is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án của use case.")
+    alias = "A1"
+    lines = ["@startuml"]
+    if data.diagram_type == "sequence":
+        lines.extend(
+            [
+                f'actor "{_quoted(actor_name)}" as {alias}',
+                f'participant "{_quoted(project.name)}" as SYS',
+            ]
+        )
+        for index, item in enumerate(main_flow, start=1):
+            lines.append(f'{alias} -> SYS : {_quoted(f"{index}. {item}")}')
+            lines.append(f"activate SYS")
+            lines.append(f'{alias} <-- SYS : Hoàn tất bước {index}')
+            lines.append("deactivate SYS")
+        for index, item in enumerate(alt_flow, start=1):
+            lines.append(f"alt Luồng phụ {index}: {_quoted(item)}")
+            lines.append(f'{alias} -> SYS : Thực hiện luồng phụ {index}')
+            lines.append(f"{alias} <-- SYS : Kết quả luồng phụ {index}")
+            lines.append("end")
+        exceptions = _decode_lines(use_case.exception_flow)
+        if exceptions:
+            lines.append("note over SYS")
+            lines.extend(_quoted(item) for item in exceptions)
+            lines.append("end note")
+    else:
+        lines.extend(
+            [
+                f'object "{_quoted(actor_name)}" as {alias}',
+                f'object "{_quoted(project.name)}" as SYS',
+            ]
+        )
+        for index, item in enumerate(main_flow, start=1):
+            lines.append(f'{alias} -> SYS : {index}. {_quoted(item)}')
+        for index, item in enumerate(alt_flow, start=1):
+            lines.append(f'{alias} ..> SYS : Luồng phụ {index}: {_quoted(item)}')
+        for index, item in enumerate(_decode_lines(use_case.exception_flow), start=1):
+            lines.append(f'SYS ..> {alias} : Ngoại lệ {index}: {_quoted(item)}')
+    lines.extend([f'title {_quoted(use_case.name)}', "@enduml"])
+    source_code = "\n".join(lines)
+    diagram = _render_and_save_diagram(
+        db,
+        project_id,
+        data.diagram_type,
+        source_code,
+        use_case_id=use_case_id,
+    )
+    return DiagramRecord.model_validate(diagram)
+
+
+@router.post(
+    "/api/projects/{project_id}/use-cases/generate-interaction-diagrams-batch",
+    response_model=list[DiagramRecord],
+    status_code=status.HTTP_201_CREATED,
+)
+def generate_project_interaction_diagrams_batch(
+    project_id: int,
+    data: InteractionDiagramInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[DiagramRecord]:
+    _require_project(db, project_id)
+    try:
+        project = db.query(Project).filter(Project.id == project_id).first()
+        use_cases = (
+            db.query(UseCase)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UseCase.id)
+            .all()
+        )
+        diagrams = (
+            db.query(Diagram.use_case_id)
+            .filter(
+                Diagram.project_id == project_id,
+                Diagram.type == data.diagram_type,
+                Diagram.use_case_id.is_not(None),
+            )
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not load project data for interaction diagram batch")
+        raise HTTPException(status_code=500, detail="Không thể đọc dữ liệu biểu đồ tương tác.") from exc
+    if project is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    existing_use_case_ids = {row[0] for row in diagrams}
+    candidates = [
+        item
+        for item in use_cases
+        if _decode_lines(item.main_flow) and item.id not in existing_use_case_ids
+    ]
+    sources: list[tuple[UseCase, str]] = []
+    for use_case in candidates:
+        try:
+            actors = (
+                db.query(Actor)
+                .join(UcActorRelation, UcActorRelation.actor_id == Actor.id)
+                .filter(UcActorRelation.use_case_id == use_case.id)
+                .order_by(Actor.id)
+                .all()
+            )
+        except SQLAlchemyError as exc:
+            logger.exception("Could not load actor for use case %s", use_case.id)
+            raise HTTPException(status_code=500, detail="Không thể đọc tác nhân của use case.") from exc
+        sources.append((
+            use_case,
+            _interaction_diagram_source(use_case, project, actors, data.diagram_type),
+        ))
+
+    generated: list[Diagram] = []
+    renderer_unavailable = False
+    for use_case, source_code in sources:
+        try:
+            image_url = render_plantuml(source_code)
+        except PlantUMLRenderError:
+            image_url = None
+            renderer_unavailable = True
+        generated.append(
+            _new_project_diagram(
+                db,
+                project_id,
+                data.diagram_type,
+                source_code,
+                image_url,
+                use_case_id=use_case.id,
+            )
+        )
+    if renderer_unavailable:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Một hoặc nhiều mã biểu đồ đã lưu nhưng chưa thể render ảnh. "
+                "Cần cấu hình PlantUML render service."
+            ),
+        )
+    return [DiagramRecord.model_validate(item) for item in generated]
+
+
+@router.post(
+    "/api/projects/{project_id}/classes",
+    response_model=ClassEntityRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_class(
+    project_id: int,
+    data: ClassCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ClassEntityRecord:
+    _require_project(db, project_id)
+    try:
+        if db.query(ClassEntity.id).filter(
+            ClassEntity.project_id == project_id,
+            func.lower(ClassEntity.name) == data.name.lower(),
+        ).first():
+            raise HTTPException(status_code=409, detail="Tên lớp đã tồn tại trong dự án.")
+        entity = ClassEntity(
+            project_id=project_id,
+            name=data.name,
+            attributes=_encode_lines(data.attributes),
+            methods=_encode_lines(data.methods),
+        )
+        db.add(entity)
+        db.commit()
+        db.refresh(entity)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not create project class")
+        raise HTTPException(status_code=500, detail="Không thể tạo lớp.") from exc
+    return ClassEntityRecord(
+        id=entity.id,
+        project_id=entity.project_id,
+        name=entity.name,
+        attributes=_decode_lines(entity.attributes),
+        methods=_decode_lines(entity.methods),
+    )
+
+
+@router.get(
+    "/api/projects/{project_id}/classes",
+    response_model=list[ClassEntityRecord],
+)
+def list_project_classes(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[ClassEntityRecord]:
+    _require_project(db, project_id)
+    try:
+        entities = (
+            db.query(ClassEntity)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassEntity.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list project classes")
+        raise HTTPException(status_code=500, detail="Không thể đọc lớp của dự án.") from exc
+    return [
+        ClassEntityRecord(
+            id=item.id,
+            project_id=item.project_id,
+            name=item.name,
+            attributes=_decode_lines(item.attributes),
+            methods=_decode_lines(item.methods),
+        )
+        for item in entities
+    ]
+
+
+@router.patch("/api/classes/{class_id}", response_model=ClassEntityRecord)
+def update_class(
+    class_id: int,
+    data: ClassUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ClassEntityRecord:
+    try:
+        entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
+        if entity is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy lớp.")
+        changes = data.model_dump(exclude_unset=True)
+        if not changes:
+            raise HTTPException(status_code=422, detail="Cần cung cấp ít nhất một trường để cập nhật.")
+        if data.name is not None:
+            if db.query(ClassEntity.id).filter(
+                ClassEntity.project_id == entity.project_id,
+                func.lower(ClassEntity.name) == data.name.lower(),
+                ClassEntity.id != class_id,
+            ).first():
+                raise HTTPException(status_code=409, detail="Tên lớp đã tồn tại trong dự án.")
+            entity.name = data.name
+        if data.attributes is not None:
+            entity.attributes = _encode_lines(data.attributes)
+        if data.methods is not None:
+            entity.methods = _encode_lines(data.methods)
+        db.commit()
+        db.refresh(entity)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not update class")
+        raise HTTPException(status_code=500, detail="Không thể cập nhật lớp.") from exc
+    return ClassEntityRecord(
+        id=entity.id,
+        project_id=entity.project_id,
+        name=entity.name,
+        attributes=_decode_lines(entity.attributes),
+        methods=_decode_lines(entity.methods),
+    )
+
+
+@router.delete("/api/classes/{class_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_class(
+    class_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
+        if entity is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy lớp.")
+        db.query(ClassRelation).filter(
+            (ClassRelation.class_a_id == class_id)
+            | (ClassRelation.class_b_id == class_id)
+        ).delete(synchronize_session=False)
+        db.delete(entity)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete class")
+        raise HTTPException(status_code=500, detail="Không thể xóa lớp.") from exc
+
+
+@router.post(
+    "/api/classes/{class_id}/relations",
+    response_model=ClassRelationRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_class_relation(
+    class_id: int,
+    data: ClassRelationInput,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ClassRelationRecord:
+    try:
+        class_a = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
+        class_b = db.query(ClassEntity).filter(ClassEntity.id == data.class_b_id).first()
+        if class_a is None or class_b is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy một trong các lớp.")
+        if class_a.project_id != class_b.project_id:
+            raise HTTPException(status_code=422, detail="Hai lớp phải thuộc cùng một dự án.")
+        if class_a.id == class_b.id:
+            raise HTTPException(status_code=422, detail="Không thể tạo quan hệ lớp với chính nó.")
+        relation = ClassRelation(
+            class_a_id=class_a.id,
+            class_b_id=class_b.id,
+            relation_type=data.relation_type,
+        )
+        db.add(relation)
+        db.commit()
+        db.refresh(relation)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not create class relation")
+        raise HTTPException(status_code=500, detail="Không thể tạo quan hệ lớp.") from exc
+    return ClassRelationRecord(
+        id=relation.id,
+        class_a_id=relation.class_a_id,
+        class_b_id=relation.class_b_id,
+        relation_type=relation.relation_type or "",
+    )
+
+
+@router.get(
+    "/api/projects/{project_id}/class-relations",
+    response_model=list[ClassRelationRecord],
+)
+def list_project_class_relations(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[ClassRelationRecord]:
+    _require_project(db, project_id)
+    try:
+        relations = (
+            db.query(ClassRelation)
+            .join(ClassEntity, ClassRelation.class_a_id == ClassEntity.id)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassRelation.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list project class relations")
+        raise HTTPException(status_code=500, detail="Không thể đọc quan hệ lớp.") from exc
+    return [
+        ClassRelationRecord(
+            id=item.id,
+            class_a_id=item.class_a_id,
+            class_b_id=item.class_b_id,
+            relation_type=item.relation_type or "",
+        )
+        for item in relations
+    ]
+
+
+@router.delete(
+    "/api/class-relations/{relation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_class_relation(
+    relation_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        relation = db.query(ClassRelation).filter(
+            ClassRelation.id == relation_id
+        ).first()
+        if relation is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy quan hệ lớp.")
+        db.delete(relation)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete class relation")
+        raise HTTPException(status_code=500, detail="Không thể xóa quan hệ lớp.") from exc
+
+
+@router.post(
+    "/api/projects/{project_id}/generate-classes",
+    response_model=list[ClassEntityRecord],
+)
+def generate_classes(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[ClassEntityRecord]:
+    _require_project(db, project_id)
+    try:
+        rows = (
+            db.query(UseCase, Specification)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UseCase.id)
+            .all()
+        )
+        specifications = (
+            db.query(Specification)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(Specification.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read class diagram source material")
+        raise HTTPException(status_code=500, detail="Không thể đọc dữ liệu mô hình lớp.") from exc
+    if not rows:
+        raise HTTPException(
+            status_code=409,
+            detail="Cần ít nhất một use case để suy luận biểu đồ lớp.",
+        )
+    case_context = "\n".join(
+        f"Use case: {item.name}\nLuồng chính: {'; '.join(_decode_lines(item.main_flow))}\n"
+        f"Luồng phụ: {'; '.join(_decode_lines(item.alt_flow))}\n"
+        f"Ngoại lệ: {'; '.join(_decode_lines(item.exception_flow))}"
+        for item, _ in rows
+    )
+    spec_context = "\n\n".join(item.content for item in specifications)
+    prompt = (
+        "Suy luận mô hình lớp UML bằng tiếng Việt từ các use case và đặc tả dưới đây. "
+        "Chỉ đề xuất lớp, thuộc tính, phương thức có căn cứ trong nghiệp vụ; không "
+        "tạo lớp framework chung chung. Trả JSON đúng schema: "
+        "{\"classes\":[{\"name\":\"...\",\"attributes\":[\"...\"],"
+        "\"methods\":[\"...\"]}],\"relations\":[{\"class_a\":\"...\","
+        "\"class_b\":\"...\",\"relation_type\":\"association|inheritance|"
+        "composition|aggregation|dependency\"}]}. Nếu không có quan hệ, dùng [].\n\n"
+        f"USE CASE:\n{case_context}\n\nĐẶC TẢ:\n{spec_context}"
+    )
+    result = _ai_json(prompt, ClassDiagramSuggestion)
+    if not result.classes:
+        raise HTTPException(status_code=502, detail="AI không đề xuất được lớp nào.")
+
+    by_name: dict[str, ClassEntity] = {}
+    try:
+        existing = db.query(ClassEntity).filter(ClassEntity.project_id == project_id).all()
+        by_name = {item.name.casefold(): item for item in existing}
+        persisted_classes: list[ClassEntity] = []
+        for suggestion in result.classes:
+            class_entity = by_name.get(suggestion.name.casefold())
+            if class_entity is None:
+                class_entity = ClassEntity(project_id=project_id, name=suggestion.name)
+                db.add(class_entity)
+            class_entity.attributes = _encode_lines(suggestion.attributes)
+            class_entity.methods = _encode_lines(suggestion.methods)
+            by_name[suggestion.name.casefold()] = class_entity
+            persisted_classes.append(class_entity)
+        db.flush()
+        class_ids = [item.id for item in existing]
+        class_ids.extend(item.id for item in persisted_classes if item.id not in class_ids)
+        if class_ids:
+            db.query(ClassRelation).filter(
+                ClassRelation.class_a_id.in_(class_ids)
+                | ClassRelation.class_b_id.in_(class_ids)
+            ).delete(synchronize_session=False)
+        for relation in result.relations:
+            class_a = by_name.get(relation.class_a.casefold())
+            class_b = by_name.get(relation.class_b.casefold())
+            if class_a is not None and class_b is not None and class_a.id != class_b.id:
+                db.add(
+                    ClassRelation(
+                        class_a_id=class_a.id,
+                        class_b_id=class_b.id,
+                        relation_type=relation.relation_type,
+                    )
+                )
+        db.commit()
+        for item in persisted_classes:
+            db.refresh(item)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not persist inferred class entities")
+        raise HTTPException(status_code=500, detail="Không thể lưu mô hình lớp.") from exc
+
+    return [
+        ClassEntityRecord(
+            id=item.id,
+            project_id=item.project_id,
+            name=item.name,
+            attributes=_decode_lines(item.attributes),
+            methods=_decode_lines(item.methods),
+        )
+        for item in persisted_classes
+    ]
+
+
+@router.post(
+    "/api/projects/{project_id}/diagrams/class",
+    response_model=DiagramRecord,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_class_diagram(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    _require_project(db, project_id)
+    try:
+        classes = (
+            db.query(ClassEntity)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassEntity.id)
+            .all()
+        )
+        relations = (
+            db.query(ClassRelation)
+            .join(ClassEntity, ClassRelation.class_a_id == ClassEntity.id)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassRelation.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read classes for class diagram")
+        raise HTTPException(status_code=500, detail="Không thể đọc mô hình lớp.") from exc
+    if not classes:
+        raise HTTPException(
+            status_code=409,
+            detail="Hãy tạo hoặc suy luận lớp trước khi sinh biểu đồ.",
+        )
+    source_code = _class_diagram_source(classes, relations)
+    diagram = _render_and_save_diagram(db, project_id, "class", source_code)
+    return DiagramRecord.model_validate(diagram)
+
+
+@router.get(
+    "/api/projects/{project_id}/diagrams",
+    response_model=list[DiagramRecord],
+)
+def list_project_diagrams(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[DiagramRecord]:
+    _require_project(db, project_id)
+    try:
+        diagrams = (
+            db.query(Diagram)
+            .filter(Diagram.project_id == project_id)
+            .order_by(Diagram.id)
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list project diagrams")
+        raise HTTPException(status_code=500, detail="Không thể đọc biểu đồ của dự án.") from exc
+    return [DiagramRecord.model_validate(item) for item in diagrams]
+
+
+@router.get("/api/diagrams/{diagram_id}", response_model=DiagramRecord)
+def get_diagram(
+    diagram_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    try:
+        diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read diagram")
+        raise HTTPException(status_code=500, detail="Không thể đọc biểu đồ.") from exc
+    if diagram is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+    return DiagramRecord.model_validate(diagram)
+
+
+@router.patch("/api/diagrams/{diagram_id}", response_model=DiagramRecord)
+def update_diagram(
+    diagram_id: int,
+    data: DiagramUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    try:
+        diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read diagram to update")
+        raise HTTPException(status_code=500, detail="Không thể đọc biểu đồ.") from exc
+    if diagram is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+    updated = _render_and_update_diagram(db, diagram, data.source_code)
+    return DiagramRecord.model_validate(updated)
+
+
+@router.delete("/api/diagrams/{diagram_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_diagram(
+    diagram_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> None:
+    try:
+        diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
+        if diagram is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+        db.delete(diagram)
+        db.commit()
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not delete diagram")
+        raise HTTPException(status_code=500, detail="Không thể xóa biểu đồ.") from exc
+
+
+@router.get(
+    "/api/projects/{project_id}/uml-state",
+    response_model=ProjectUmlState,
+)
+def get_project_uml_state(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> ProjectUmlState:
+    _require_project(db, project_id)
+    try:
+        actors = db.query(Actor).filter(Actor.project_id == project_id).order_by(Actor.id).all()
+        use_cases = (
+            db.query(UseCase)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UseCase.id)
+            .all()
+        )
+        relations = (
+            db.query(UcActorRelation)
+            .join(UseCase, UcActorRelation.use_case_id == UseCase.id)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .join(UserStory, Specification.user_story_id == UserStory.id)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UcActorRelation.id)
+            .all()
+        )
+        diagrams = (
+            db.query(Diagram)
+            .filter(Diagram.project_id == project_id)
+            .order_by(Diagram.id)
+            .all()
+        )
+        classes = db.query(ClassEntity).filter(
+            ClassEntity.project_id == project_id
+        ).order_by(ClassEntity.id).all()
+        class_ids = [item.id for item in classes]
+        class_relations = (
+            db.query(ClassRelation)
+            .filter(
+                ClassRelation.class_a_id.in_(class_ids)
+                | ClassRelation.class_b_id.in_(class_ids)
+            )
+            .order_by(ClassRelation.id)
+            .all()
+            if class_ids
+            else []
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not load project UML state")
+        raise HTTPException(status_code=500, detail="Không thể tải dữ liệu UML của dự án.") from exc
+    return ProjectUmlState(
+        actors=[ActorRecord.model_validate(item) for item in actors],
+        use_cases=[_use_case_record(item) for item in use_cases],
+        relations=[ActorRelationRecord.model_validate(item) for item in relations],
+        diagrams=[DiagramRecord.model_validate(item) for item in diagrams],
+        classes=[
+            ClassEntityRecord(
+                id=item.id,
+                project_id=item.project_id,
+                name=item.name,
+                attributes=_decode_lines(item.attributes),
+                methods=_decode_lines(item.methods),
+            )
+            for item in classes
+        ],
+        class_relations=[
+            {
+                "id": item.id,
+                "class_a_id": item.class_a_id,
+                "class_b_id": item.class_b_id,
+                "relation_type": item.relation_type or "association",
+            }
+            for item in class_relations
+        ],
+    )

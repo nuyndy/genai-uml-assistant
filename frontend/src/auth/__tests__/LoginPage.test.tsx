@@ -115,7 +115,7 @@ describe("LoginPage – nội dung cơ bản luôn hiển thị", () => {
       screen.getByRole("heading", { name: /GenAI UML Assistant/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Đăng nhập để bắt đầu quản lý dự án/i),
+      screen.getByText(/Đăng nhập bằng Google để mở không gian dự án/i),
     ).toBeInTheDocument();
   });
 });

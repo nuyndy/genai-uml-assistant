@@ -1,62 +1,118 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Stepper from "./components/Stepper";
+import GiaiDoanStepper from "./components/GiaiDoanStepper";
+import GiaiDoan1 from "./components/GiaiDoan1";
+import GiaiDoan2 from "./components/GiaiDoan2";
+import GiaiDoan3 from "./components/GiaiDoan3";
 import { useAuth } from "./auth/AuthContext";
 import LoginPage from "./auth/LoginPage";
 import HomePage from "./components/home/HomePage";
 import {
-  loadProjects,
-  saveProjects,
-  toNumericId,
+  listProjects,
   type Project,
 } from "./components/home/projectStore";
-import Step1Requirement, {
-  type Specification,
-} from "./components/step1/Step1Requirement";
-import Step2UseCase from "./components/Step2UseCase";
-import Step3DiagramBuilder from "./components/Step3DiagramBuilder";
-
-interface UseCase {
-  id: number;
-  specId: number;
-  name: string;
-  mainFlow: string[];
-  altFlows: string[];
-  diagramGenerated: boolean;
-}
+import { STAGES, type StageId } from "./stages";
+import { StageBackdrop } from "./components/ui/primitives";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { emptyWorkflow, type WorkflowState } from "./types/workflow";
 
 function App() {
   const { user, loading, logout } = useAuth();
-  const [projects, setProjects] = useState<Project[]>(() => loadProjects());
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoadedFor, setProjectsLoadedFor] = useState<number | null>(null);
+  const [projectsError, setProjectsError] = useState("");
   const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [specs, setSpecs] = useState<Specification[]>([]);
-  const [useCases, setUseCases] = useState<UseCase[]>([]);
 
-  const persist = (next: Project[]) => {
-    setProjects(next);
-    saveProjects(next);
+  /* Giai đoạn lớn đang mở và bước con tương ứng. */
+  const [stage, setStage] = useState<StageId>(1);
+  const [step, setStep] = useState(1);
+
+  /** Dữ liệu đang dùng ở các giai đoạn; Giai đoạn 1 luôn đọc và ghi qua API. */
+  const [workflow, setWorkflow] = useState<WorkflowState>(emptyWorkflow);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void listProjects()
+      .then((result) => {
+        if (!cancelled) {
+          setProjects(result);
+          setProjectsError("");
+          setProjectsLoadedFor(user.id);
+        }
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) {
+          setProjectsError(
+            reason instanceof Error
+              ? `Không thể tải dự án từ cơ sở dữ liệu: ${reason.message}`
+              : "Không thể tải dự án từ cơ sở dữ liệu.",
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const resetWorkflow = () => {
+    setWorkflow(emptyWorkflow());
+    setStage(1);
+    setStep(1);
   };
 
   const handleOpenProject = (project: Project) => {
-    // Nếu là dự án mới chưa có trong danh sách thì thêm vào.
-    if (!projects.some((p) => p.id === project.id)) {
-      persist([...projects, project]);
-    }
+    setProjects((previous) =>
+      previous.some((item) => item.id === project.id)
+        ? previous
+        : [...previous, project],
+    );
     setActiveProject(project);
-    setStep(1);
-    setSpecs([]);
-    setUseCases([]);
-  };
-
-  const handleDeleteProject = (id: string) => {
-    persist(projects.filter((p) => p.id !== id));
+    resetWorkflow();
   };
 
   const handleBackHome = () => {
     setActiveProject(null);
-    setStep(1);
-    setSpecs([]);
-    setUseCases([]);
+    resetWorkflow();
+  };
+
+  const handleDeleteProject = (projectId: number) => {
+    setProjects((previous) => previous.filter((project) => project.id !== projectId));
+  };
+
+  /**
+   * Bước tối đa được mở ở mỗi giai đoạn — mở khoá dần theo tiến độ thật:
+   *  - GĐ1: tới Bước 5 khi đã khoá yêu cầu; các bước sau mở khi đã có kết quả.
+   *  - GĐ2: tới Bước 2 khi đã xác nhận danh sách; các bước sau mở theo dữ liệu.
+   *  - GĐ3: mở dần sau mỗi bước đã hoàn thành.
+   */
+  const maxUnlockedStep = (): number => {
+    const total = STAGES[stage].steps.length;
+    if (stage === 1) {
+      if (workflow.specs.length > 0) return total;
+      if (workflow.userStoryId) return 4;
+      if (workflow.analysis) return 3;
+      if (workflow.requirementId) return 2;
+      return 1;
+    }
+    if (stage === 2) {
+      if (workflow.classDiagramUrl) return total;
+      if (workflow.umlClasses.length > 0) return 5;
+      if (workflow.interactions.length > 0) return 5;
+      if (Object.keys(workflow.scenarios).length > 0) return 5;
+      // Biểu đồ UC đã lưu mã nguồn cũng đủ để mở Bước 3: kịch bản use case
+      // được sinh từ dữ liệu actor/use case, không phụ thuộc ảnh đã render.
+      if (workflow.useCaseDiagramCode) return 3;
+      if (workflow.actors.length > 0 && workflow.usecases.length > 0) return 3;
+      return 1;
+    }
+    if (workflow.previewImageUrl) return 4;
+    if (
+      workflow.diagramCode.trim() &&
+      workflow.diagramCode !== "@startuml\n@enduml"
+    )
+      return 3;
+    return 2;
   };
 
   // 0) Cổng đăng nhập: chưa đăng nhập thì chặn toàn bộ app.
@@ -76,34 +132,40 @@ function App() {
     return (
       <HomePage
         projects={projects}
+        user={user}
         onOpen={handleOpenProject}
         onDelete={handleDeleteProject}
+        onLogout={logout}
+        loading={projectsLoadedFor !== user.id}
+        loadError={projectsError}
       />
     );
   }
 
-  // 2) Workspace: luồng 3 bước
+  // 2) Workspace: 3 GIAI ĐOẠN lớn, mỗi giai đoạn có sub-stepper riêng.
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-4xl px-4 flex items-center justify-between gap-3 py-3">
+    <div className="relative min-h-screen bg-slate-50">
+      <div className="fixed inset-0 z-0">
+        <StageBackdrop />
+      </div>
+
+      <div className="relative z-10">
+      <div className="border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 flex items-center justify-between gap-3 py-3">
           <button
             type="button"
             onClick={handleBackHome}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-violet-600"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-violet-600"
           >
             ← Trang chủ
           </button>
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="min-w-0 text-right">
-              <span className="block text-sm font-semibold text-slate-900 truncate">
+              <span className="block max-w-[16rem] break-words text-sm font-semibold text-slate-900 [overflow-wrap:anywhere]">
                 {activeProject.name}
               </span>
-              <span className="block text-xs text-slate-400 truncate">
-                {activeProject.description || "Không có mô tả"}
-              </span>
             </div>
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <div className="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-3">
               {user.avatar_url && (
                 <img
                   src={user.avatar_url}
@@ -112,13 +174,13 @@ function App() {
                   referrerPolicy="no-referrer"
                 />
               )}
-              <span className="hidden sm:block text-xs text-slate-600 max-w-35 truncate">
+              <span className="hidden max-w-35 truncate text-xs text-slate-600 sm:block">
                 {user.name || user.email}
               </span>
               <button
                 type="button"
                 onClick={logout}
-                className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
+                className="inline-flex h-8 items-center whitespace-nowrap rounded-lg px-2 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
               >
                 Đăng xuất
               </button>
@@ -127,35 +189,82 @@ function App() {
         </div>
       </div>
 
-      <Stepper current={step} onStepClick={setStep} />
+      <GiaiDoanStepper
+        stage={stage}
+        maxUnlockedStage={3}
+        onStageChange={(next) => {
+          setStage(next);
+          setStep(1);
+        }}
+      />
 
-      {step === 1 && (
-        <Step1Requirement
-          projectId={toNumericId(activeProject.id)}
-          onContinue={(s: Specification[]) => {
-            setSpecs(s);
-            setStep(2);
-          }}
-        />
-      )}
+      <Stepper
+        stage={stage}
+        step={step}
+        maxUnlockedStep={maxUnlockedStep()}
+        completedSteps={stage === 1
+          ? [
+              ...(workflow.requirementId ? [1] : []),
+              ...(workflow.analysis ? [2] : []),
+              ...(workflow.userStoryId ? [3] : []),
+              ...(workflow.specs.length > 0 ? [4, 5] : []),
+            ]
+          : stage === 2
+            ? [
+                ...(workflow.actors.length > 0 && workflow.usecases.length > 0 ? [1] : []),
+                ...(workflow.useCaseDiagramUrl ? [2] : []),
+                ...(workflow.usecases.length > 0 &&
+                workflow.usecases.every((useCase) => Boolean(workflow.scenarios[useCase.id]))
+                  ? [3]
+                  : []),
+                ...(workflow.usecases.some((useCase) =>
+                  workflow.interactions.some(
+                    (diagram) => diagram.usecaseId === useCase.id && Boolean(diagram.imageUrl),
+                  ),
+                )
+                  ? [4]
+                  : []),
+                ...(workflow.classDiagramUrl ? [5] : []),
+              ]
+          : undefined}
+        onStepChange={setStep}
+      />
 
-      {step === 2 && (
-        <Step2UseCase
-          specs={specs}
-          onBack={() => setStep(1)}
-          onContinue={(uc) => {
-            setUseCases(uc);
-            setStep(3);
-          }}
-        />
-      )}
-
-      {step === 3 && (
-        <Step3DiagramBuilder
-          useCases={useCases}
-          onBack={() => setStep(2)}
-        />
-      )}
+      <ErrorBoundary>
+      <main>
+        {stage === 1 && (
+          <GiaiDoan1
+            projectId={activeProject.id}
+            state={workflow}
+            setState={setWorkflow}
+            step={step}
+            onStepChange={setStep}
+          />
+        )}
+        {stage === 2 && (
+          <GiaiDoan2
+            projectId={activeProject.id}
+            state={workflow}
+            setState={setWorkflow}
+            step={step}
+            onStepChange={setStep}
+            onReturnStage1={() => {
+              setStage(1);
+              setStep(1);
+            }}
+          />
+        )}
+        {stage === 3 && (
+          <GiaiDoan3
+            state={workflow}
+            setState={setWorkflow}
+            step={step}
+            onStepChange={setStep}
+          />
+        )}
+      </main>
+      </ErrorBoundary>
+      </div>
     </div>
   );
 }

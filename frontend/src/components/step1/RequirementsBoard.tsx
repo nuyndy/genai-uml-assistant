@@ -57,7 +57,7 @@ export default function RequirementsBoard({ records, onRemove }: Props) {
                     {rec.targetObject}
                   </td>
                   <td className="py-3 pr-3 text-slate-500 italic">
-                    {rec.purpose || "—"}
+                    {rec.purpose || "Chưa có"}
                   </td>
                   <td className="py-3 pr-3 text-slate-600 max-w-xs">
                     {rec.content}

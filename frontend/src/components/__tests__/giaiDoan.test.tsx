@@ -1,0 +1,192 @@
+import { describe, it, expect } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { useState } from "react";
+import GiaiDoanStepper from "../GiaiDoanStepper";
+import Stepper from "../Stepper";
+import GiaiDoan1 from "../GiaiDoan1";
+import GiaiDoan2 from "../GiaiDoan2";
+import GiaiDoan3 from "../GiaiDoan3";
+import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+
+/**
+ * Kiểm tra cấu trúc 3 GIAI ĐOẠN: thanh giai đoạn lớn, sub-stepper, và các panel
+ * bước con hiển thị đúng tên bước.
+ */
+
+/** Bọc trong state thật để mô phỏng đúng cách App.tsx truyền props. */
+function Harness({ initial, stage, step }: {
+  initial: WorkflowState;
+  stage: 1 | 2 | 3;
+  step: number;
+}) {
+  const [state, setState] = useState<WorkflowState>(initial);
+  const noop = () => {};
+  const Panel =
+    stage === 1 ? GiaiDoan1 : stage === 2 ? GiaiDoan2 : GiaiDoan3;
+  return (
+    <>
+      <GiaiDoanStepper stage={stage} maxUnlockedStage={3} />
+      <Stepper stage={stage} step={step} maxUnlockedStep={5} />
+      <Panel state={state} setState={setState} step={step} onStepChange={noop} />
+    </>
+  );
+}
+
+describe("GiaiDoanStepper", () => {
+  it("hiển thị đủ 3 giai đoạn lớn", () => {
+    render(<GiaiDoanStepper stage={1} maxUnlockedStage={3} />);
+    expect(screen.getByText("Thu thập & Đặc tả")).toBeTruthy();
+    expect(screen.getByText("Mô hình hóa UML")).toBeTruthy();
+    expect(screen.getByText("Tùy chỉnh & Xuất")).toBeTruthy();
+  });
+
+  it("tô xanh lá giai đoạn đã đi qua", () => {
+    const { container } = render(
+      <GiaiDoanStepper stage={3} maxUnlockedStage={3} />,
+    );
+    // Giai đoạn 1 và 2 đã hoàn thành -> vòng tròn màu emerald.
+    expect(container.querySelectorAll(".bg-emerald-500").length).toBe(2);
+  });
+});
+
+describe("Giai đoạn 1: sub-stepper 5 bước", () => {
+  const steps = [
+    "Nhập yêu cầu",
+    "Phân tích thiếu sót",
+    "Kiểm duyệt User Story",
+    "Sinh đặc tả",
+    "Tổng hợp tài liệu",
+  ];
+
+  it.each(steps)("hiển thị bước %s trong sub-stepper", (name) => {
+    render(<Stepper stage={1} step={1} maxUnlockedStep={5} />);
+    expect(screen.getByText(name)).toBeTruthy();
+  });
+
+  it("Bước 1 hiển thị form nhập yêu cầu", () => {
+    render(<Harness initial={emptyWorkflow()} stage={1} step={1} />);
+    expect(screen.getAllByText("Nhập yêu cầu").length).toBeGreaterThan(0);
+    expect(screen.getByPlaceholderText("VD: Sinh viên, Khách hàng")).toBeTruthy();
+  });
+
+  it("Bước 2 cho phép sang bước tiếp theo dù có yêu cầu thiếu", () => {
+    render(<Harness initial={emptyWorkflow()} stage={1} step={2} />);
+    expect(screen.getByText("Phân tích và phát hiện thiếu sót")).toBeTruthy();
+    expect(screen.getByText("Tiếp tục sang Bước 3")).toBeTruthy();
+  });
+
+  it("Bước 3 cho người dùng kiểm duyệt User Story do AI tạo", () => {
+    render(<Harness initial={emptyWorkflow()} stage={1} step={3} />);
+    expect(screen.getByText("Chưa có yêu cầu để rà soát")).toBeTruthy();
+    expect(screen.getByText("Xác nhận yêu cầu & sang Bước 4")).toBeTruthy();
+  });
+
+  it("Bước 5 cho sửa trực tiếp trên trang Word và tải xuống docx", () => {
+    const initial = emptyWorkflow();
+    initial.specs = [
+      { id: 1, feature: "Đăng nhập", type: "functional", content: "A", approved: true },
+      { id: 2, feature: "Hiệu năng", type: "non_functional", content: "B", approved: true },
+      { id: 3, feature: "Chưa duyệt", type: "functional", content: "C", approved: false },
+    ];
+    render(<Harness initial={initial} stage={1} step={5} />);
+    expect(screen.getByText("Tài liệu SRS")).toBeTruthy();
+    expect(screen.getByText("Tải xuống file Word (.docx)")).toBeTruthy();
+    // Sửa được trực tiếp trên tài liệu, không phải quay lại Bước 4.
+    expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
+    expect(screen.getByLabelText("1.2 Phạm vi")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Lưu phần giới thiệu" })).toBeTruthy();
+  });
+});
+
+describe("Giai đoạn 2", () => {
+  it("sub-stepper hiển thị đúng 5 tên bước", () => {
+    render(<Stepper stage={2} step={1} maxUnlockedStep={5} />);
+    [
+      "Trích xuất tác nhân & UC",
+      "Sinh biểu đồ UC tổng quát",
+      "Sinh kịch bản use case chi tiết",
+      "Sinh biểu đồ tương tác",
+      "Sinh biểu đồ lớp",
+    ].forEach((n) => expect(screen.getByText(n)).toBeTruthy());
+  });
+
+  it("Bước 1 hiện tác nhân và use case đã lưu", () => {
+    const initial = emptyWorkflow();
+    initial.actors = [{ id: 1, name: "Khách hàng" }];
+    initial.usecases = [{ id: 1, name: "Đặt hàng", description: "Mua hàng" }];
+    render(<Harness initial={initial} stage={2} step={1} />);
+    expect(screen.getByText(/Khách hàng/)).toBeTruthy();
+    expect(screen.getByText(/Đặt hàng/)).toBeTruthy();
+    expect(screen.getByText("Dữ liệu đã lưu trong dự án")).toBeTruthy();
+  });
+
+  it("Bước 3 mở rộng ba phần kịch bản đã lưu", () => {
+    const initial = emptyWorkflow();
+    initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.scenarios = {
+      1: { mainFlow: ["1. Chọn hàng"], altFlows: ["1a. Huỷ"], exceptions: ["2a. Lỗi"] },
+    };
+    render(<Harness initial={initial} stage={2} step={3} />);
+    // Kịch bản chỉ hiện sau khi mở rộng use case tương ứng.
+    fireEvent.click(screen.getByText("Xem và sửa"));
+    expect(screen.getByText("Luồng chính")).toBeTruthy();
+    expect(screen.getByText("Luồng phụ")).toBeTruthy();
+    expect(screen.getByText("Ngoại lệ")).toBeTruthy();
+    expect(screen.getByDisplayValue("1. Chọn hàng")).toBeTruthy();
+  });
+
+  it("Bước 5 cho phép chọn Sequence / Collaboration", () => {
+    const initial = emptyWorkflow();
+    initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.scenarios = {
+      1: { mainFlow: ["Chọn hàng"], altFlows: [], exceptions: [] },
+    };
+    render(<Harness initial={initial} stage={2} step={4} />);
+    expect(screen.getByText("Sequence")).toBeTruthy();
+    expect(screen.getByText("Collaboration")).toBeTruthy();
+  });
+});
+
+describe("Giai đoạn 3", () => {
+  it("sub-stepper hiển thị đúng 4 tên bước", () => {
+    render(<Stepper stage={3} step={1} maxUnlockedStep={4} />);
+    [
+      "Chỉnh sửa thành phần biểu đồ",
+      "Sinh/cập nhật mã mô tả biểu đồ",
+      "Xem trước và hiển thị",
+      "Xuất biểu đồ",
+    ].forEach((n) => expect(screen.getByText(n)).toBeTruthy());
+  });
+
+  it("Bước 1 hiện thành phần biểu đồ từ Giai đoạn 2", () => {
+    const initial = emptyWorkflow();
+    initial.actors = [{ id: 1, name: "Khách hàng" }];
+    initial.umlClasses = [
+      { id: 1, name: "Order", attributes: ["id: int"], methods: ["create()"] },
+    ];
+    initial.relations = [{ id: 1, from: "Khách hàng", to: "Order", type: "association" }];
+    render(<Harness initial={initial} stage={3} step={1} />);
+    // "Khách hàng" xuất hiện ở cả ô tác nhân và ô quan hệ "Từ".
+    expect(screen.getAllByDisplayValue("Khách hàng").length).toBeGreaterThan(0);
+    // "Order" xuất hiện ở cả ô tên lớp và ô quan hệ "Đến".
+    expect(screen.getAllByDisplayValue("Order").length).toBeGreaterThan(0);
+    expect(screen.getByDisplayValue("id: int")).toBeTruthy();
+  });
+
+  it("Bước 3 có 2 nút quay lại khi chưa ưng ý", () => {
+    render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
+    expect(screen.getByText("← Quay lại sửa thành phần")).toBeTruthy();
+    expect(screen.getByText("← Quay lại sửa mã")).toBeTruthy();
+  });
+
+  it("Bước 4 chọn được định dạng PNG/SVG", () => {
+    render(<Harness initial={emptyWorkflow()} stage={3} step={4} />);
+    expect(screen.getByRole("button", { name: "PNG" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "SVG" })).toBeTruthy();
+  });
+
+  it("không dùng dấu gạch ngang dài trong văn bản hiển thị", () => {
+    render(<Harness initial={emptyWorkflow()} stage={3} step={1} />);
+    expect(document.body.textContent).not.toContain("—");
+  });
+});

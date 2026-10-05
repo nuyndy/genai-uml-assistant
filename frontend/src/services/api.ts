@@ -74,3 +74,42 @@ export async function apiFetch<T>(
   const text = await res.text();
   return (text ? JSON.parse(text) : undefined) as T;
 }
+
+export async function apiFetchBlob(
+  path: string,
+  options: RequestInit = {},
+): Promise<{ blob: Blob; filename: string }> {
+  const headers: HeadersInit = {
+    ...authHeaders(),
+    ...(options.headers ?? {}),
+  };
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch {
+    throw new ApiError(
+      0,
+      `Không kết nối được backend tại ${API_BASE}. Hãy chắc chắn server đang chạy.`,
+    );
+  }
+  if (res.status === 401) {
+    emitAuthExpired();
+    throw new ApiError(401, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+  }
+  if (!res.ok) {
+    let detail = `Yêu cầu thất bại (HTTP ${res.status}).`;
+    try {
+      const body = await res.json();
+      if (body?.detail) detail = String(body.detail);
+    } catch {
+      // Server returned a non-JSON error body.
+    }
+    throw new ApiError(res.status, detail);
+  }
+  const disposition = res.headers.get("content-disposition") ?? "";
+  const encodedName = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+  return {
+    blob: await res.blob(),
+    filename: encodedName ?? "SRS",
+  };
+}

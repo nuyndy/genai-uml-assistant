@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.requirement import router as requirement_router
+from routers.specification import router as specification_router
+from routers.projects import router as projects_router
+from routers.uml import router as uml_router
+from routers.srs import router as srs_router
 from routers.auth import router as auth_router
 from database.db import Base, engine
 from database import models
@@ -22,6 +26,10 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(auth_router)
 app.include_router(requirement_router)
+app.include_router(specification_router)
+app.include_router(projects_router)
+app.include_router(uml_router)
+app.include_router(srs_router)
 
 @app.get("/")
 async def root():
