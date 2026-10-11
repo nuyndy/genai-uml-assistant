@@ -78,6 +78,7 @@ function Workspace() {
       <GiaiDoanStepper
         stage={stage}
         maxUnlockedStage={3}
+        completedStages={[]}
         onStageChange={(next) => {
           setStage(next);
           setStep(1);

@@ -61,14 +61,26 @@ class ConfirmRequirementsBatch(BaseModel):
     user_stories: list["UserStoryDraft"] | None = None
 
 
-class UserStoryDraft(BaseModel):
-    requirement_id: int = Field(gt=0)
+class UserStoryDraftContent(BaseModel):
+    """Nội dung user story do AI sinh ra.
+
+    KHÔNG chứa `requirement_id`: AI không bao giờ được yêu cầu sinh id này (id là
+    dữ kiện của hệ thống, không phải nội dung văn bản). Router tự gắn
+    `requirement_id` của yêu cầu đang xử lý sau khi AI trả về. Tách riêng khỏi
+    `UserStoryDraft` để việc kiểm tra đầu ra AI không đòi một trường mà AI không
+    có trách nhiệm sinh ra.
+    """
+
     role: str = Field(min_length=1)
     feature: str = Field(min_length=1)
     benefit: str = Field(min_length=1)
     acceptance_criteria: str = Field(min_length=1)
 
     model_config = ConfigDict(str_strip_whitespace=True)
+
+
+class UserStoryDraft(UserStoryDraftContent):
+    requirement_id: int = Field(gt=0)
 
 
 class UserStoryDraftBatch(BaseModel):

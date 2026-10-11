@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from services.ollama import AIServiceError, generate_content
+from schemas.uml import ExtractActorsUseCasesResult
+from services.ollama import AIServiceError, generate_content, generate_json
 
 
 def test_generate_content_calls_local_ollama_and_requests_json():
@@ -30,6 +31,8 @@ def test_generate_content_calls_local_ollama_and_requests_json():
         "prompt": "Analyze this",
         "stream": False,
         "format": "json",
+        # temperature 0 và seed cố định để đầu ra JSON ổn định giữa các lần chạy.
+        "options": {"temperature": 0.0, "seed": 0},
     }
     assert urlopen.call_args.kwargs["timeout"] == 300
     assert result == '{"is_complete": true}'
@@ -39,6 +42,15 @@ def test_generate_content_reports_when_ollama_is_not_running():
     with patch("services.ollama.urlopen", side_effect=URLError("refused")):
         with pytest.raises(AIServiceError, match="Không kết nối được Ollama"):
             generate_content("Hello")
+
+
+def test_generate_content_phan_biet_timeout_voi_server_khong_chay():
+    # Timeout KHÔNG phải "Ollama chưa mở": Ollama vẫn sống nhưng chậm (thường do
+    # nạp model lần đầu). Thông báo phải nói đúng để không đổ lỗi sai cho người dùng.
+    with patch("services.ollama.urlopen", side_effect=TimeoutError("timed out")):
+        with pytest.raises(AIServiceError, match="Ollama không phản hồi") as exc:
+            generate_content("Hello")
+    assert "Không kết nối được" not in str(exc.value)
 
 
 def test_generate_content_explains_when_model_is_not_installed():
@@ -58,3 +70,79 @@ def test_generate_content_rejects_invalid_timeout():
     with patch.dict("os.environ", {"OLLAMA_TIMEOUT_SECONDS": "0"}):
         with pytest.raises(AIServiceError, match="phải lớn hơn 0"):
             generate_content("Hello")
+
+
+def _ollama_response(text: str) -> io.BytesIO:
+    return io.BytesIO(json.dumps({"response": text}).encode("utf-8"))
+
+
+def _ollama_responder(text: str):
+    """Mock `urlopen` trả về một stream MỚI cho mỗi lần gọi.
+
+    `generate_content` đọc xong sẽ đóng response (đúng như hành vi với kết nối
+    thật). Nếu dùng chung một `BytesIO` qua `return_value`, lần gọi thứ hai khi
+    `generate_json` thử lại sẽ đọc đúng đối tượng đã bị đóng và ném
+    `ValueError: I/O operation on closed file`.
+    """
+    return lambda *args, **kwargs: _ollama_response(text)
+
+
+def test_generate_json_appends_strict_format_contract():
+    """Prompt gửi đi phải kèm ràng buộc mảng phẳng và cấm đổi tên khóa."""
+    payload = {"suggested_actors": [], "suggested_use_cases": []}
+    with patch(
+        "services.ollama.urlopen", return_value=_ollama_response(json.dumps(payload))
+    ) as urlopen:
+        generate_json("Nội dung yêu cầu", ExtractActorsUseCasesResult)
+
+    sent_prompt = json.loads(urlopen.call_args.args[0].data)["prompt"]
+    assert "YÊU CẦU ĐỊNH DẠNG NGHIÊM NGẶT" in sent_prompt
+    assert "MẢNG phẳng" in sent_prompt
+    assert "suggested_actors" in sent_prompt
+    assert "suggested_use_cases" in sent_prompt
+    # Nhắc rõ không được dùng từ đồng nghĩa cho khóa name.
+    assert "title" in sent_prompt
+
+
+def test_generate_json_repairs_items_wrapper_and_title_key():
+    """Model trả {"items": [{"title": ...}]} cho mảng phải là list[dict name].
+
+    Đây đúng là lỗi thực tế gặp ở endpoint trích xuất tác nhân/use case.
+    """
+    payload = {
+        "suggested_actors": {"items": [{"title": "Sinh viên"}]},
+        "suggested_use_cases": {
+            "items": [{"title": "Đăng ký môn", "description": "Sinh viên đăng ký."}]
+        },
+    }
+    with patch(
+        "services.ollama.urlopen",
+        # Stream mới mỗi lần gọi: model sinh lại ở lần thử thứ hai.
+        side_effect=_ollama_responder(json.dumps(payload)),
+    ):
+        result = generate_json("prompt", ExtractActorsUseCasesResult)
+
+    assert [actor.name for actor in result.suggested_actors] == ["Sinh viên"]
+    assert [item.name for item in result.suggested_use_cases] == ["Đăng ký môn"]
+
+
+def test_generate_json_strips_markdown_fence():
+    payload = {"suggested_actors": [{"name": "Khách"}], "suggested_use_cases": []}
+    text = f"```json\n{json.dumps(payload)}\n```"
+    with patch("services.ollama.urlopen", return_value=_ollama_response(text)):
+        result = generate_json("prompt", ExtractActorsUseCasesResult)
+
+    assert result.suggested_actors[0].name == "Khách"
+
+
+def test_generate_json_retries_then_raises_with_reason():
+    """Sai cấu trúc không sửa được thì thử lại rồi báo lỗi kèm nguyên nhân."""
+    with patch(
+        "services.ollama.urlopen",
+        side_effect=_ollama_responder(json.dumps({"unexpected": True})),
+    ) as urlopen:
+        with pytest.raises(AIServiceError, match="không đúng cấu trúc"):
+            generate_json("prompt", ExtractActorsUseCasesResult)
+
+    # Gọi lần đầu + một lần sửa lỗi.
+    assert urlopen.call_count == 2

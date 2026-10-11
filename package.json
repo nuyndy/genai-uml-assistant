@@ -1,0 +1,21 @@
+{
+  "name": "genai-uml-assistant",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Khởi động toàn bộ hệ thống GenAI UML Assistant bằng một lệnh",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/start-all.mjs",
+    "dev": "node scripts/start-all.mjs",
+    "start:frontend": "node scripts/start-all.mjs --only=frontend",
+    "start:api": "node scripts/start-all.mjs --only=api",
+    "start:plantuml": "node scripts/start-all.mjs --only=plantuml",
+    "start:ollama": "node scripts/start-all.mjs --only=ollama"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.12.0"
+  }
+}

@@ -130,7 +130,7 @@ def test_stage_two_full_api_flow_persists_project_uml_data(client, db_session):
     assert candidates.json()[0]["user_story"]["feature"] == "đặt đơn hàng"
 
     with patch(
-        "routers.uml.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "suggested_actors": [{"name": "Khách hàng"}],
@@ -186,7 +186,7 @@ def test_stage_two_full_api_flow_persists_project_uml_data(client, db_session):
     assert "Đặt đơn hàng" in use_case_diagram.json()["source_code"]
 
     with patch(
-        "routers.uml.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "main_flow": ["Khách hàng chọn sản phẩm", "Hệ thống xác nhận đơn hàng"],
@@ -226,7 +226,7 @@ def test_stage_two_full_api_flow_persists_project_uml_data(client, db_session):
     assert interaction.json()["type"] == "sequence"
 
     with patch(
-        "routers.uml.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "classes": [
@@ -330,7 +330,7 @@ def test_unconfigured_plantuml_renderer_returns_explicit_error_without_fake_diag
     assert "Đặt đơn hàng" in pending_use_case_diagram.source_code
 
     with patch(
-        "routers.uml.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "classes": [
@@ -419,7 +419,7 @@ def test_stage_two_batch_extract_save_scenarios_and_diagrams(client, db_session)
         },
         ensure_ascii=False,
     )
-    with patch("routers.uml.generate_content", return_value=suggestions_payload):
+    with patch("services.ollama.generate_content", return_value=suggestions_payload):
         suggestions = client.post(
             f"/api/projects/{project.id}/extract-actors-usecases-batch",
             headers=headers,
@@ -459,13 +459,17 @@ def test_stage_two_batch_extract_save_scenarios_and_diagrams(client, db_session)
         },
         ensure_ascii=False,
     )
-    with patch("routers.uml.generate_content", return_value=scenario_payload):
+    with patch("services.ollama.generate_content", return_value=scenario_payload):
         scenarios = client.post(
             f"/api/projects/{project.id}/use-cases/generate-scenarios-batch",
             headers=headers,
         )
     assert scenarios.status_code == 200
     assert scenarios.json()["results"][0]["use_case_id"] == use_case_id
+    # Item batch phải tự mô tả đủ use case (đồng bộ với UseCaseRecord),
+    # không chỉ có use_case_id.
+    assert scenarios.json()["results"][0]["name"] == saved.json()["use_cases"][0]["name"]
+    assert scenarios.json()["results"][0]["specification_id"] == specification.id
     assert db_session.get(UseCase, use_case_id).main_flow == json.dumps(
         ["Chọn sản phẩm", "Xác nhận đơn"],
         ensure_ascii=False,
@@ -482,3 +486,147 @@ def test_stage_two_batch_extract_save_scenarios_and_diagrams(client, db_session)
     assert diagrams.json()[0]["use_case_id"] == use_case_id
     assert diagrams.json()[0]["image_url"] == "https://render.local/sequence.svg"
     assert db_session.query(Diagram).filter_by(use_case_id=use_case_id, type="sequence").count() == 1
+
+
+def test_scenario_batch_fills_in_use_cases_the_ai_omitted(client, db_session):
+    """Model nhỏ hay bỏ sót use case khi sinh kịch bản theo lô.
+
+    Endpoint phải giữ kết quả hợp lệ, sinh bù riêng cho use case còn thiếu và
+    trả về đủ kịch bản, thay vì trả lỗi 502 "AI không trả đúng một kịch bản".
+    """
+    project, specification, headers = _project_with_specification(db_session)
+    first = UseCase(
+        specification_id=specification.id,
+        name="Đặt đơn hàng",
+        main_flow="[]",
+        alt_flow="[]",
+        exception_flow="[]",
+    )
+    second = UseCase(
+        specification_id=specification.id,
+        name="Hủy đơn hàng",
+        main_flow="[]",
+        alt_flow="[]",
+        exception_flow="[]",
+    )
+    db_session.add_all([first, second])
+    db_session.commit()
+    db_session.refresh(first)
+    db_session.refresh(second)
+
+    # Lượt gọi batch cố tình chỉ trả một use case; lượt gọi bù trả cho use case kia.
+    batch_only_first = json.dumps(
+        {
+            "results": [{
+                "use_case_id": first.id,
+                "main_flow": ["Chọn sản phẩm"],
+                "alt_flow": [],
+                "exception_flow": [],
+            }]
+        },
+        ensure_ascii=False,
+    )
+    single_fallback = json.dumps(
+        {
+            "main_flow": ["Mở chi tiết đơn"],
+            "alt_flow": ["Xác nhận hủy"],
+            "exception_flow": ["Đơn đã giao"],
+        },
+        ensure_ascii=False,
+    )
+
+    # Sinh kịch bản đi qua generate_json (có retry), nên phải chọn phản hồi theo
+    # nội dung prompt thay vì theo thứ tự gọi, tránh lệch khi có lần thử lại.
+    def fake_generate(prompt: str, **_kwargs) -> str:
+        return single_fallback if "USE CASE:" in prompt else batch_only_first
+
+    with patch("services.ollama.generate_content", side_effect=fake_generate):
+        response = client.post(
+            f"/api/projects/{project.id}/use-cases/generate-scenarios-batch",
+            headers=headers,
+        )
+
+    assert response.status_code == 200
+    results = {item["use_case_id"]: item for item in response.json()["results"]}
+    assert set(results) == {first.id, second.id}
+    # Cả item do AI trả về lẫn item sinh bù phải đều có name/specification_id đúng,
+    # đây chính là chỗ trước kia lệch với UseCaseRecord.
+    assert results[first.id]["name"] == first.name
+    assert results[first.id]["specification_id"] == first.specification_id
+    assert results[second.id]["name"] == second.name
+    assert results[second.id]["specification_id"] == second.specification_id
+    # API commit ở session khác, nên đọc lại từ DB thay vì dùng bản cache cũ.
+    db_session.expire_all()
+    assert db_session.get(UseCase, first.id).main_flow == json.dumps(
+        ["Chọn sản phẩm"], ensure_ascii=False
+    )
+    assert db_session.get(UseCase, second.id).main_flow == json.dumps(
+        ["Mở chi tiết đơn"], ensure_ascii=False
+    )
+    assert db_session.get(UseCase, second.id).alt_flow == json.dumps(
+        ["Xác nhận hủy"], ensure_ascii=False
+    )
+
+
+def test_interaction_diagram_uses_project_actor_when_use_case_has_no_relation(
+    client, db_session
+):
+    """Use case chưa gán tác nhân vẫn phải sinh được biểu đồ tương tác.
+
+    Trước đây endpoint trả 409 "Use case ... chưa được liên kết với tác nhân",
+    chặn cả lô chỉ vì một use case mồ côi. Biểu đồ tương tác luôn cần một tác
+    nhân khởi động, nên hệ thống phải tự dùng tác nhân của dự án.
+    """
+    project, specification, headers = _project_with_specification(db_session)
+    actor = Actor(project_id=project.id, name="Khách hàng")
+    use_case = UseCase(
+        specification_id=specification.id,
+        name="Đặt đơn hàng",
+        main_flow=json.dumps(["Chọn sản phẩm"], ensure_ascii=False),
+        alt_flow="[]",
+        exception_flow="[]",
+    )
+    db_session.add_all([actor, use_case])
+    db_session.commit()
+    db_session.refresh(actor)
+    db_session.refresh(use_case)
+    # Cố ý KHÔNG tạo UcActorRelation: mô phỏng dữ liệu use case mồ côi.
+
+    with patch("routers.uml.render_plantuml", return_value="https://render.local/uc.svg"):
+        response = client.post(
+            f"/api/projects/{project.id}/use-cases/generate-interaction-diagrams-batch",
+            json={"diagram_type": "sequence"},
+            headers=headers,
+        )
+
+    assert response.status_code == 201
+    assert len(response.json()) == 1
+    assert response.json()[0]["use_case_id"] == use_case.id
+    # Tác nhân dự phòng của dự án phải xuất hiện trong mã PlantUML.
+    assert "Khách hàng" in response.json()[0]["source_code"]
+
+
+def test_interaction_diagram_reports_clearly_when_project_has_no_actor(
+    client, db_session
+):
+    """Dự án hoàn toàn không có tác nhân: báo lỗi nói rõ phải làm gì ở Bước 1."""
+    project, specification, headers = _project_with_specification(db_session)
+    use_case = UseCase(
+        specification_id=specification.id,
+        name="Đặt đơn hàng",
+        main_flow=json.dumps(["Chọn sản phẩm"], ensure_ascii=False),
+        alt_flow="[]",
+        exception_flow="[]",
+    )
+    db_session.add(use_case)
+    db_session.commit()
+
+    with patch("routers.uml.render_plantuml", return_value="https://render.local/uc.svg"):
+        response = client.post(
+            f"/api/projects/{project.id}/use-cases/generate-interaction-diagrams-batch",
+            json={"diagram_type": "sequence"},
+            headers=headers,
+        )
+
+    assert response.status_code == 409
+    assert "chưa có tác nhân" in response.json()["detail"].lower()

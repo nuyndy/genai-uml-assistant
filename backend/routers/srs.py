@@ -3,7 +3,6 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
-from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -26,7 +25,7 @@ from schemas.specification import (
     SpecificationDocumentExportInput,
     SpecificationRecord,
 )
-from services.ollama import AIServiceError, generate_content
+from services.ollama import AIServiceError, generate_json
 from services.spec_generator import build_nonfunctional_spec_prompt
 from services.srs_export import markdown_to_docx
 
@@ -177,18 +176,13 @@ def generate_nonfunctional_specification(
         .all()
     ]
     try:
-        raw = generate_content(
+        content = generate_json(
             build_nonfunctional_spec_prompt(features),
-            json_response=True,
+            NonFunctionalSpecification,
         )
-        content = NonFunctionalSpecification.model_validate(json.loads(raw))
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.exception("AI returned an invalid non-functional specification")
-        raise HTTPException(
-            status_code=502, detail="AI trả về đặc tả phi chức năng không đúng cấu trúc."
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     if existing:
         item = existing
         item.content = content.model_dump_json()

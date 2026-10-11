@@ -111,8 +111,30 @@ describe("Giai đoạn 2 khi dự án chưa có đặc tả", () => {
     const { listProjectSpecificationsForUml } = await import("../../services/umlService");
     vi.mocked(listProjectSpecificationsForUml).mockResolvedValueOnce([]);
     render(<Harness />);
-    expect(await screen.findByText(/Project chưa có đặc tả/)).toBeTruthy();
+    expect(await screen.findByText(/Dự án chưa có đặc tả/)).toBeTruthy();
     expect(screen.getAllByText(/Giai đoạn 1/).length).toBeGreaterThan(0);
+  });
+
+  it("chỉ có đặc tả phi chức năng thì báo cần bổ sung đặc tả chức năng", async () => {
+    const { listProjectSpecificationsForUml } = await import("../../services/umlService");
+    vi.mocked(listProjectSpecificationsForUml).mockResolvedValueOnce([
+      {
+        id: 200,
+        user_story_id: 0,
+        feature: "Đặc tả phi chức năng",
+        type: "non_functional",
+        content: '{"items":[]}',
+        version: 1,
+      },
+    ]);
+    render(<Harness />);
+    expect(
+      await screen.findByText(/Dự án chưa có đặc tả chức năng/),
+    ).toBeTruthy();
+    // Không được cho phép bấm trích xuất tác nhân/UC từ đặc tả phi chức năng.
+    expect(
+      screen.queryByRole("button", { name: /Phân tích & đề xuất/ }),
+    ).toBeNull();
   });
 });
 

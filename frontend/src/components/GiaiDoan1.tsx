@@ -31,7 +31,7 @@ import {
 import type { RawRequirement, SpecDoc, WorkflowState } from "../types/workflow";
 import { STAGES } from "../stages";
 import RequirementFormFields from "./step1/RequirementFormFields";
-import SrsWordEditor from "./SrsWordEditor";
+import Buoc5TaiLieuSRS from "./step5/Buoc5TaiLieuSRS";
 import ProgressOverlay from "./ProgressOverlay";
 import {
   emptyFunctionalSpecification,
@@ -1372,45 +1372,21 @@ export default function GiaiDoan1({
   );
 
   const B5 = (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        {srsMetadataDirty && (
-          <StatusBadge tone="warn">Có thay đổi chưa lưu</StatusBadge>
-        )}
-        <SoftButton
-          disabled={busy || !srsMetadataDirty}
-          onClick={() => void saveSrsMetadataDraft()}
-        >
-          Lưu phần giới thiệu
-        </SoftButton>
-        <PrimaryButton disabled={busy} onClick={() => void exportSrs()}>
-          Tải xuống file Word (.docx)
-        </PrimaryButton>
-      </div>
-      <Card
-        tone="plain"
-        title="Tài liệu SRS"
-        actions={<StatusBadge tone="success">{specifications.length} mục</StatusBadge>}
-      >
-        {srsMarkdown || specifications.length > 0 ? (
-          <SrsWordEditor
-            metadata={srsMetadata}
-            functional={srsFunctionalForEditor}
-            nonFunctional={srsNonFunctionalForEditor}
-            onChangeMetadata={setSrsMetadata}
-            onChangeSpecification={(record, content) => {
-              setSrsSpecDrafts((previous) => ({ ...previous, [record.id]: content }));
-              void saveSrsSpecification(record, content);
-            }}
-          />
-        ) : (
-          <EmptyState title="Tài liệu chưa có nội dung" hint="Hoàn thành đặc tả ở Bước 4 để soạn tài liệu." />
-        )}
-      </Card>
-      <div className="flex justify-start">
-        <GhostButton onClick={() => onStepChange(4)}>Quay lại Bước 4</GhostButton>
-      </div>
-    </div>
+    <Buoc5TaiLieuSRS
+      srsMetadataDirty={srsMetadataDirty}
+      srsMetadata={srsMetadata}
+      srsMarkdown={srsMarkdown}
+      specifications={specifications}
+      srsFunctionalForEditor={srsFunctionalForEditor}
+      srsNonFunctionalForEditor={srsNonFunctionalForEditor}
+      busy={busy}
+      onStepChange={onStepChange}
+      saveSrsMetadataDraft={saveSrsMetadataDraft}
+      exportSrs={exportSrs}
+      saveSrsSpecification={saveSrsSpecification}
+      setSrsMetadata={setSrsMetadata}
+      setSrsSpecDrafts={setSrsSpecDrafts}
+    />
   );
 
   return (

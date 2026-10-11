@@ -6,26 +6,31 @@ interface GiaiDoanStepperProps {
   onStageChange?: (stage: StageId) => void;
   /** Giai đoạn tối đa được phép mở. */
   maxUnlockedStage: StageId;
-}
-
-/** Số giai đoạn đã hoàn thành, dùng cho dòng tiến trình tổng. */
-function doneCount(stage: StageId) {
-  return stage - 1;
+  /**
+   * Các giai đoạn đã thực sự hoàn thành, suy ra từ dữ liệu trong database
+   * (đã xác nhận yêu cầu, đã sinh đặc tả, đã có mô hình UML).
+   *
+   * Chỉ những giai đoạn nằm trong danh sách này mới được tô xanh: bấm sang
+   * giai đoạn sau không đồng nghĩa với việc giai đoạn trước đã xong.
+   */
+  completedStages: StageId[];
 }
 
 /**
  * Thanh 3 GIAI ĐOẠN lớn, đặt trên cùng workspace; ngay bên dưới là sub-stepper
  * riêng của giai đoạn đang chọn.
  *
- * Giai đoạn đã đi qua được tô xanh lá, cùng ngôn ngữ thị giác với sub-stepper.
- * Nhãn được cắt gọn bằng truncate để không tràn khi màn hình hẹp.
+ * Giai đoạn đã hoàn thành thật (theo dữ liệu) được tô xanh lá, cùng ngôn ngữ
+ * thị giác với sub-stepper. Nhãn được cắt gọn bằng truncate để không tràn khi
+ * màn hình hẹp.
  */
 export default function GiaiDoanStepper({
   stage,
   onStageChange,
   maxUnlockedStage,
+  completedStages,
 }: GiaiDoanStepperProps) {
-  const done = doneCount(stage);
+  const done = completedStages.length;
   const percent = Math.round((done / STAGE_ORDER.length) * 100);
 
   return (
@@ -38,7 +43,7 @@ export default function GiaiDoanStepper({
           {STAGE_ORDER.map((id, index) => {
             const def = STAGES[id];
             const isActive = id === stage;
-            const isDone = id < stage;
+            const isDone = completedStages.includes(id);
             const unlocked = id <= maxUnlockedStage;
             const clickable = unlocked && !isActive && !!onStageChange;
 
@@ -101,7 +106,9 @@ export default function GiaiDoanStepper({
                   <span
                     aria-hidden="true"
                     className={`hidden h-1 w-6 shrink-0 rounded-full sm:block ${
-                      isDone ? "bg-emerald-400" : "bg-slate-200"
+                      isDone
+                        ? "bg-emerald-400"
+                        : "bg-slate-200"
                     }`}
                   />
                 )}

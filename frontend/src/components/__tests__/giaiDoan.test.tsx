@@ -7,6 +7,40 @@ import GiaiDoan1 from "../GiaiDoan1";
 import GiaiDoan2 from "../GiaiDoan2";
 import GiaiDoan3 from "../GiaiDoan3";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { vi } from "vitest";
+
+/**
+ * Giai đoạn 2 tự nạp đặc tả từ database; test phải cấp một đặc tả chức năng
+ * để màn hình không rơi vào trạng thái "dự án chưa có đặc tả chức năng".
+ */
+vi.mock("../../services/umlService", () => ({
+  getProjectUmlState: vi.fn().mockResolvedValue({
+    actors: [],
+    use_cases: [],
+    relations: [],
+    classes: [],
+    class_relations: [],
+    diagrams: [],
+  }),
+  listProjectSpecificationsForUml: vi.fn().mockResolvedValue([
+    {
+      id: 1,
+      user_story_id: 1,
+      feature: "Đặt hàng",
+      type: "functional",
+      content: "{}",
+      version: 1,
+    },
+  ]),
+  extractProjectActorsUseCasesBatch: vi.fn(),
+  saveProjectActorUseCasesBatch: vi.fn(),
+  generateUseCaseDiagram: vi.fn(),
+  generateProjectScenariosBatch: vi.fn(),
+  updateUseCaseScenario: vi.fn(),
+  generateProjectInteractionDiagramsBatch: vi.fn(),
+  generateClasses: vi.fn(),
+  generateClassDiagram: vi.fn(),
+}));
 
 /**
  * Kiểm tra cấu trúc 3 GIAI ĐOẠN: thanh giai đoạn lớn, sub-stepper, và các panel
@@ -25,7 +59,7 @@ function Harness({ initial, stage, step }: {
     stage === 1 ? GiaiDoan1 : stage === 2 ? GiaiDoan2 : GiaiDoan3;
   return (
     <>
-      <GiaiDoanStepper stage={stage} maxUnlockedStage={3} />
+      <GiaiDoanStepper stage={stage} maxUnlockedStage={3} completedStages={[]} />
       <Stepper stage={stage} step={step} maxUnlockedStep={5} />
       <Panel state={state} setState={setState} step={step} onStepChange={noop} />
     </>
@@ -34,18 +68,25 @@ function Harness({ initial, stage, step }: {
 
 describe("GiaiDoanStepper", () => {
   it("hiển thị đủ 3 giai đoạn lớn", () => {
-    render(<GiaiDoanStepper stage={1} maxUnlockedStage={3} />);
+    render(<GiaiDoanStepper stage={1} maxUnlockedStage={3} completedStages={[]} />);
     expect(screen.getByText("Thu thập & Đặc tả")).toBeTruthy();
     expect(screen.getByText("Mô hình hóa UML")).toBeTruthy();
     expect(screen.getByText("Tùy chỉnh & Xuất")).toBeTruthy();
   });
 
-  it("tô xanh lá giai đoạn đã đi qua", () => {
+  it("tô xanh lá đúng các giai đoạn đã hoàn thành thật", () => {
     const { container } = render(
-      <GiaiDoanStepper stage={3} maxUnlockedStage={3} />,
+      <GiaiDoanStepper stage={3} maxUnlockedStage={3} completedStages={[1, 2]} />,
     );
     // Giai đoạn 1 và 2 đã hoàn thành -> vòng tròn màu emerald.
     expect(container.querySelectorAll(".bg-emerald-500").length).toBe(2);
+  });
+
+  it("không tô xanh giai đoạn chưa hoàn thành dù đang đứng ở giai đoạn sau", () => {
+    const { container } = render(
+      <GiaiDoanStepper stage={2} maxUnlockedStage={2} completedStages={[]} />,
+    );
+    expect(container.querySelectorAll(".bg-emerald-500").length).toBe(0);
   });
 });
 

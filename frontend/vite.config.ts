@@ -5,6 +5,14 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    // Cố định port 5173 và KHÔNG tự nhảy port (strictPort).
+    // Google OAuth (GSI) whitelist theo origin: http://localhost:5173. Nếu Vite
+    // âm thầm nhảy sang 5174/5175, origin đổi và Google trả lỗi `origin_mismatch`.
+    // Báo lỗi rõ khi port bận còn hơn để lỗi OAuth khó hiểu xuất hiện sau đó.
+    port: 5173,
+    strictPort: true,
+  },
   test: {
     environment: "jsdom",
     globals: true,

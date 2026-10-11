@@ -183,7 +183,21 @@ class SaveActorUseCasesBatch(BaseModel):
     relations: list[BatchActorUseCaseRelation] = Field(default_factory=list)
 
 class UseCaseScenarioBatchItem(UseCaseScenarioSuggestion):
+    """Kịch bản sinh cho một use case trong lần sinh hàng loạt (Bước 3).
+
+    Giữ ĐỒNG BỘ với `UseCaseRecord`: ngoài `use_case_id` (khoá gốc của use case)
+    còn trả kèm `name` và `specification_id`, để frontend không phải phụ thuộc
+    vào một lần gọi `uml-state` phụ trợ mới hiển thị được thông tin use case.
+
+    `name` / `specification_id` để mặc định `None` (không bắt buộc) vì đây là
+    schema vừa dùng để PHÂN TÍCH JSON do AI trả về (`_ai_json`) — model nhỏ chỉ
+    sinh `use_case_id` + kịch bản. Router sẽ tự điền hai trường này từ bản ghi
+    đã nạp sẵn trước khi trả cho client.
+    """
+
     use_case_id: int
+    name: str | None = None
+    specification_id: int | None = None
 
 
 class UseCaseScenarioBatchResult(BaseModel):

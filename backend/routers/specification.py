@@ -20,7 +20,7 @@ from schemas.specification import (
     SpecificationUpdate,
 )
 from services.spec_generator import build_functional_spec_prompt
-from services.ollama import AIServiceError, generate_content
+from services.ollama import AIServiceError, generate_json
 
 router = APIRouter(
     tags=["specifications"],
@@ -89,18 +89,13 @@ def generate_specification(
         raise HTTPException(status_code=422, detail="Đặc tả phi chức năng được sinh theo dự án.")
 
     try:
-        raw_content = generate_content(
+        content = generate_json(
             build_functional_spec_prompt(story, f"UC{story.id:02d}"),
-            json_response=True,
+            FunctionalSpecification,
         )
-        content = FunctionalSpecification.model_validate(json.loads(raw_content))
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.exception("AI returned an invalid functional specification")
-        raise HTTPException(
-            status_code=502, detail="AI trả về đặc tả chức năng không đúng cấu trúc."
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     if existing is not None:
         specification = existing
@@ -166,19 +161,14 @@ def generate_project_specifications_batch(
     generated: list[tuple[UserStory, str]] = []
     try:
         for story in stories:
-            raw_content = generate_content(
+            specification = generate_json(
                 build_functional_spec_prompt(story, f"UC{story.id:02d}"),
-                json_response=True,
+                FunctionalSpecification,
             )
-            specification = FunctionalSpecification.model_validate(json.loads(raw_content))
             generated.append((story, specification.model_dump_json()))
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.exception("AI returned an invalid functional specification in batch")
-        raise HTTPException(
-            status_code=502, detail="AI trả về đặc tả chức năng không đúng cấu trúc."
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     saved: list[Specification] = []
     try:

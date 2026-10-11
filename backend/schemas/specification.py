@@ -42,7 +42,9 @@ class FunctionalSpecification(BaseModel):
     business_rules: list[str]
     field_mapping: list[FieldMapping]
 
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    # Bỏ qua khóa lạ do AI thêm vào thay vì từ chối cả đặc tả: model nhỏ
+    # thường chèn thêm khóa mô tả, chặn cứng sẽ làm hỏng nội dung đúng.
+    model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
 
 class NonFunctionalItem(BaseModel):
@@ -50,7 +52,7 @@ class NonFunctionalItem(BaseModel):
     criteria: str = Field(min_length=1)
     requirement: str = Field(min_length=1)
 
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
 
 class NonFunctionalSpecification(BaseModel):

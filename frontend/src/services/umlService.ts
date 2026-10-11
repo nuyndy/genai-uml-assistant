@@ -117,6 +117,9 @@ export interface SaveActorUseCasesBatchPayload {
 
 export interface UseCaseScenarioBatchItem {
   use_case_id: number;
+  /** Đồng bộ với `UseCaseRecord` — xem `backend/schemas/uml.py`. */
+  name: string;
+  specification_id: number;
   main_flow: string[];
   alt_flow: string[];
   exception_flow: string[];
@@ -187,6 +190,16 @@ export function listProjectActors(projectId: number) {
   return apiFetch<ActorRecord[]>(`/api/projects/${projectId}/actors`);
 }
 
+/**
+ * Parse PlantUML source code into UML model for sync.
+ */
+export function parsePlantUml(projectId: number, sourceCode: string) {
+  return apiFetch<any>(`/api/projects/${projectId}/parse-plantuml`, {
+    method: "POST",
+    body: JSON.stringify({ source_code: sourceCode }),
+  });
+}
+
 export function deleteActor(actorId: number) {
   return apiFetch<void>(`/api/actors/${actorId}`, { method: "DELETE" });
 }
@@ -237,6 +250,21 @@ export function generateUseCaseDiagram(projectId: number) {
     `/api/projects/${projectId}/diagrams/use-case`,
     { method: "POST" },
   );
+}
+
+/**
+ * Sinh lại biểu đồ use case từ mã PlantUML người dùng đã sửa tay.
+ *
+ * Backend chỉ sinh mã từ mô hình ở endpoint POST, nên bước "sinh từ mã riêng"
+ * gồm hai nhịp: tạo biểu đồ chuẩn trước (để có bản ghi), rồi PATCH đè source_code
+ * để render lại ảnh. Cách này tránh thêm endpoint mới mà vẫn dùng đúng luồng render.
+ */
+export async function regenerateUseCaseDiagramFromCode(
+  projectId: number,
+  sourceCode: string,
+) {
+  const created = await generateUseCaseDiagram(projectId);
+  return updateDiagram(created.id, sourceCode);
 }
 
 export function generateScenario(useCaseId: number) {
@@ -348,6 +376,20 @@ export function generateClassDiagram(projectId: number) {
   return apiFetch<DiagramRecord>(`/api/projects/${projectId}/diagrams/class`, {
     method: "POST",
   });
+}
+
+/**
+ * Sinh lại biểu đồ lớp từ mã PlantUML người dùng đã sửa tay.
+ *
+ * Cùng cách làm với biểu đồ use case: tạo bản ghi biểu đồ chuẩn trước, rồi PATCH
+ * source_code để backend render lại ảnh từ đúng mã người dùng nhập.
+ */
+export async function regenerateClassDiagramFromCode(
+  projectId: number,
+  sourceCode: string,
+) {
+  const created = await generateClassDiagram(projectId);
+  return updateDiagram(created.id, sourceCode);
 }
 
 export function listProjectDiagrams(projectId: number) {

@@ -8,15 +8,22 @@ import type {
 } from "../types/workflow";
 import { STAGES } from "../stages";
 import {
+  deleteClass,
   extractProjectActorsUseCasesBatch,
   generateClasses,
   generateClassDiagram,
+  generateInteractionDiagram,
   generateProjectInteractionDiagramsBatch,
   generateProjectScenariosBatch,
+  generateScenario,
   generateUseCaseDiagram,
   getProjectUmlState,
   listProjectSpecificationsForUml,
+  regenerateClassDiagramFromCode,
+  regenerateUseCaseDiagramFromCode,
   saveProjectActorUseCasesBatch,
+  updateClass,
+  updateDiagram,
   updateUseCaseScenario,
   type ExtractedSuggestions,
   type ProjectSpecificationRecord,
@@ -29,6 +36,7 @@ import {
   EmptyState,
   FieldLabel,
   GhostButton,
+  MiniButton,
   Notice,
   PrimaryButton,
   RemoveButton,
@@ -243,6 +251,22 @@ export default function GiaiDoan2({
   const [specifications, setSpecifications] = useState<ProjectSpecificationRecord[] | null>(null);
   const [specificationError, setSpecificationError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  /**
+   * Kết quả AI bị người dùng đánh dấu "chưa ổn".
+   *   - suggestionDraftStale: danh sách tác nhân/UC ở Bước 1 chưa lưu hoặc vừa bị đánh dấu xấu.
+   *   - B2/B4/B5: đánh dấu theo khoá để nhắc người dùng bấm "Sinh lại".
+   * Cờ này KHÔNG chặn thao tác, chỉ nhắc để không bỏ qua kết quả kém.
+   */
+  const [rejectedKeys, setRejectedKeys] = useState<string[]>([]);
+  /** Xác nhận trước khi "Sinh lại" ghi đè kết quả đã có; tránh mất công sửa tay. */
+  const [pendingRegenerate, setPendingRegenerate] = useState<(() => void) | null>(null);
+  const [regenerateTitle, setRegenerateTitle] = useState("");
+  const [regenerateLabel, setRegenerateLabel] = useState("");
+  /* Sửa tay: mã PlantUML của biểu đồ UC / tương tác / lớp, và lớp UML đang mở. */
+  const [editingCodeKey, setEditingCodeKey] = useState<string | null>(null);
+  const [codeDrafts, setCodeDrafts] = useState<Record<string, string>>({});
+  const [editingClassId, setEditingClassId] = useState<number | null>(null);
+  const [classDrafts, setClassDrafts] = useState<Record<number, { name: string; attributes: string[]; methods: string[] }>>({});
   // Chặn lỗi "reading 'label'" nếu step vô tình nằm ngoài danh sách bước.
   const def = STAGES[2].steps[step - 1] ?? STAGES[2].steps[0];
   const scenarios = useMemo(
@@ -349,6 +373,31 @@ export default function GiaiDoan2({
     }
   }
 
+  /** Bật/tắt đánh dấu "chưa ổn" cho một khối kết quả AI. */
+  function toggleRejected(key: string) {
+    setRejectedKeys((previous) =>
+      previous.includes(key) ? previous.filter((item) => item !== key) : [...previous, key],
+    );
+  }
+
+  /**
+   * Chạy "Sinh lại" kèm cảnh báo ghi đè khi đã có kết quả.
+   * `hasExisting` = true nghĩa là kết quả cũ có thể chứa phần người dùng đã sửa tay,
+   * nên phải hỏi trước thay vì âm thầm thay thế.
+   */
+  function regenerate(label: string, title: string, hasExisting: boolean, run: () => void) {
+    if (!hasExisting) {
+      run();
+      return;
+    }
+    setPendingRegenerate(() => () => {
+      setPendingRegenerate(null);
+      run();
+    });
+    setRegenerateTitle(title);
+    setRegenerateLabel(label);
+  }
+
   function updateScenario(useCaseId: number, field: keyof Scenario, lines: string[]) {
     setState((previous) => ({
       ...previous,
@@ -362,6 +411,31 @@ export default function GiaiDoan2({
     }));
   }
 
+  /**
+   * Gọi AI trích xuất tác nhân/use case cho TOÀN BỘ đặc tả của dự án.
+   * Tách riêng khỏi nút bấm để dùng được cho cả lần sinh đầu lẫn "Sinh lại".
+   */
+  async function runExtract(): Promise<void> {
+    if (!projectId) return;
+    const result = await extractProjectActorsUseCasesBatch(projectId);
+    const mapped = mapSuggestions(result);
+    setSuggestions(mapped);
+    setSelectedActorTokens(mapped.actors.map((item) => item.token));
+    setSelectedUseCaseTokens(mapped.useCases.map((item) => item.token));
+    const allActorNames = [
+      ...state.actors.map((item) => item.name),
+      ...mapped.actors.map((item) => item.name),
+    ];
+    setRelationActors(
+      Object.fromEntries(
+        mapped.useCases.map((item) => [item.token, [...new Set(allActorNames)]]),
+      ),
+    );
+    setRelationTypes(Object.fromEntries(mapped.useCases.map((item) => [item.token, "association"])));
+    // Kết quả mới thay thế kết quả cũ nên bỏ mọi đánh dấu "chưa ổn" trước đó.
+    setRejectedKeys((previous) => previous.filter((key) => key !== "suggestions"));
+  }
+
   const B1 = (
     <div className="space-y-6">
       {!projectId && <Notice tone="warn">Hãy mở một dự án để tải dữ liệu UML từ database.</Notice>}
@@ -373,32 +447,25 @@ export default function GiaiDoan2({
             disabled={!projectId || busy}
             onClick={() =>
               void runAction(async () => {
-                const result = await extractProjectActorsUseCasesBatch(projectId!);
-                const mapped = mapSuggestions(result);
-                setSuggestions(mapped);
-                setSelectedActorTokens(mapped.actors.map((item) => item.token));
-                setSelectedUseCaseTokens(mapped.useCases.map((item) => item.token));
-                const allActorNames = [
-                  ...state.actors.map((item) => item.name),
-                  ...mapped.actors.map((item) => item.name),
-                ];
-                setRelationActors(
-                  Object.fromEntries(
-                    mapped.useCases.map((item) => [item.token, [...new Set(allActorNames)]]),
-                  ),
-                );
-                setRelationTypes(Object.fromEntries(mapped.useCases.map((item) => [item.token, "association"])));
+                if (suggestions.actors.length > 0 || suggestions.useCases.length > 0) {
+                  setPendingRegenerate(() => () => void runExtract());
+                  return;
+                }
+                await runExtract();
               }, "Đang phân tích đặc tả và đề xuất tác nhân, use case...")
             }
           >
-            {busy ? "Đang phân tích..." : "✨ Phân tích & đề xuất cho tất cả đặc tả"}
+            {busy ? "Đang phân tích..." : suggestions.actors.length + suggestions.useCases.length > 0 ? "↻ Phân tích lại" : "✨ Phân tích & đề xuất cho tất cả đặc tả"}
           </PrimaryButton>
         }
       >
         {specifications && specifications.length > 0 && (
           <div className="mb-5 rounded-xl border border-violet-100 bg-violet-50/60 p-4 text-sm text-slate-700">
             <p className="font-medium">
-              Nguồn phân tích: {specifications.length} đặc tả trong database
+              Nguồn phân tích: {
+                specifications.filter((item) => item.type === "functional").length
+              }{" "}
+              đặc tả chức năng trong database
             </p>
             <p className="mt-1 text-xs text-slate-500">
               Gồm {specifications.filter((item) => item.type === "functional").length} đặc tả chức năng và{" "}
@@ -556,44 +623,70 @@ export default function GiaiDoan2({
           </div>
         )}
         {(suggestions.actors.length > 0 || suggestions.useCases.length > 0) && (
-          <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
-            <PrimaryButton
-              disabled={busy || (selectedActorTokens.length === 0 && selectedUseCaseTokens.length === 0)}
-              onClick={() =>
-                void runAction(async () => {
-                  const selectedActors = suggestions.actors
-                    .filter((item) => selectedActorTokens.includes(item.token))
-                    .map((item) => item.name.trim())
-                    .filter(Boolean);
-                  const selectedUseCases = suggestions.useCases
-                    .filter((item) => selectedUseCaseTokens.includes(item.token) && item.name.trim());
-                  const relationPairs = selectedUseCases.flatMap((item) =>
-                    (relationActors[item.token] ?? []).map((actorName) => ({
-                      specification_id: item.specification_id,
-                      use_case_name: item.name.trim(),
-                      actor_name: actorName,
-                      relation_type: relationTypes[item.token] ?? "association",
-                    })),
-                  );
-                  const actorNames = [...new Set([
-                    ...selectedActors,
-                    ...relationPairs.map((item) => item.actor_name),
-                  ])];
-                  await saveProjectActorUseCasesBatch(projectId!, {
-                    actors: actorNames.map((name) => ({ name })),
-                    use_cases: selectedUseCases.map((item) => ({
-                      specification_id: item.specification_id,
-                      name: item.name.trim(),
-                    })),
-                    relations: relationPairs,
-                  });
-                  await refreshSavedState();
-                }, "Đang sinh biểu đồ Use Case...")
-              }
-            >
-              {busy ? "Đang lưu..." : "Lưu danh sách"}
-            </PrimaryButton>
-          </div>
+          <>
+            <RegenerateBar
+              label="Phân tích lại toàn bộ"
+              hint="Chưa vừa ý? Bạn có thể sửa tên trực tiếp, bỏ gợi ý sai, hoặc để AI phân tích lại."
+              rejected={rejectedKeys.includes("suggestions")}
+              disabled={!projectId}
+              busy={busy}
+              onRegenerate={() => setPendingRegenerate(() => () => void runExtract())}
+              onToggleRejected={() => toggleRejected("suggestions")}
+            />
+            <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+              <PrimaryButton
+                disabled={busy || (selectedActorTokens.length === 0 && selectedUseCaseTokens.length === 0)}
+                onClick={() =>
+                  void runAction(async () => {
+                    const selectedActors = suggestions.actors
+                      .filter((item) => selectedActorTokens.includes(item.token))
+                      .map((item) => item.name.trim())
+                      .filter(Boolean);
+                    const selectedUseCases = suggestions.useCases
+                      .filter((item) => selectedUseCaseTokens.includes(item.token) && item.name.trim());
+                    const relationPairs = selectedUseCases.flatMap((item) => {
+                      const chosen = relationActors[item.token] ?? [];
+                      // Mỗi use case BẮT BUỘC có ít nhất một tác nhân (chuẩn UML: tác
+                      // nhân khởi động use case). Nếu người dùng chưa tick tác nhân nào
+                      // thì tự gán tác nhân đầu tiên đang chọn. Không auto-gán thì use
+                      // case mồ côi sẽ chặn sinh biểu đồ tương tác ở Bước 4.
+                      const fallback = chosen.length > 0
+                        ? chosen
+                        : selectedActors.slice(0, 1);
+                      return fallback.map((actorName) => ({
+                        specification_id: item.specification_id,
+                        use_case_name: item.name.trim(),
+                        actor_name: actorName,
+                        relation_type: relationTypes[item.token] ?? "association",
+                      }));
+                    });
+                    if (relationPairs.length === 0) {
+                      setError(
+                        "Mỗi use case cần ít nhất một tác nhân. Hãy chọn thêm tác nhân ở cột bên trái.",
+                      );
+                      return;
+                    }
+                    const actorNames = [...new Set([
+                      ...selectedActors,
+                      ...relationPairs.map((item) => item.actor_name),
+                    ])];
+                    await saveProjectActorUseCasesBatch(projectId!, {
+                      actors: actorNames.map((name) => ({ name })),
+                      use_cases: selectedUseCases.map((item) => ({
+                        specification_id: item.specification_id,
+                        name: item.name.trim(),
+                      })),
+                      relations: relationPairs,
+                    });
+                    await refreshSavedState();
+                    setRejectedKeys((previous) => previous.filter((key) => key !== "suggestions"));
+                  }, "Đang lưu tác nhân và use case...")
+                }
+              >
+                {busy ? "Đang lưu..." : "Lưu danh sách"}
+              </PrimaryButton>
+            </div>
+          </>
         )}
       </Card>
       <NavRow onBack={() => onStepChange(1)} nextLabel="Tiếp tục sang Bước 2" onNext={() => onStepChange(2)} />
@@ -602,9 +695,6 @@ export default function GiaiDoan2({
 
   const B2 = (
     <div className="space-y-6">
-      <Notice tone="warn">
-        TODO: cần cấu hình PlantUML render service ở Backend bằng PLANTUML_RENDER_URL trước khi có thể lưu ảnh.
-      </Notice>
       <Card
         tone="violet"
         title="Biểu đồ use case tổng quát"
@@ -612,22 +702,28 @@ export default function GiaiDoan2({
           <SoftButton
             disabled={busy || !projectId || state.actors.length === 0 || state.usecases.length === 0}
             onClick={() =>
-              void runAction(async () => {
-                try {
-                  const diagram = await generateUseCaseDiagram(projectId!);
-                  setState((previous) => ({
-                    ...previous,
-                    useCaseDiagramUrl: diagram.image_url,
-                    useCaseDiagramCode: diagram.source_code,
-                  }));
-                } catch (reason) {
-                  await refreshSavedState();
-                  throw reason;
-                }
-              }, "Đang sinh kịch bản use case...")
+              regenerate(
+                "Sinh lại biểu đồ",
+                "Ghi đè biểu đồ use case?",
+                Boolean(state.useCaseDiagramCode || state.useCaseDiagramUrl),
+                () => void runAction(async () => {
+                  try {
+                    const diagram = await generateUseCaseDiagram(projectId!);
+                    setState((previous) => ({
+                      ...previous,
+                      useCaseDiagramUrl: diagram.image_url,
+                      useCaseDiagramCode: diagram.source_code,
+                    }));
+                    setRejectedKeys((previous) => previous.filter((key) => key !== "usecase-diagram"));
+                  } catch (reason) {
+                    await refreshSavedState();
+                    throw reason;
+                  }
+                }, "Đang sinh biểu đồ use case...")
+              )
             }
           >
-            {busy ? "Đang sinh..." : "Sinh biểu đồ"}
+            {busy ? "Đang sinh..." : state.useCaseDiagramCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}
           </SoftButton>
         }
       >
@@ -637,7 +733,50 @@ export default function GiaiDoan2({
           emptyHint='Bấm "Sinh biểu đồ" để tạo biểu đồ tổng cho project.'
           downloadName={`use-case-diagram.${imageExtension(state.useCaseDiagramUrl)}`}
         />
-        {state.useCaseDiagramCode && <PlantUmlSource source={state.useCaseDiagramCode} />}
+        {state.useCaseDiagramCode && (
+          <>
+            <RegenerateBar
+              label="Sinh lại biểu đồ"
+              hint="Biểu đồ do AI sinh từ tác nhân và use case đã lưu. Nếu thiếu/sai, bạn có thể sửa mã PlantUML bên dưới."
+              rejected={rejectedKeys.includes("usecase-diagram")}
+              disabled={!projectId || state.actors.length === 0 || state.usecases.length === 0}
+              busy={busy}
+              onRegenerate={() =>
+                regenerate("Sinh lại biểu đồ", "Ghi đè biểu đồ use case?", true, () =>
+                  void runAction(async () => {
+                    const diagram = await generateUseCaseDiagram(projectId!);
+                    setState((previous) => ({
+                      ...previous,
+                      useCaseDiagramUrl: diagram.image_url,
+                      useCaseDiagramCode: diagram.source_code,
+                    }));
+                  }, "Đang sinh biểu đồ use case...")
+                )
+              }
+              onToggleRejected={() => toggleRejected("usecase-diagram")}
+            />
+            <EditablePlantUml
+              diagramKey="usecase-diagram"
+              code={state.useCaseDiagramCode}
+              editingCodeKey={editingCodeKey}
+              codeDrafts={codeDrafts}
+              setCodeDrafts={setCodeDrafts}
+              setEditingCodeKey={setEditingCodeKey}
+              busy={busy}
+              onSave={(nextCode) =>
+                void runAction(async () => {
+                  const diagram = await regenerateUseCaseDiagramFromCode(projectId!, nextCode);
+                  setState((previous) => ({
+                    ...previous,
+                    useCaseDiagramUrl: diagram.image_url,
+                    useCaseDiagramCode: diagram.source_code,
+                  }));
+                  setEditingCodeKey(null);
+                }, "Đang render lại từ mã đã sửa...")
+              }
+            />
+          </>
+        )}
       </Card>
       <NavRow onBack={() => onStepChange(1)} nextLabel="Tiếp tục sang Bước 3" onNext={() => onStepChange(3)} />
     </div>
@@ -654,20 +793,34 @@ export default function GiaiDoan2({
             onClick={() =>
               void runAction(async () => {
                 const result = await generateProjectScenariosBatch(projectId!);
-                setState((previous) => ({
-                  ...previous,
-                  scenarios: {
-                    ...previous.scenarios,
-                    ...Object.fromEntries(result.results.map((item) => [
-                      item.use_case_id,
-                      {
-                        mainFlow: item.main_flow,
-                        altFlows: item.alt_flow,
-                        exceptions: item.exception_flow,
-                      },
-                    ])),
-                  },
-                }));
+                // Item batch nay tự mang name/specification_id nên cập nhật use case
+                // ngay từ kết quả trả về; refreshSavedState() chỉ còn để đồng bộ ảnh
+                // và bản ghi chuẩn, không còn là điều kiện để hiển thị đúng.
+                setState((previous) => {
+                  const useCases = previous.usecases.map((item) => {
+                    const generated = result.results.find(
+                      (entry) => entry.use_case_id === item.id,
+                    );
+                    return generated
+                      ? { ...item, name: generated.name, specificationId: generated.specification_id }
+                      : item;
+                  });
+                  return {
+                    ...previous,
+                    usecases: useCases,
+                    scenarios: {
+                      ...previous.scenarios,
+                      ...Object.fromEntries(result.results.map((item) => [
+                        item.use_case_id,
+                        {
+                          mainFlow: item.main_flow,
+                          altFlows: item.alt_flow,
+                          exceptions: item.exception_flow,
+                        },
+                      ])),
+                    },
+                  };
+                });
                 setExpandedIds(state.usecases.map((item) => item.id));
                 await refreshSavedState();
               }, "Đang lưu kịch bản use case...")
@@ -713,27 +866,66 @@ export default function GiaiDoan2({
                           />
                         </div>
                       ))}
-                      <div className="flex justify-end">
-                        <PrimaryButton
-                          disabled={busy || !scenario.mainFlow.some((item) => item.trim())}
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <GhostButton
+                          disabled={busy}
                           onClick={() =>
-                            void runAction(async () => {
-                              const clean: Scenario = {
-                                mainFlow: scenario.mainFlow.map((item) => item.trim()).filter(Boolean),
-                                altFlows: scenario.altFlows.map((item) => item.trim()).filter(Boolean),
-                                exceptions: scenario.exceptions.map((item) => item.trim()).filter(Boolean),
-                              };
-                              const saved = await updateUseCaseScenario(useCase.id, clean);
-                              setState((previous) => ({
-                                ...previous,
-                                scenarios: { ...previous.scenarios, [useCase.id]: toScenario(saved) },
-                              }));
-                            }, "Đang sinh biểu đồ tương tác...")
+                            regenerate(
+                              "Sinh lại kịch bản này",
+                              `Ghi đè kịch bản của "${useCase.name}"?`,
+                              true,
+                              () =>
+                                void runAction(async () => {
+                                  const saved = await generateScenario(useCase.id);
+                                  setState((previous) => ({
+                                    ...previous,
+                                    scenarios: { ...previous.scenarios, [useCase.id]: toScenario(saved) },
+                                  }));
+                                  setRejectedKeys((previous) =>
+                                    previous.filter((key) => key !== `scenario-${useCase.id}`),
+                                  );
+                                }, "Đang sinh lại kịch bản...")
+                            )
                           }
                         >
-                          Lưu kịch bản
-                        </PrimaryButton>
+                          ↻ Sinh lại kịch bản
+                        </GhostButton>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <GhostButton onClick={() => toggleRejected(`scenario-${useCase.id}`)}>
+                            {rejectedKeys.includes(`scenario-${useCase.id}`)
+                              ? "✓ Bỏ đánh dấu chưa ổn"
+                              : "⚑ Đánh dấu chưa ổn"}
+                          </GhostButton>
+                          <PrimaryButton
+                            disabled={busy || !scenario.mainFlow.some((item) => item.trim())}
+                            onClick={() =>
+                              void runAction(async () => {
+                                const clean: Scenario = {
+                                  mainFlow: scenario.mainFlow.map((item) => item.trim()).filter(Boolean),
+                                  altFlows: scenario.altFlows.map((item) => item.trim()).filter(Boolean),
+                                  exceptions: scenario.exceptions.map((item) => item.trim()).filter(Boolean),
+                                };
+                                const saved = await updateUseCaseScenario(useCase.id, clean);
+                                setState((previous) => ({
+                                  ...previous,
+                                  scenarios: { ...previous.scenarios, [useCase.id]: toScenario(saved) },
+                                }));
+                                setRejectedKeys((previous) =>
+                                  previous.filter((key) => key !== `scenario-${useCase.id}`),
+                                );
+                              }, "Đang lưu kịch bản...")
+                            }
+                          >
+                            Lưu kịch bản
+                          </PrimaryButton>
+                        </div>
                       </div>
+                      {rejectedKeys.includes(`scenario-${useCase.id}`) && (
+                        <Notice tone="warn">
+                          Kịch bản này bị đánh dấu <strong>chưa ổn</strong>. Sửa trực tiếp các dòng bên trên rồi
+                          bấm “Lưu kịch bản”, hoặc bấm “Sinh lại kịch bản này” để AI làm lại.
+                        </Notice>
+                      )}
                     </div>
                   )}
                 </section>
@@ -742,12 +934,12 @@ export default function GiaiDoan2({
           </div>
         )}
       </Card>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(2)}>Quay lại</GhostButton>
-        <PrimaryButton disabled={scenarios.length === 0} onClick={() => onStepChange(4)}>
-          Tiếp tục sang Bước 4
-        </PrimaryButton>
-      </div>
+      <NavRow
+        onBack={() => onStepChange(2)}
+        nextLabel="Tiếp tục sang Bước 4"
+        onNext={() => onStepChange(4)}
+        nextDisabled={scenarios.length === 0}
+      />
     </div>
   );
 
@@ -806,10 +998,24 @@ export default function GiaiDoan2({
                 <section key={useCase.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className={`min-w-0 break-words font-semibold text-slate-900 ${wrapClass}`}>{useCase.name}</h3>
-                    {diagram?.imageUrl
-                      ? <StatusBadge tone="success">Đã render</StatusBadge>
-                      : diagram ? <StatusBadge tone="warn">Đã lưu mã, chờ render</StatusBadge>
-                        : <StatusBadge tone="muted">Chưa có biểu đồ</StatusBadge>}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {diagram?.imageUrl
+                        ? <StatusBadge tone="success">Đã render</StatusBadge>
+                        : diagram ? <StatusBadge tone="warn">Đã lưu mã, chờ render</StatusBadge>
+                          : <StatusBadge tone="muted">Chưa có biểu đồ</StatusBadge>}
+                      {!diagram && (
+                        <MiniButton
+                          onClick={() =>
+                            void runAction(async () => {
+                              await generateInteractionDiagram(useCase.id, currentDiagramType);
+                              await refreshSavedState();
+                            }, "Đang sinh biểu đồ tương tác...")
+                          }
+                        >
+                          Sinh cho use case này
+                        </MiniButton>
+                      )}
+                    </div>
                   </div>
                   <DiagramPreview
                     imageUrl={diagram?.imageUrl ?? null}
@@ -817,7 +1023,53 @@ export default function GiaiDoan2({
                     emptyHint="Biểu đồ được lưu riêng cho từng use case."
                     downloadName={`${currentDiagramType}-${useCase.id}.${imageExtension(diagram?.imageUrl ?? null)}`}
                   />
-                  {diagram?.sourceCode && <PlantUmlSource source={diagram.sourceCode} />}
+                  {diagram?.sourceCode && (
+                    <>
+                      <RegenerateBar
+                        label="Sinh lại biểu đồ này"
+                        hint="Bấm sinh lại nếu biểu đồ chưa phản ánh đúng kịch bản đã lưu."
+                        rejected={rejectedKeys.includes(`interaction-${useCase.id}-${currentDiagramType}`)}
+                        disabled={!projectId}
+                        busy={busy}
+                        onRegenerate={() =>
+                          regenerate(
+                            "Sinh lại biểu đồ này",
+                            `Ghi đè biểu đồ ${currentDiagramType} của "${useCase.name}"?`,
+                            true,
+                            () =>
+                              void runAction(async () => {
+                                await generateInteractionDiagram(useCase.id, currentDiagramType);
+                                await refreshSavedState();
+                                setRejectedKeys((previous) =>
+                                  previous.filter(
+                                    (key) => key !== `interaction-${useCase.id}-${currentDiagramType}`,
+                                  ),
+                                );
+                              }, "Đang sinh lại biểu đồ tương tác...")
+                          )
+                        }
+                        onToggleRejected={() =>
+                          toggleRejected(`interaction-${useCase.id}-${currentDiagramType}`)
+                        }
+                      />
+                      <EditablePlantUml
+                        diagramKey={`interaction-${useCase.id}-${currentDiagramType}`}
+                        code={diagram.sourceCode}
+                        editingCodeKey={editingCodeKey}
+                        codeDrafts={codeDrafts}
+                        setCodeDrafts={setCodeDrafts}
+                        setEditingCodeKey={setEditingCodeKey}
+                        busy={busy}
+                        onSave={(nextCode) =>
+                          void runAction(async () => {
+                            await updateDiagram(diagram.id, nextCode);
+                            await refreshSavedState();
+                            setEditingCodeKey(null);
+                          }, "Đang render lại từ mã đã sửa...")
+                        }
+                      />
+                    </>
+                  )}
                 </section>
               );
             })}
@@ -828,11 +1080,30 @@ export default function GiaiDoan2({
     </div>
   );
 
+  /** Suy luận lại mô hình lớp và sinh lại ảnh biểu đồ lớp từ mô hình mới. */
+  async function runGenerateClasses(): Promise<void> {
+    if (!projectId) return;
+    const classes = await generateClasses(projectId);
+    setState((previous) => ({
+      ...previous,
+      umlClasses: classes.map((item) => ({
+        id: item.id,
+        name: item.name,
+        attributes: item.attributes,
+        methods: item.methods,
+      })),
+    }));
+    const diagram = await generateClassDiagram(projectId);
+    setState((previous) => ({
+      ...previous,
+      classDiagramUrl: diagram.image_url,
+      classDiagramCode: diagram.source_code,
+    }));
+    setRejectedKeys((previous) => previous.filter((key) => key !== "uml-classes"));
+  }
+
   const B5 = (
     <div className="space-y-6">
-      <Notice tone="warn">
-        TODO: cần cấu hình PlantUML render service ở Backend bằng PLANTUML_RENDER_URL trước khi có thể lưu ảnh biểu đồ lớp.
-      </Notice>
       <Card
         tone="violet"
         title="Mô hình lớp suy luận"
@@ -840,32 +1111,27 @@ export default function GiaiDoan2({
           <SoftButton
             disabled={busy || !projectId || state.usecases.length === 0}
             onClick={() =>
-              void runAction(async () => {
-                try {
-                  const classes = await generateClasses(projectId!);
-                  setState((previous) => ({
-                    ...previous,
-                    umlClasses: classes.map((item) => ({
-                      id: item.id,
-                      name: item.name,
-                      attributes: item.attributes,
-                      methods: item.methods,
-                    })),
-                  }));
-                  const diagram = await generateClassDiagram(projectId!);
-                  setState((previous) => ({
-                    ...previous,
-                    classDiagramUrl: diagram.image_url,
-                    classDiagramCode: diagram.source_code,
-                  }));
-                } catch (reason) {
-                  await refreshSavedState();
-                  throw reason;
-                }
-              })
+              regenerate(
+                "Sinh lại mô hình lớp",
+                "Ghi đè mô hình lớp?",
+                state.umlClasses.length > 0,
+                () =>
+                  void runAction(async () => {
+                    try {
+                      await runGenerateClasses();
+                    } catch (reason) {
+                      await refreshSavedState();
+                      throw reason;
+                    }
+                  }, "Đang suy luận và sinh biểu đồ lớp...")
+              )
             }
           >
-            {busy ? "Đang suy luận và sinh biểu đồ..." : "Sinh biểu đồ lớp"}
+            {busy
+              ? "Đang suy luận và sinh biểu đồ..."
+              : state.umlClasses.length > 0
+                ? "↻ Sinh lại mô hình lớp"
+                : "Sinh biểu đồ lớp"}
           </SoftButton>
         }
       >
@@ -875,7 +1141,12 @@ export default function GiaiDoan2({
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr><th className="px-4 py-3">Lớp</th><th className="px-4 py-3">Thuộc tính</th><th className="px-4 py-3">Phương thức</th></tr>
+                <tr>
+                  <th className="px-4 py-3">Lớp</th>
+                  <th className="px-4 py-3">Thuộc tính</th>
+                  <th className="px-4 py-3">Phương thức</th>
+                  <th className="px-4 py-3">Sửa</th>
+                </tr>
               </thead>
               <tbody>
                 {state.umlClasses.map((item) => (
@@ -887,23 +1158,144 @@ export default function GiaiDoan2({
                     <td className="min-w-0 px-4 py-3">
                       <ul className="space-y-1">{item.methods.map((value, index) => <li key={`${value}-${index}`} className={`text-slate-600 ${wrapClass}`}>{value}</li>)}</ul>
                     </td>
+                    <td className="px-4 py-3">
+                      <MiniButton
+                        onClick={() => {
+                          setClassDrafts((previous) => ({
+                            ...previous,
+                            [item.id]: {
+                              name: item.name,
+                              attributes: item.attributes.length ? item.attributes : [""],
+                              methods: item.methods.length ? item.methods : [""],
+                            },
+                          }));
+                          setEditingClassId(item.id);
+                        }}
+                      >
+                        ✎ Sửa
+                      </MiniButton>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+        {editingClassId !== null && (() => {
+          const target = state.umlClasses.find((item) => item.id === editingClassId);
+          const draft = classDrafts[editingClassId];
+          if (!target || !draft) return null;
+          return (
+            <div className="mt-4">
+              <ClassEditor
+                draft={draft}
+                onChange={(next) => setClassDrafts((previous) => ({ ...previous, [editingClassId]: next }))}
+                onCancel={() => setEditingClassId(null)}
+                busy={busy}
+                onSave={() =>
+                  void runAction(async () => {
+                    const saved = await updateClass(editingClassId, {
+                      name: draft.name.trim(),
+                      attributes: draft.attributes.map((line) => line.trim()).filter(Boolean),
+                      methods: draft.methods.map((line) => line.trim()).filter(Boolean),
+                    });
+                    setState((previous) => ({
+                      ...previous,
+                      umlClasses: previous.umlClasses.map((item) =>
+                        item.id === saved.id
+                          ? { id: saved.id, name: saved.name, attributes: saved.attributes, methods: saved.methods }
+                          : item,
+                      ),
+                    }));
+                    setEditingClassId(null);
+                    // Mô hình đổi thì biểu đồ đã lưu đã cũ, nhắc người dùng sinh lại.
+                    setRejectedKeys((previous) =>
+                      previous.includes("uml-classes") ? previous : [...previous, "uml-classes"],
+                    );
+                  }, "Đang lưu lớp...")
+                }
+                onDelete={() =>
+                  regenerate(
+                    "Xoá lớp",
+                    `Xoá lớp "${target.name}"?`,
+                    true,
+                    () =>
+                      void runAction(async () => {
+                        await deleteClass(editingClassId);
+                        setState((previous) => ({
+                          ...previous,
+                          umlClasses: previous.umlClasses.filter((item) => item.id !== editingClassId),
+                        }));
+                        setEditingClassId(null);
+                        setRejectedKeys((previous) =>
+                          previous.includes("uml-classes") ? previous : [...previous, "uml-classes"],
+                        );
+                      }, "Đang xoá lớp...")
+                  )
+                }
+              />
+            </div>
+          );
+        })()}
+        {state.umlClasses.length > 0 && (
+          <RegenerateBar
+            label="Sinh lại mô hình lớp"
+            hint="Sửa xong một lớp thì nên sinh lại biểu đồ để ảnh khớp với mô hình mới."
+            rejected={rejectedKeys.includes("uml-classes")}
+            disabled={!projectId || state.usecases.length === 0}
+            busy={busy}
+            onRegenerate={() =>
+              regenerate("Sinh lại mô hình lớp", "Ghi đè mô hình lớp?", true, () =>
+                void runAction(async () => {
+                  try {
+                    await runGenerateClasses();
+                  } catch (reason) {
+                    await refreshSavedState();
+                    throw reason;
+                  }
+                }, "Đang suy luận và sinh biểu đồ lớp...")
+              )
+            }
+            onToggleRejected={() => toggleRejected("uml-classes")}
+          />
+        )}
       </Card>
       <Card title="Biểu đồ lớp" tone="emerald">
         <DiagramPreview
           imageUrl={state.classDiagramUrl}
           emptyTitle="Chưa có ảnh biểu đồ lớp"
-          emptyHint="Cấu hình PlantUML render service rồi sinh biểu đồ lớp."
+          emptyHint="Sinh mô hình lớp ở trên để tạo biểu đồ."
           downloadName={`class-diagram.${imageExtension(state.classDiagramUrl)}`}
         />
-        {state.classDiagramCode && <PlantUmlSource source={state.classDiagramCode} />}
+        {state.classDiagramCode && (
+          <EditablePlantUml
+            diagramKey="class-diagram"
+            code={state.classDiagramCode}
+            editingCodeKey={editingCodeKey}
+            codeDrafts={codeDrafts}
+            setCodeDrafts={setCodeDrafts}
+            setEditingCodeKey={setEditingCodeKey}
+            busy={busy}
+            onSave={(nextCode) =>
+              void runAction(async () => {
+                const diagram = await regenerateClassDiagramFromCode(projectId!, nextCode);
+                setState((previous) => ({
+                  ...previous,
+                  classDiagramUrl: diagram.image_url,
+                  classDiagramCode: diagram.source_code,
+                }));
+                setEditingCodeKey(null);
+              }, "Đang render lại từ mã đã sửa...")
+            }
+          />
+        )}
       </Card>
-      <div className="flex justify-start"><GhostButton onClick={() => onStepChange(4)}>Quay lại Bước 4</GhostButton></div>
+      <NavRow
+        onBack={() => onStepChange(4)}
+        nextLabel="Hoàn tất"
+        onNext={() => onStepChange(5)}
+        isLast
+      />
     </div>
   );
 
@@ -916,18 +1308,38 @@ export default function GiaiDoan2({
    * Trả về sớm một màn hình hướng dẫn kèm nút quay lại, TUYỆT ĐỐI không để
    * `.map()` trên mảng rỗng làm trắng trang.
    */
-  if (specifications && specifications.length === 0) {
+  const hasFunctionalSpecification = specifications?.some(
+    (item) => item.type === "functional",
+  );
+
+  if (specifications && !hasFunctionalSpecification) {
+    const hasAnySpecification = specifications.length > 0;
     return (
       <div className="mx-auto max-w-2xl px-4 py-12">
-        <Card tone="amber" title="Project chưa có đặc tả">
+        <Card
+          tone="amber"
+          title={hasAnySpecification
+            ? "Dự án chưa có đặc tả chức năng"
+            : "Dự án chưa có đặc tả"}
+        >
           <p className="text-sm text-slate-700">
-            Dự án này chưa có đặc tả nào trong database, nên chưa thể chuyển sang mô hình hóa UML.
-            Vui lòng hoàn thành <strong>Giai đoạn 1 — Thu thập &amp; Đặc tả</strong> trước.
+            {hasAnySpecification ? (
+              <>
+                Dự án chỉ có đặc tả phi chức năng. Tác nhân và use case chỉ được sinh từ đặc tả
+                chức năng, nên chưa thể chuyển sang mô hình hóa UML.
+                Vui lòng bổ sung <strong>đặc tả chức năng</strong> ở Giai đoạn 1 trước.
+              </>
+            ) : (
+              <>
+                Dự án này chưa có đặc tả nào trong database, nên chưa thể chuyển sang mô hình hóa UML.
+                Vui lòng hoàn thành <strong>Giai đoạn 1: Thu thập và Đặc tả</strong> trước.
+              </>
+            )}
           </p>
           <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm text-slate-600">
             <li>Vào Giai đoạn 1, nhập và phân tích yêu cầu.</li>
             <li>Kiểm duyệt và xác nhận user story.</li>
-            <li>Sinh đặc tả chức năng và phi chức năng.</li>
+            <li>Sinh đặc tả chức năng cho từng user story.</li>
           </ol>
           <div className="mt-6 flex flex-wrap gap-3">
             {onReturnStage1 && (
@@ -945,6 +1357,15 @@ export default function GiaiDoan2({
   return (
     <div className="relative">
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
+      {pendingRegenerate && (
+        <OverwriteConfirm
+          title={regenerateTitle}
+          detail="Kết quả hiện tại sẽ bị thay bằng kết quả mới từ AI. Phần bạn đã sửa tay (nếu có) tại bước này sẽ mất."
+          confirmLabel={regenerateLabel}
+          onConfirm={pendingRegenerate}
+          onCancel={() => setPendingRegenerate(null)}
+        />
+      )}
       <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-4 py-8">
         <StepHeading step={`Bước ${step} / 5`} title={def.label} icon={def.icon} />
         {specificationError && <Notice tone="warn">{specificationError}</Notice>}
@@ -963,15 +1384,24 @@ function NavRow({
   onBack,
   onNext,
   nextLabel,
+  nextDisabled = false,
+  isLast = false,
 }: {
   onBack: () => void;
   onNext: () => void;
   nextLabel: string;
+  nextDisabled?: boolean;
+  /** Bước cuối của giai đoạn: chỉ hiển thị nút quay lại. */
+  isLast?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <GhostButton onClick={onBack}>Quay lại</GhostButton>
-      <PrimaryButton onClick={onNext}>{nextLabel}</PrimaryButton>
+      {!isLast && (
+        <PrimaryButton disabled={nextDisabled} onClick={onNext}>
+          {nextLabel}
+        </PrimaryButton>
+      )}
     </div>
   );
 }
@@ -1023,5 +1453,242 @@ function FlowListEditor({
         {addLabel}
       </button>
     </div>
+  );
+}
+
+/**
+ * Thanh hành động cho một khối kết quả AI: "Sinh lại" + "Đánh dấu chưa ổn".
+ *
+ * Vì sao cần: kết quả AI có thể dùng được nhưng chưa vừa ý. Trước đây người dùng
+ * chỉ có một nút sinh duy nhất nên hoặc phải chấp nhận kết quả kém, hoặc bấm lại
+ * mà không biết có ghi đè phần đã sửa tay hay không. Thanh này tách bạch hai ý:
+ *   - "Sinh lại": gọi AI lần nữa, có cảnh báo trước khi ghi đè.
+ *   - "Chưa ổn": đánh dấu để không quên, kèm gợi ý sửa tay ngay bên cạnh.
+ */
+function RegenerateBar({
+  label,
+  hint,
+  rejected,
+  disabled,
+  busy,
+  onRegenerate,
+  onToggleRejected,
+}: {
+  label: string;
+  hint?: string;
+  rejected: boolean;
+  disabled?: boolean;
+  busy?: boolean;
+  onRegenerate: () => void;
+  onToggleRejected: () => void;
+}) {
+  return (
+    <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <SoftButton disabled={disabled || busy} onClick={onRegenerate}>
+          {busy ? "Đang sinh lại..." : `↻ ${label}`}
+        </SoftButton>
+        <GhostButton onClick={onToggleRejected}>
+          {rejected ? "✓ Bỏ đánh dấu chưa ổn" : "⚑ Đánh dấu chưa ổn"}
+        </GhostButton>
+      </div>
+      {rejected && (
+        <Notice tone="warn">
+          Đã đánh dấu <strong>chưa ổn</strong>. Bạn có thể bấm “{label}” để AI làm lại,
+          hoặc sửa trực tiếp bên dưới rồi lưu.
+        </Notice>
+      )}
+      {hint && !rejected && <p className="text-xs text-slate-500">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * Hộp thoại xác nhận trước khi ghi đè. Chỉ hiện khi kết quả đã tồn tại, để một
+ * lần bấm nhầm không xoá mất phần người dùng đã chỉnh tay.
+ */
+function OverwriteConfirm({
+  title,
+  detail,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  detail: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <GhostButton onClick={onCancel}>Huỷ</GhostButton>
+          <PrimaryButton onClick={onConfirm}>{confirmLabel}</PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Trình sửa mã PlantUML thủ công, dùng chung cho biểu đồ UC / tương tác / lớp. */
+function PlantUmlEditor({
+  value,
+  onChange,
+  onSave,
+  onCancel,
+  busy,
+  saved,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  busy: boolean;
+  saved: boolean;
+}) {
+  return (
+    <div className="mt-4 space-y-3 rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+      <FieldLabel hint="Sửa trực tiếp rồi lưu để render lại">Mã PlantUML</FieldLabel>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={12}
+        spellCheck={false}
+        className={`${inputClass} min-h-48 resize-y font-mono text-xs leading-6 whitespace-pre`}
+      />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {saved && <span className="text-xs text-emerald-700">Đã lưu mã mới.</span>}
+        <GhostButton onClick={onCancel}>Đóng</GhostButton>
+        <PrimaryButton disabled={busy || !value.trim()} onClick={onSave}>
+          {busy ? "Đang lưu..." : "Lưu mã"}
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+/** Trình sửa một lớp UML: tên, thuộc tính, phương thức. */
+function ClassEditor({
+  draft,
+  onChange,
+  onSave,
+  onCancel,
+  onDelete,
+  busy,
+}: {
+  draft: { name: string; attributes: string[]; methods: string[] };
+  onChange: (next: { name: string; attributes: string[]; methods: string[] }) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onDelete: () => void;
+  busy: boolean;
+}) {
+  return (
+    <div className="space-y-4 rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+      <div className="min-w-0">
+        <FieldLabel>Tên lớp</FieldLabel>
+        <input
+          value={draft.name}
+          onChange={(event) => onChange({ ...draft, name: event.target.value })}
+          aria-label="Tên lớp"
+          className={singleLineClass}
+        />
+      </div>
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="min-w-0">
+          <FieldLabel hint={`${draft.attributes.length} thuộc tính`}>Thuộc tính</FieldLabel>
+          <FlowListEditor
+            items={draft.attributes}
+            onChange={(lines) => onChange({ ...draft, attributes: lines })}
+            placeholder="Ví dụ: - maDonHang: string"
+            addLabel="+ Thêm thuộc tính"
+          />
+        </div>
+        <div className="min-w-0">
+          <FieldLabel hint={`${draft.methods.length} phương thức`}>Phương thức</FieldLabel>
+          <FlowListEditor
+            items={draft.methods}
+            onChange={(lines) => onChange({ ...draft, methods: lines })}
+            placeholder="Ví dụ: + taoDonHang(): void"
+            addLabel="+ Thêm phương thức"
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <GhostButton onClick={onDelete}>Xoá lớp</GhostButton>
+        <div className="flex flex-wrap items-center gap-3">
+          <GhostButton onClick={onCancel}>Huỷ</GhostButton>
+          <PrimaryButton disabled={busy || !draft.name.trim()} onClick={onSave}>
+            {busy ? "Đang lưu..." : "Lưu lớp"}
+          </PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Khối mã PlantUML có thể sửa tay ngay tại chỗ.
+ *
+ * Vì sao cần: AI sinh mã có thể sai nhãn hoặc thiếu quan hệ. Trước đây người dùng
+ * chỉ xem được mã ở dạng `<details>` chỉ đọc, muốn đổi phải sinh lại từ đầu và mất
+ * mọi chỉnh sửa. Khối này cho sửa trực tiếp rồi lưu; backend render lại ảnh từ mã mới.
+ */
+function EditablePlantUml({
+  diagramKey,
+  code,
+  editingCodeKey,
+  codeDrafts,
+  setCodeDrafts,
+  setEditingCodeKey,
+  busy,
+  onSave,
+}: {
+  diagramKey: string;
+  code: string;
+  editingCodeKey: string | null;
+  codeDrafts: Record<string, string>;
+  setCodeDrafts: (updater: (previous: Record<string, string>) => Record<string, string>) => void;
+  setEditingCodeKey: (key: string | null) => void;
+  busy: boolean;
+  onSave: (sourceCode: string) => void;
+}) {
+  const editing = editingCodeKey === diagramKey;
+  const draft = codeDrafts[diagramKey] ?? code;
+
+  if (!editing) {
+    return (
+      <div className="mt-4 min-w-0 rounded-xl border border-slate-200 bg-slate-50">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+          <span className="text-xs font-semibold text-slate-600">Mã PlantUML đã lưu</span>
+          <GhostButton
+            onClick={() => {
+              setCodeDrafts((previous) => ({ ...previous, [diagramKey]: code }));
+              setEditingCodeKey(diagramKey);
+            }}
+          >
+            ✎ Sửa mã
+          </GhostButton>
+        </div>
+        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-slate-200 p-4 font-mono text-xs text-slate-700 [overflow-wrap:anywhere]">
+          {code}
+        </pre>
+      </div>
+    );
+  }
+
+  return (
+    <PlantUmlEditor
+      value={draft}
+      onChange={(next) => setCodeDrafts((previous) => ({ ...previous, [diagramKey]: next }))}
+      onSave={() => onSave(draft)}
+      onCancel={() => setEditingCodeKey(null)}
+      busy={busy}
+      saved={false}
+    />
   );
 }

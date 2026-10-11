@@ -22,10 +22,11 @@ from schemas.requirement import (
     RequirementUpdate,
     UserStoryDraft,
     UserStoryDraftBatch,
+    UserStoryDraftContent,
     UserStoryRecord,
     UserStoryUpdate,
 )
-from services.ollama import AIServiceError, generate_content
+from services.ollama import AIServiceError, generate_json
 
 router = APIRouter(
     tags=["requirements"],
@@ -120,15 +121,10 @@ def _analyze_content(content: dict) -> RequirementAnalysis:
         f"Quy tắc nghiệp vụ: {json.dumps(rules, ensure_ascii=False)}"
     )
     try:
-        raw_result = generate_content(prompt, json_response=True)
-        return RequirementAnalysis.model_validate(json.loads(raw_result))
+        return generate_json(prompt, RequirementAnalysis)
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValueError) as exc:
         logger.exception("AI returned invalid requirement analysis")
-        raise HTTPException(
-            status_code=502, detail="AI trả về kết quả phân tích không hợp lệ."
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 def _generate_user_story(content: dict, requirement_id: int) -> UserStoryDraft:
@@ -143,18 +139,11 @@ def _generate_user_story(content: dict, requirement_id: int) -> UserStoryDraft:
         f"Yêu cầu: {json.dumps(content, ensure_ascii=False)}"
     )
     try:
-        raw_result = generate_content(prompt, json_response=True)
-        data = json.loads(raw_result)
-        return UserStoryDraft.model_validate(
-            {**data, "requirement_id": requirement_id}
-        )
+        draft = generate_json(prompt, UserStoryDraftContent)
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.exception("AI returned invalid user story draft")
-        raise HTTPException(
-            status_code=502, detail="AI trả về bản nháp user story không hợp lệ."
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return UserStoryDraft(requirement_id=requirement_id, **draft.model_dump())
 
 
 @router.post("/api/projects/{project_id}/requirements", status_code=201)
@@ -221,16 +210,10 @@ def check_project_requirement_coverage(
         f"Yêu cầu hiện có: {json.dumps(items, ensure_ascii=False)}"
     )
     try:
-        raw_result = generate_content(prompt, json_response=True)
-        return RequirementCoverageAnalysis.model_validate(json.loads(raw_result))
+        return generate_json(prompt, RequirementCoverageAnalysis)
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.exception("AI returned invalid project requirement coverage analysis")
-        raise HTTPException(
-            status_code=502,
-            detail="AI trả về kết quả kiểm tra chức năng không hợp lệ.",
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.post(

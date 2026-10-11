@@ -118,7 +118,9 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
     expect(toStep4).not.toBeDisabled();
     fireEvent.click(toStep4);
-    expect(screen.getByText("Sinh biểu đồ tương tác")).toBeTruthy();
+    // Tên bước xuất hiện cả trên sub-stepper lẫn tiêu đề card.
+    expect(screen.getAllByText("Sinh biểu đồ tương tác").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeTruthy();
   });
 
   it("Bước 4 sang Bước 5 không bị chặn", async () => {

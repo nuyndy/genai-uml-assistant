@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Editor from "react-simple-code-editor";
+import UmlCanvas from "../components/UmlCanvas";
 
 interface UseCase {
   id: number;
@@ -205,25 +206,7 @@ export default function Step3DiagramBuilder({
             {rendering ? "Đang render..." : "Xuất biểu đồ thành ảnh"}
           </button>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-medium text-slate-700 mb-3">Xem trước</p>
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center min-h-[200px]">
-              {imageUrl ? (
-                <img src={imageUrl} alt="Biểu đồ" className="max-w-full rounded" />
-              ) : (
-                <p className="text-sm text-slate-400">Chưa có ảnh — bấm "Xuất biểu đồ thành ảnh"</p>
-              )}
-            </div>
-            {imageUrl && (
-              <a
-                href={imageUrl}
-                download="diagram.svg"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-700"
-              >
-                ⬇ Tải ảnh về
-              </a>
-            )}
-          </div>
+          <UmlCanvas projectId={0} sourceCode={code} onSourceChange={setCode} />
         </div>
       </div>
 

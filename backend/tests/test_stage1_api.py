@@ -148,7 +148,7 @@ def test_stage1_persists_requirement_analyzes_and_confirms(client, db_session):
     assert json.loads(stored.content)["target_object"] == "đơn hàng"
 
     with patch(
-        "routers.requirement.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "is_complete": True,
@@ -248,7 +248,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     db_session.refresh(story)
 
     with patch(
-        "routers.specification.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(_functional_spec(), ensure_ascii=False),
     ) as ollama:
         functional = client.post(
@@ -289,7 +289,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     ollama.assert_called_once()
 
     with patch(
-        "routers.specification.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             _functional_spec(function_name="Đặc tả do AI tạo lại"),
             ensure_ascii=False,
@@ -307,7 +307,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     ollama.assert_called_once()
 
     with patch(
-        "routers.srs.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(_nonfunctional_spec(), ensure_ascii=False),
     ) as ollama:
         non_functional = client.post(
@@ -319,7 +319,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
             headers=headers,
         )
     with patch(
-        "routers.srs.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(
             {
                 "items": [
@@ -465,7 +465,7 @@ def test_batch_analysis_and_confirmation_persist_all_draft_requirements(client, 
         {"is_complete": True, "missing_elements": [], "feedback": "Đầy đủ."},
         ensure_ascii=False,
     )
-    with patch("routers.requirement.generate_content", return_value=complete):
+    with patch("services.ollama.generate_content", return_value=complete):
         analyzed = client.post(
             f"/api/projects/{project.id}/requirements/analyze-batch",
             headers=headers,
@@ -474,7 +474,7 @@ def test_batch_analysis_and_confirmation_persist_all_draft_requirements(client, 
     assert {item["requirement_id"] for item in analyzed.json()["results"]} == set(requirement_ids)
     assert all(item["is_complete"] for item in analyzed.json()["results"])
 
-    with patch("routers.requirement.generate_content", return_value=complete):
+    with patch("services.ollama.generate_content", return_value=complete):
         confirmed = client.post(
             f"/api/projects/{project.id}/requirements/confirm-batch",
             json={"requirement_ids": requirement_ids},
@@ -508,7 +508,7 @@ def test_requirement_coverage_suggests_missing_features_and_saves_only_selected(
         "suggestions": [suggestion],
     }
     with patch(
-        "routers.requirement.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(result_json, ensure_ascii=False),
     ) as ollama:
         checked = client.post(
@@ -557,7 +557,7 @@ def test_batch_confirmation_rejects_incomplete_item_without_partial_commit(clien
         {"is_complete": False, "missing_elements": ["Quy tắc"], "feedback": "Thiếu."},
         ensure_ascii=False,
     )
-    with patch("routers.requirement.generate_content", side_effect=[json.dumps(
+    with patch("services.ollama.generate_content", side_effect=[json.dumps(
         {"is_complete": True, "missing_elements": [], "feedback": "Đủ."},
         ensure_ascii=False,
     ), incomplete]):
@@ -586,7 +586,7 @@ def test_ai_user_story_preview_can_be_reviewed_and_confirmed(client, db_session)
         "acceptance_criteria": "Đơn hàng được tạo thành công.",
     }
     with patch(
-        "routers.requirement.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(generated_story, ensure_ascii=False),
     ) as ollama:
         preview = client.post(
@@ -648,7 +648,7 @@ def test_batch_spec_generation_only_creates_missing_functional_specs(client, db_
     db_session.commit()
 
     with patch(
-        "routers.specification.generate_content",
+        "services.ollama.generate_content",
         return_value=json.dumps(_functional_spec("UC02", "Xuất báo cáo"), ensure_ascii=False),
     ) as ollama:
         response = client.post(

@@ -115,6 +115,34 @@ function App() {
     return 2;
   };
 
+  /**
+   * Giai đoạn 1 hoàn thành khi mọi yêu cầu đã được xác nhận VÀ đã sinh được
+   * ít nhất một đặc tả. Giai đoạn 2 hoàn thành khi đã có mô hình lớp (bước
+   * cuối) cùng biểu đồ use case.
+   */
+  const stage1Complete =
+    workflow.requirementLocked &&
+    workflow.userStoryId !== null &&
+    workflow.specs.length > 0;
+  const stage2Complete =
+    stage1Complete && workflow.umlClasses.length > 0 && workflow.classDiagramUrl !== null;
+
+  /** Các giai đoạn đã thực sự hoàn thành, dùng để tô xanh đúng tiến độ. */
+  const completedStages = [
+    ...(stage1Complete ? [1 as StageId] : []),
+    ...(stage2Complete ? [2 as StageId] : []),
+  ];
+
+  /**
+   * Chỉ mở khoá giai đoạn khi giai đoạn trước đã hoàn thành thật, không mở
+   * sẵn cả ba ngay từ đầu.
+   */
+  const maxUnlockedStage = (): StageId => {
+    if (stage2Complete) return 3;
+    if (stage1Complete) return 2;
+    return 1;
+  };
+
   // 0) Cổng đăng nhập: chưa đăng nhập thì chặn toàn bộ app.
   if (loading) {
     return (
@@ -191,7 +219,8 @@ function App() {
 
       <GiaiDoanStepper
         stage={stage}
-        maxUnlockedStage={3}
+        maxUnlockedStage={maxUnlockedStage()}
+        completedStages={completedStages}
         onStageChange={(next) => {
           setStage(next);
           setStep(1);

@@ -1,9 +1,7 @@
 import json
 import logging
-import re
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import ValidationError
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -53,8 +51,9 @@ from schemas.uml import (
     UseCaseScenarioBatchResult,
     UseCaseUpdate,
 )
-from services.ollama import AIServiceError, generate_content
+from services.ollama import AIServiceError, generate_json
 from services.plantuml import PlantUMLRenderError, render_plantuml
+from services.plantuml_parser import parse_plantuml
 
 router = APIRouter(
     tags=["uml"],
@@ -125,6 +124,72 @@ def _encode_lines(values: list[str]) -> str:
     return json.dumps([value.strip() for value in values], ensure_ascii=False)
 
 
+def _functional_fields(specification: Specification) -> dict:
+    """Bóc tách `specification.content` thành các trường có nhãn.
+
+    Giai đoạn 1 lưu content dưới dạng chuỗi JSON theo cấu trúc 12 phần đã
+    thống nhất. Nếu nhét nguyên chuỗi JSON thô vào prompt, model nhỏ dễ bị
+    neo vào cấu trúc đó và trả sai schema; đồng thời thông tin quan trọng như
+    `field_mapping` bị bỏ phí. Hàm này chuẩn hoá lại thành dict có khóa rõ
+    ràng, chịu được cả trường hợp content là text tự do (dữ liệu cũ).
+    """
+    try:
+        parsed = json.loads(specification.content)
+    except (json.JSONDecodeError, TypeError):
+        text = (specification.content or "").strip()
+        return {"description": text} if text else {}
+    if isinstance(parsed, dict):
+        return parsed
+    if isinstance(parsed, list):
+        return {"items": parsed}
+    return {"description": str(parsed)}
+
+
+def _format_specification(specification: Specification, *, index: int) -> str:
+    """Mô tả một đặc tả chức năng cho prompt: nhãn rõ từng phần."""
+    fields = _functional_fields(specification)
+
+    def as_lines(value: object) -> str:
+        if isinstance(value, list):
+            items = []
+            for item in value:
+                if isinstance(item, dict):
+                    items.append(
+                        "; ".join(f"{key}: {val}" for key, val in item.items())
+                    )
+                else:
+                    items.append(str(item))
+            return " | ".join(part for part in items if part)
+        return str(value) if value is not None else ""
+
+    lines = [f"SPECIFICATION_ID: {specification.id}"]
+    mapping = {
+        "function_code": "Mã chức năng",
+        "function_name": "Tên chức năng",
+        "description": "Mô tả",
+        "actors": "Tác nhân",
+        "priority": "Ưu tiên",
+        "pre_conditions": "Điều kiện trước",
+        "main_flow": "Luồng chính",
+        "alternative_flows": "Luồng phụ",
+        "exception_flows": "Luồng ngoại lệ",
+        "post_conditions": "Điều kiện sau",
+        "business_rules": "Quy tắc nghiệp vụ",
+        "field_mapping": "Trường dữ liệu",
+    }
+    for key, label in mapping.items():
+        if key in fields:
+            rendered = as_lines(fields[key])
+            if rendered:
+                lines.append(f"{label}: {rendered}")
+    for key, value in fields.items():
+        if key not in mapping:
+            rendered = as_lines(value)
+            if rendered:
+                lines.append(f"{key}: {rendered}")
+    return "\n".join(lines)
+
+
 def _use_case_record(use_case: UseCase) -> UseCaseRecord:
     return UseCaseRecord(
         id=use_case.id,
@@ -137,22 +202,16 @@ def _use_case_record(use_case: UseCase) -> UseCaseRecord:
 
 
 def _ai_json(prompt: str, model: type) -> object:
+    """Gọi AI lấy JSON đúng schema.
+
+    Ràng buộc định dạng và retry/repair do `generate_json` đảm nhiệm, nên mọi
+    endpoint đều được bảo vệ giống nhau.
+    """
     try:
-        response = generate_content(prompt, json_response=True)
+        return generate_json(prompt, model)
     except AIServiceError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    text = response.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
-    try:
-        payload = json.loads(text)
-        return model.model_validate(payload)
-    except (json.JSONDecodeError, ValidationError, TypeError, ValueError) as exc:
         logger.warning("AI returned JSON that did not match %s", model.__name__)
-        raise HTTPException(
-            status_code=502,
-            detail="AI trả về dữ liệu không đúng định dạng yêu cầu.",
-        ) from exc
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 def _render_and_save_diagram(
@@ -264,7 +323,15 @@ def _interaction_diagram_source(
     project: Project,
     actors: list[Actor],
     diagram_type: str,
+    project_actors: list[Actor] | None = None,
 ) -> str:
+    """Dựng mã PlantUML cho biểu đồ tương tác của MỘT use case.
+
+    Biểu đồ tương tác luôn cần một tác nhân khởi động. Nếu use case chưa có quan
+    hệ tác nhân tường minh (dữ liệu cũ, hoặc người dùng chỉ lưu use case), ta tự
+    dùng tác nhân đầu tiên của dự án thay vì chặn sinh biểu đồ. Chỉ khi dự án
+    KHÔNG có tác nhân nào thì mới thực sự không thể vẽ.
+    """
     main_flow = _decode_lines(use_case.main_flow)
     alt_flow = _decode_lines(use_case.alt_flow)
     if not main_flow and not alt_flow:
@@ -272,13 +339,17 @@ def _interaction_diagram_source(
             status_code=409,
             detail=f"Use case {use_case.id} chưa có kịch bản.",
         )
-    if not actors:
+    chosen_actors = actors or (project_actors or [])
+    if not chosen_actors:
         raise HTTPException(
             status_code=409,
-            detail=f"Use case {use_case.id} chưa được liên kết với tác nhân.",
+            detail=(
+                "Dự án chưa có tác nhân nào. Hãy lưu tác nhân và use case ở "
+                "Bước 1 trước khi sinh biểu đồ tương tác."
+            ),
         )
     alias = "A1"
-    actor_name = actors[0].name
+    actor_name = chosen_actors[0].name
     lines = ["@startuml"]
     if diagram_type == "sequence":
         lines.extend(
@@ -346,10 +417,36 @@ def _render_and_update_diagram(
     return diagram
 
 
-@router.get(
-    "/api/projects/{project_id}/specifications-with-stories",
-    response_model=list[SpecificationWithStoryRecord],
+
+
+# New endpoint: parse PlantUML source code into UML model for front‑end sync
+@router.post(
+    "/api/projects/{project_id}/parse-plantuml",
+    response_model=dict,
+    tags=["uml"],
 )
+def parse_plantuml_endpoint(
+    project_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Parse PlantUML source sent from frontend.
+
+    Expected JSON body: {"source_code": "..."}
+    Returns a dictionary with keys: actors, use_cases, classes, relations.
+    """
+    _require_project(db, project_id)
+    source_code = payload.get("source_code", "")
+    if not source_code:
+        raise HTTPException(status_code=422, detail="source_code không được để trống.")
+    try:
+        parsed = parse_plantuml(source_code)
+    except Exception as exc:
+        logger.exception("Lỗi khi parse PlantUML")
+        raise HTTPException(status_code=400, detail="Không thể parse PlantUML: " + str(exc))
+    return parsed
+
 def list_unmodeled_specifications(
     project_id: int,
     db: Session = Depends(get_db),
@@ -401,13 +498,18 @@ def extract_actors_use_cases(
         raise HTTPException(status_code=500, detail="Không thể đọc đặc tả.") from exc
     if specification is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả.")
+    if specification.type != "functional":
+        raise HTTPException(
+            status_code=409,
+            detail="Chỉ đặc tả chức năng mới sinh được tác nhân và use case.",
+        )
     prompt = (
         "Phân tích đặc tả phần mềm sau bằng tiếng Việt. Đề xuất các tác nhân và "
         "use case có căn cứ trực tiếp trong nội dung, không tự bịa nghiệp vụ. "
         "Trả về JSON đúng schema: {\"suggested_actors\":[{\"name\":\"...\"}],"
         "\"suggested_use_cases\":[{\"name\":\"...\",\"description\":\"...\"}]}. "
         "Nếu không có mục phù hợp, trả mảng rỗng.\n\n"
-        f"ĐẶC TẢ:\n{specification.content}"
+        f"ĐẶC TẢ:\n{_format_specification(specification, index=1)}"
     )
     result = _ai_json(prompt, ExtractActorsUseCasesResult)
     return result
@@ -424,11 +526,16 @@ def extract_project_actors_use_cases_batch(
 ) -> ExtractProjectActorsUseCasesResult:
     _require_project(db, project_id)
     try:
+        # Chỉ đặc tả CHỨC NĂNG mới sinh được use case; đặc tả phi chức năng
+        # không mô tả hành vi nên nếu trộn vào chỉ khiến AI bịa nghiệp vụ.
         specifications = (
             db.query(Specification)
             .join(UserStory, Specification.user_story_id == UserStory.id)
             .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
-            .filter(RawRequirement.project_id == project_id)
+            .filter(
+                RawRequirement.project_id == project_id,
+                Specification.type == "functional",
+            )
             .order_by(Specification.id)
             .all()
         )
@@ -436,11 +543,14 @@ def extract_project_actors_use_cases_batch(
         logger.exception("Could not read project specifications for batch extraction")
         raise HTTPException(status_code=500, detail="Không thể đọc đặc tả của dự án.") from exc
     if not specifications:
-        raise HTTPException(status_code=409, detail="Dự án chưa có đặc tả để phân tích.")
+        raise HTTPException(
+            status_code=409,
+            detail="Dự án chưa có đặc tả chức năng để sinh use case.",
+        )
 
     spec_context = "\n\n".join(
-        f"SPECIFICATION_ID: {item.id}\nLOẠI: {item.type}\nNỘI DUNG:\n{item.content}"
-        for item in specifications
+        _format_specification(item, index=index)
+        for index, item in enumerate(specifications, start=1)
     )
     prompt = (
         "Phân tích tất cả đặc tả phần mềm của dự án bằng tiếng Việt. Tổng hợp "
@@ -499,12 +609,16 @@ def save_project_actor_use_cases_batch(
             .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
             .filter(
                 RawRequirement.project_id == project_id,
+                Specification.type == "functional",
                 Specification.id.in_(specification_ids),
             )
             .all()
         ) if specification_ids else []
         if len(specifications) != len(specification_ids):
-            raise HTTPException(status_code=422, detail="Có đặc tả không thuộc dự án.")
+            raise HTTPException(
+                status_code=422,
+                detail="Có đặc tả không thuộc dự án hoặc không phải đặc tả chức năng.",
+            )
 
         actor_by_name: dict[str, Actor] = {}
         for selection in data.actors:
@@ -746,6 +860,16 @@ def create_use_case(
 ) -> UseCaseRecord:
     _project_for_specification(db, specification_id)
     try:
+        specification = db.query(Specification).filter(
+            Specification.id == specification_id
+        ).first()
+        if specification is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả.")
+        if specification.type != "functional":
+            raise HTTPException(
+                status_code=422,
+                detail="Chỉ đặc tả chức năng mới tạo được use case.",
+            )
         existing = (
             db.query(UseCase)
             .filter(
@@ -972,6 +1096,28 @@ def generate_use_case_diagram(
     return DiagramRecord.model_validate(diagram)
 
 
+def _generate_scenario_for(
+    use_case: UseCase,
+    specification: Specification,
+    index: int = 1,
+) -> UseCaseScenarioSuggestion:
+    """Sinh kịch bản cho MỘT use case. Dùng chung cho endpoint đơn và fallback batch.
+
+    Tách riêng để khi batch bỏ sót use case, hệ thống gọi lại đúng một use case
+    mà không cần nhân bản prompt ở hai nơi.
+    """
+    prompt = (
+        "Tạo kịch bản use case bằng tiếng Việt, chỉ dựa trên đặc tả và tên use case. "
+        "Không bịa quy tắc hoặc dữ liệu; nếu thiếu chi tiết, nêu giả định cần xác nhận "
+        "ngay trong bước liên quan. Trả JSON đúng schema: "
+        "{\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
+        "\"exception_flow\":[\"...\"]}. Mỗi phần tử là một bước ngắn.\n\n"
+        f"USE CASE: {use_case.name}\n"
+        f"ĐẶC TẢ:\n{_format_specification(specification, index=index)}"
+    )
+    return _ai_json(prompt, UseCaseScenarioSuggestion)
+
+
 @router.post(
     "/api/use-cases/{use_case_id}/generate-scenario",
     response_model=UseCaseRecord,
@@ -991,15 +1137,7 @@ def generate_use_case_scenario(
         raise HTTPException(status_code=500, detail="Không thể đọc đặc tả liên quan.") from exc
     if specification is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả liên quan.")
-    prompt = (
-        "Tạo kịch bản use case bằng tiếng Việt, chỉ dựa trên đặc tả và tên use case. "
-        "Không bịa quy tắc hoặc dữ liệu; nếu thiếu chi tiết, nêu giả định cần xác nhận "
-        "ngay trong bước liên quan. Trả JSON đúng schema: "
-        "{\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
-        "\"exception_flow\":[\"...\"]}. Mỗi phần tử là một bước ngắn.\n\n"
-        f"USE CASE: {use_case.name}\nĐẶC TẢ:\n{specification.content}"
-    )
-    result = _ai_json(prompt, UseCaseScenarioSuggestion)
+    result = _generate_scenario_for(use_case, specification)
     use_case.main_flow = _encode_lines(result.main_flow)
     use_case.alt_flow = _encode_lines(result.alt_flow)
     use_case.exception_flow = _encode_lines(result.exception_flow)
@@ -1017,6 +1155,8 @@ def generate_use_case_scenario(
     "/api/projects/{project_id}/use-cases/generate-scenarios-batch",
     response_model=UseCaseScenarioBatchResult,
 )
+# Trả kèm name/specification_id (lấy từ bản ghi đã nạp sẵn, không thêm truy vấn)
+# để mỗi kết quả tự mô tả đầy đủ use case của nó, đồng bộ với UseCaseRecord.
 def generate_project_use_case_scenarios_batch(
     project_id: int,
     db: Session = Depends(get_db),
@@ -1043,29 +1183,67 @@ def generate_project_use_case_scenarios_batch(
         return UseCaseScenarioBatchResult(results=[])
 
     inputs = "\n\n".join(
-        f"USE_CASE_ID: {use_case.id}\nTÊN: {use_case.name}\nĐẶC TẢ:\n{specification.content}"
-        for use_case, specification in rows
+        f"USE_CASE_ID: {use_case.id}\nTÊN: {use_case.name}\n"
+        f"ĐẶC TẢ:\n{_format_specification(specification, index=index)}"
+        for index, (use_case, specification) in enumerate(rows, start=1)
     )
+    valid_ids = [use_case.id for use_case, _ in rows]
     prompt = (
         "Sinh kịch bản cho tất cả use case dưới đây bằng tiếng Việt, chỉ dựa vào "
         "tên use case và đặc tả tương ứng. Mỗi main_flow có ít nhất một bước. "
         "Không bịa dữ kiện; ghi rõ điểm cần xác nhận nếu thông tin chưa đủ. "
         "Trả JSON theo schema: {\"results\":[{\"use_case_id\":1,"
         "\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
-        "\"exception_flow\":[\"...\"]}]}. Phải trả đúng một kết quả cho mỗi ID.\n\n"
+        "\"exception_flow\":[\"...\"]}]}. "
+        f"Phải trả ĐÚNG {len(valid_ids)} kết quả, mỗi kết quả ứng với một "
+        "USE_CASE_ID sau và dùng nguyên giá trị số đó làm use_case_id: "
+        f"{', '.join(str(use_case_id) for use_case_id in valid_ids)}.\n\n"
         f"{inputs}"
     )
     result = _ai_json(prompt, UseCaseScenarioBatchResult)
-    expected_ids = {use_case.id for use_case, _ in rows}
-    result_ids = [item.use_case_id for item in result.results]
-    if set(result_ids) != expected_ids or len(result_ids) != len(expected_ids):
-        raise HTTPException(
-            status_code=502,
-            detail="AI không trả đúng một kịch bản cho mỗi use case.",
-        )
+
+    # Model nhỏ (qwen2.5:3b) hay bỏ sót hoặc trả trùng ID khi có nhiều use case.
+    # Thay vì báo lỗi 502 cho người dùng, giữ những kết quả hợp lệ rồi sinh bù
+    # riêng cho từng use case còn thiếu bằng endpoint đơn (đã được kiểm thử).
     by_id = {use_case.id: use_case for use_case, _ in rows}
+    specification_by_id = {use_case.id: specification for use_case, specification in rows}
+    accepted: dict[int, UseCaseScenarioBatchItem] = {}
+    for item in result.results:
+        if item.use_case_id in by_id and item.use_case_id not in accepted:
+            # AI chỉ trả use_case_id + kịch bản; điền name/specification_id từ
+            # bản ghi đã nạp sẵn để item tự mô tả đủ, khớp UseCaseRecord.
+            matched = by_id[item.use_case_id]
+            accepted[item.use_case_id] = UseCaseScenarioBatchItem(
+                use_case_id=item.use_case_id,
+                name=matched.name,
+                specification_id=matched.specification_id,
+                main_flow=item.main_flow,
+                alt_flow=item.alt_flow,
+                exception_flow=item.exception_flow,
+            )
+
+    missing_ids = [use_case.id for use_case, _ in rows if use_case.id not in accepted]
+    for index, use_case_id in enumerate(missing_ids, start=1):
+        use_case = by_id[use_case_id]
+        logger.info(
+            "Batch bo sot use case %s, sinh bu bang mot yeu cau rieng.", use_case_id
+        )
+        fallback = _generate_scenario_for(
+            use_case, specification_by_id[use_case_id], index=index
+        )
+        accepted[use_case_id] = UseCaseScenarioBatchItem(
+            use_case_id=use_case_id,
+            name=use_case.name,
+            specification_id=use_case.specification_id,
+            main_flow=fallback.main_flow,
+            alt_flow=fallback.alt_flow,
+            exception_flow=fallback.exception_flow,
+        )
+
+    ordered_results = [accepted[use_case.id] for use_case, _ in rows]
+    result = UseCaseScenarioBatchResult(results=ordered_results)
     try:
-        for item in result.results:
+        for item in ordered_results:
             use_case = by_id[item.use_case_id]
             use_case.main_flow = _encode_lines(item.main_flow)
             use_case.alt_flow = _encode_lines(item.alt_flow)
@@ -1147,13 +1325,26 @@ def generate_interaction_diagram(
             .order_by(Actor.id)
             .all()
         )
+        # Phương án dự phòng: use case chưa gán tác nhân tường minh thì dùng tác
+        # nhân đầu tiên của dự án, thay vì chặn người dùng (biểu đồ tương tác luôn
+        # cần một tác nhân khởi động).
+        if not actors:
+            actors = (
+                db.query(Actor)
+                .filter(Actor.project_id == project_id)
+                .order_by(Actor.id)
+                .all()
+            )
     except SQLAlchemyError as exc:
         logger.exception("Could not read use-case actors")
         raise HTTPException(status_code=500, detail="Không thể đọc tác nhân của use case.") from exc
     if not actors:
         raise HTTPException(
             status_code=409,
-            detail="Liên kết ít nhất một tác nhân với use case trước khi sinh biểu đồ.",
+            detail=(
+                "Dự án chưa có tác nhân nào. Hãy lưu tác nhân và use case ở Bước 1 "
+                "trước khi sinh biểu đồ tương tác."
+            ),
         )
     actor_name = actors[0].name
     try:
@@ -1244,6 +1435,14 @@ def generate_project_interaction_diagrams_batch(
             )
             .all()
         )
+        # Tác nhân của cả dự án, dùng làm phương án dự phòng cho use case chưa được
+        # gán tác nhân tường minh (dữ liệu cũ, hoặc người dùng chỉ lưu use case).
+        project_actors = (
+            db.query(Actor)
+            .filter(Actor.project_id == project_id)
+            .order_by(Actor.id)
+            .all()
+        )
     except SQLAlchemyError as exc:
         logger.exception("Could not load project data for interaction diagram batch")
         raise HTTPException(status_code=500, detail="Không thể đọc dữ liệu biểu đồ tương tác.") from exc
@@ -1270,7 +1469,9 @@ def generate_project_interaction_diagrams_batch(
             raise HTTPException(status_code=500, detail="Không thể đọc tác nhân của use case.") from exc
         sources.append((
             use_case,
-            _interaction_diagram_source(use_case, project, actors, data.diagram_type),
+            _interaction_diagram_source(
+                use_case, project, actors, data.diagram_type, project_actors
+            ),
         ))
 
     generated: list[Diagram] = []
@@ -1562,11 +1763,16 @@ def generate_classes(
             .order_by(UseCase.id)
             .all()
         )
+        # Lớp được suy luận từ nghiệp vụ, tức đặc tả CHỨC NĂNG; đặc tả phi
+        # chức năng không mô tả thực thể nên không đưa vào prompt.
         specifications = (
             db.query(Specification)
             .join(UserStory, Specification.user_story_id == UserStory.id)
             .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
-            .filter(RawRequirement.project_id == project_id)
+            .filter(
+                RawRequirement.project_id == project_id,
+                Specification.type == "functional",
+            )
             .order_by(Specification.id)
             .all()
         )
@@ -1584,7 +1790,10 @@ def generate_classes(
         f"Ngoại lệ: {'; '.join(_decode_lines(item.exception_flow))}"
         for item, _ in rows
     )
-    spec_context = "\n\n".join(item.content for item in specifications)
+    spec_context = "\n\n".join(
+        _format_specification(item, index=index)
+        for index, item in enumerate(specifications, start=1)
+    )
     prompt = (
         "Suy luận mô hình lớp UML bằng tiếng Việt từ các use case và đặc tả dưới đây. "
         "Chỉ đề xuất lớp, thuộc tính, phương thức có căn cứ trong nghiệp vụ; không "
