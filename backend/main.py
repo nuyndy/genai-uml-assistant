@@ -3,11 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers.requirement import router as requirement_router
 from routers.specification import router as specification_router
 from routers.projects import router as projects_router
+from routers.baseline import router as baseline_router
 from routers.uml import router as uml_router
 from routers.srs import router as srs_router
 from routers.auth import router as auth_router
 from database.db import Base, engine
 from database import models
+
 app = FastAPI(title="GenAI UML Assistant")
 
 app.add_middleware(
@@ -30,6 +32,7 @@ app.include_router(specification_router)
 app.include_router(projects_router)
 app.include_router(uml_router)
 app.include_router(srs_router)
+app.include_router(baseline_router)
 
 @app.get("/")
 async def root():

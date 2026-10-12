@@ -1,9 +1,13 @@
 import base64
 import json
 import os
+
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 class PlantUMLRenderError(RuntimeError):
     pass

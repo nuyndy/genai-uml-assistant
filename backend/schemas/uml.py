@@ -1,5 +1,5 @@
 from typing import Literal
-
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -285,3 +285,15 @@ class SpecificationWithStoryRecord(BaseModel):
     content: str
     version: int
     user_story: SpecificationStoryRecord
+
+
+class DiagramRevisionRecord(BaseModel):
+    id: int
+    diagram_id: int
+    version: int
+    source_code: str
+    image_url: str | None = None
+    change_type: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

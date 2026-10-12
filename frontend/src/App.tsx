@@ -285,6 +285,7 @@ function App() {
         )}
         {stage === 3 && (
           <GiaiDoan3
+            projectId={activeProject.id}
             state={workflow}
             setState={setWorkflow}
             step={step}

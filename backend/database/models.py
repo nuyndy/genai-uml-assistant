@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index
 from sqlalchemy.sql import func
 from database.db import Base
+from sqlalchemy.dialects.postgresql import JSONB
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +15,7 @@ class User(Base):
 
 class Project(Base):
     __tablename__ = "project"
+
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
@@ -23,24 +25,50 @@ class Project(Base):
     )
     name = Column(String, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    description = Column(Text, nullable=True)
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 
 class RawRequirement(Base):
     __tablename__ = "raw_requirement"
+
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     content = Column(Text, nullable=False)
     status = Column(String, default="draft")
 
+    actor = Column(String, nullable=True)
+    action = Column(String, nullable=True)
+    target_object = Column(String, nullable=True)
+    purpose = Column(Text, nullable=True)
+    normalized_text = Column(Text, nullable=True)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    title = Column(String, nullable=True)
+    as_a = Column(String, nullable=True)
+    i_want_to = Column(String, nullable=True)
+    so_that = Column(Text, nullable=True)
+    acceptance_criteria = Column(Text, nullable=True)
+    technical_notes = Column(Text, nullable=True)
+
 
 class UserStory(Base):
     __tablename__ = "user_story"
+
     id = Column(Integer, primary_key=True, index=True)
-    requirement_id = Column(Integer, ForeignKey("raw_requirement.id"), nullable=False)
+    requirement_id = Column(
+        Integer,
+        ForeignKey("raw_requirement.id"),
+        nullable=False,
+    )
     role = Column(String)
     feature = Column(Text, nullable=False)
     benefit = Column(Text)
     acceptance_criteria = Column(Text)
+    technical_notes = Column(Text, nullable=True)
 
 
 class Specification(Base):
@@ -136,3 +164,223 @@ class Diagram(Base):
     source_code = Column(Text, nullable=False)
     image_url = Column(String)
     version = Column(Integer, default=1)
+
+
+class DiagramRevision(Base):
+    __tablename__ = "diagram_revision"
+
+    id = Column(Integer, primary_key=True, index=True)
+    diagram_id = Column(
+        Integer,
+        ForeignKey("diagram.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    version = Column(Integer, nullable=False)
+    source_code = Column(Text, nullable=False)
+    image_url = Column(String, nullable=True)
+    change_type = Column(String(30), nullable=False, default="edit")
+    created_at = Column(
+        TIMESTAMP,
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    __table_args__ = (
+        Index(
+            "uq_diagram_revision_version",
+            "diagram_id",
+            "version",
+            unique=True,
+        ),
+        Index("ix_diagram_revision_diagram_id", "diagram_id"),
+        Index("ix_diagram_revision_created_at", "created_at"),
+    )
+
+class GlossaryTerm(Base):
+    __tablename__ = "glossary_term"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(
+        Integer,
+        ForeignKey("project.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    term = Column(String(255), nullable=False)
+    canonical_term = Column(String(255), nullable=False)
+    aliases = Column(JSONB, nullable=False, server_default="[]")
+    definition = Column(Text, nullable=False, server_default="")
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    __table_args__ = (
+        Index(
+            "uq_glossary_project_term",
+            "project_id",
+            "canonical_term",
+            unique=True,
+        ),
+        Index("ix_glossary_project", "project_id"),
+    )
+
+
+class TraceLink(Base):
+    __tablename__ = "trace_link"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(
+        Integer,
+        ForeignKey("project.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    source_type = Column(String(50), nullable=False)
+    source_id = Column(Integer, nullable=False)
+    target_type = Column(String(50), nullable=False)
+    target_id = Column(Integer, nullable=False)
+    relation_type = Column(
+        String(50),
+        nullable=False,
+        server_default="traces_to",
+    )
+    rationale = Column(Text, nullable=False, server_default="")
+    validation_status = Column(
+        String(20),
+        nullable=False,
+        server_default="pending",
+    )
+    validation_message = Column(Text, nullable=False, server_default="")
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    __table_args__ = (
+        Index(
+            "uq_trace_link",
+            "project_id",
+            "source_type",
+            "source_id",
+            "target_type",
+            "target_id",
+            "relation_type",
+            unique=True,
+        ),
+        Index("ix_trace_link_project", "project_id"),
+        Index(
+            "ix_trace_link_source",
+            "project_id",
+            "source_type",
+            "source_id",
+        ),
+        Index(
+            "ix_trace_link_target",
+            "project_id",
+            "target_type",
+            "target_id",
+        ),
+    )
+
+
+class ProjectBaseline(Base):
+    __tablename__ = "project_baseline"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(
+        Integer,
+        ForeignKey("project.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    version = Column(Integer, nullable=False)
+    name = Column(String(255), nullable=False)
+    status = Column(String(20), nullable=False, server_default="draft")
+    snapshot = Column(JSONB, nullable=False)
+    open_issues = Column(JSONB, nullable=False, server_default="[]")
+    created_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    approved_at = Column(TIMESTAMP(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index(
+            "uq_project_baseline_version",
+            "project_id",
+            "version",
+            unique=True,
+        ),
+        Index(
+            "ix_project_baseline_project",
+            "project_id",
+            "version",
+        ),
+    )
+
+
+class EntityRevision(Base):
+    __tablename__ = "entity_revision"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(
+        Integer,
+        ForeignKey("project.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    entity_type = Column(String(50), nullable=False)
+    entity_id = Column(Integer, nullable=False)
+    version = Column(Integer, nullable=False)
+    content = Column(JSONB, nullable=False)
+    change_type = Column(
+        String(30),
+        nullable=False,
+        server_default="update",
+    )
+    change_note = Column(Text, nullable=False, server_default="")
+    created_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    __table_args__ = (
+        Index(
+            "uq_entity_revision_version",
+            "project_id",
+            "entity_type",
+            "entity_id",
+            "version",
+            unique=True,
+        ),
+        Index(
+            "ix_entity_revision_lookup",
+            "project_id",
+            "entity_type",
+            "entity_id",
+            "version",
+        ),
+    )

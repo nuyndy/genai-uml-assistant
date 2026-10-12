@@ -38,14 +38,22 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
     # State for class parsing
     current_class: Dict[str, Any] | None = None
 
-    # Regex patterns (simple, enough for the supported subset)
-    actor_pat = re.compile(r'^actor\s+"?([^\"]+)"?\s+as\s+(\w+)', re.IGNORECASE)
-    actor_simple_pat = re.compile(r'^actor\s+"?([^\"]+)"?', re.IGNORECASE)
-    usecase_pat = re.compile(r'^usecase\s+"?([^\"]+)"?\s+as\s+(\w+)', re.IGNORECASE)
-    usecase_simple_pat = re.compile(r'^usecase\s+"?([^\"]+)"?', re.IGNORECASE)
-    class_start_pat = re.compile(r'^class\s+"?([^\"]+)"?\s+as\s+(\w+)\s*\{', re.IGNORECASE)
+    # Regex patterns (simple, enough for the supported subset) 
+    actor_pat = re.compile(r'^actor\s+"([^"]+)"\s+as\s+(\w+)', re.IGNORECASE,)
+    actor_simple_pat = re.compile(r'^actor\s+("[^"]+"|\S+)', re.IGNORECASE,)
+    usecase_pat = re.compile(r'^usecase\s+"([^"]+)"\s+as\s+(\w+)', re.IGNORECASE,)
+    usecase_simple_pat = re.compile(r'^usecase\s+("[^"]+"|\S+)', re.IGNORECASE,)
+    class_start_pat = re.compile(r'^class\s+"([^"]+)"\s+as\s+(\w+)\s*\{', re.IGNORECASE,)
+
     class_end_pat = re.compile(r'^\}$')
-    relation_pat = re.compile(r'^(\w+)\s*([\-\.]{1,3}[\>\-])\s*(\w+)(?:\s*:\s*(.+))?$', re.IGNORECASE)
+    relation_pat = re.compile(
+        r'^([\w]+)\s*(--\|>|\\.\\.|\\.\\.>|-\|>|'
+        r'\*--|--\*|o--|--o|'
+        r'<\|--|<\|\\.\\.|<\.\.|\.\.>|'
+        r'-->|<--|->|--|-\.)\s*([\w]+)'
+        r'(?:\s*:\s*(.+))?$',
+        re.IGNORECASE,
+    )
 
     for line in lines:
         # End of class definition
@@ -62,38 +70,75 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
             else:
                 current_class['attributes'].append(line)
             continue
-
+        
         # Actor (full syntax)
         m = actor_pat.match(line)
         if m:
-            name = _strip_quotes(m.group(1))
-            actors.append({'name': name})
+            actors.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': m.group(2),
+            })
+            continue
+
+        # Actor simple (no alias)
+        m = actor_simple_pat.match(line)
+        if m:
+            actors.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': None,
+            })
             continue
         # Actor simple (no alias)
         m = actor_simple_pat.match(line)
         if m:
-            name = _strip_quotes(m.group(1))
-            actors.append({'name': name})
+            actors.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': None,
+            })
             continue
 
         # Use case (full syntax)
         m = usecase_pat.match(line)
         if m:
-            name = _strip_quotes(m.group(1))
-            use_cases.append({'name': name})
-            continue
-        # Use case simple
-        m = usecase_simple_pat.match(line)
-        if m:
-            name = _strip_quotes(m.group(1))
-            use_cases.append({'name': name})
+            use_cases.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': m.group(2),
+            })
             continue
 
-        # Class start
+        # Use case simple (no alias)
+        m = usecase_simple_pat.match(line)
+        if m:
+            use_cases.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': None,
+            })
+            continue
+
+        # Class start: class with alias and body
         m = class_start_pat.match(line)
         if m:
-            name = _strip_quotes(m.group(1))
-            current_class = {'name': name, 'attributes': [], 'methods': []}
+            current_class = {
+                'name': _strip_quotes(m.group(1)),
+                'alias': m.group(2),
+                'attributes': [],
+                'methods': [],
+            }
+            continue
+
+        # Simple class declaration without body or alias
+        simple_class_pat = re.compile(
+            r'^class\s+("[^"]+"|[\w.]+)\s*$',
+            re.IGNORECASE,
+        )
+        m = simple_class_pat.match(line)
+        if m:
+            classes.append({
+                'name': _strip_quotes(m.group(1)),
+                'alias': None,
+                'attributes': [],
+                'methods': [],
+            })
             continue
 
         # Relation line
@@ -101,13 +146,17 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
         if m:
             src, arrow, dst, label = m.group(1), m.group(2), m.group(3), m.group(4)
             # Normalise arrow to relation type hint
-            rel_type = {
-                '-->': 'association',
-                '..>': 'dependency',
-                '--|>': 'inheritance',
-                '*--': 'composition',
-                'o--': 'aggregation',
-            }.get(arrow.strip(), 'association')
+            arrow = arrow.strip()
+            if arrow in ('--|>', '<|--', '-|>', '<|-'):
+                rel_type = 'inheritance'
+            elif arrow in ('..>', '<..', '...', '..'):
+                rel_type = 'dependency'
+            elif arrow in ('*--', '--*'):
+                rel_type = 'composition'
+            elif arrow in ('o--', '--o'):
+                rel_type = 'aggregation'
+            else:
+                rel_type = 'association'
             relations.append({
                 'from': src,
                 'to': dst,

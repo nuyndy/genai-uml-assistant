@@ -12,6 +12,7 @@ from database.models import (
     ClassRelation,
     ClassEntity,
     Diagram,
+    DiagramRevision,
     Project,
     RawRequirement,
     Specification,
@@ -36,6 +37,7 @@ from schemas.uml import (
     ClassRelationRecord,
     ClassUpdate,
     DiagramRecord,
+    DiagramRevisionRecord,
     DiagramUpdate,
     ExtractActorsUseCasesResult,
     ExtractProjectActorsUseCasesResult,
@@ -385,15 +387,30 @@ def _interaction_diagram_source(
     return "\n".join(lines)
 
 
+
 def _render_and_update_diagram(
     db: Session, diagram: Diagram, source_code: str
 ) -> Diagram:
     try:
         image_url = render_plantuml(source_code)
+        change_type = "edit"
     except PlantUMLRenderError as exc:
+        image_url = None
+        change_type = "edit"
+
         diagram.source_code = source_code
-        diagram.image_url = None
+        diagram.image_url = image_url
         diagram.version = (diagram.version or 0) + 1
+
+        db.add(
+            DiagramRevision(
+                diagram_id=diagram.id,
+                version=diagram.version,
+                source_code=diagram.source_code,
+                image_url=diagram.image_url,
+                change_type=change_type,
+            )
+        )
         try:
             db.commit()
             db.refresh(diagram)
@@ -401,19 +418,37 @@ def _render_and_update_diagram(
             db.rollback()
             logger.exception("Could not save pending diagram revision")
             raise HTTPException(
-                status_code=500, detail="Không thể lưu mã biểu đồ đã cập nhật."
+                status_code=500,
+                detail="Không thể lưu mã biểu đồ đã cập nhật.",
             ) from db_exc
+
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
     diagram.source_code = source_code
     diagram.image_url = image_url
     diagram.version = (diagram.version or 0) + 1
+
+    db.add(
+        DiagramRevision(
+            diagram_id=diagram.id,
+            version=diagram.version,
+            source_code=diagram.source_code,
+            image_url=diagram.image_url,
+            change_type=change_type,
+        )
+    )
+
     try:
         db.commit()
         db.refresh(diagram)
     except SQLAlchemyError as exc:
         db.rollback()
         logger.exception("Could not update diagram")
-        raise HTTPException(status_code=500, detail="Không thể cập nhật biểu đồ.") from exc
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể cập nhật biểu đồ.",
+        ) from exc
+
     return diagram
 
 
@@ -446,6 +481,291 @@ def parse_plantuml_endpoint(
         logger.exception("Lỗi khi parse PlantUML")
         raise HTTPException(status_code=400, detail="Không thể parse PlantUML: " + str(exc))
     return parsed
+
+@router.post(
+    "/api/projects/{project_id}/check-uml-consistency",
+    response_model=dict,
+    tags=["uml"],
+)
+def check_uml_consistency(
+    project_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Compare PlantUML class model with the project's saved UML model."""
+    _require_project(db, project_id)
+
+    source_code = payload.get("source_code", "")
+    if not isinstance(source_code, str) or not source_code.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="source_code không được để trống.",
+        )
+
+    try:
+        parsed = parse_plantuml(source_code)
+
+        parsed_classes = {
+            item["name"].strip().casefold(): item["name"].strip()
+            for item in parsed.get("classes", [])
+            if item.get("name", "").strip()
+        }
+
+        db_classes = (
+            db.query(ClassEntity)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassEntity.id)
+            .all()
+        )
+
+        saved_classes = {
+            item.name.strip().casefold(): item.name.strip()
+            for item in db_classes
+            if item.name and item.name.strip()
+        }
+
+        missing_in_database = [
+            name
+            for key, name in parsed_classes.items()
+            if key not in saved_classes
+        ]
+
+        missing_in_plantuml = [
+            name
+            for key, name in saved_classes.items()
+            if key not in parsed_classes
+        ]
+
+        db_class_ids = {item.id for item in db_classes}
+        db_relations = (
+            db.query(ClassRelation)
+            .filter(
+                ClassRelation.class_a_id.in_(db_class_ids)
+                & ClassRelation.class_b_id.in_(db_class_ids)
+            )
+            .order_by(ClassRelation.id)
+            .all()
+            if db_class_ids
+            else []
+        )
+
+        db_class_names = {
+            item.id: item.name.strip()
+            for item in db_classes
+            if item.name
+        }
+
+        def normalize_relation(source, target, relation_type):
+            endpoints = sorted([
+                source.strip().casefold(),
+                target.strip().casefold(),
+            ])
+            return (
+                endpoints[0],
+                endpoints[1],
+                (relation_type or "association").strip().casefold(),
+            )
+
+        source_relations = {
+            normalize_relation(
+                item["from"],
+                item["to"],
+                item.get("type", "association"),
+            )
+            for item in parsed.get("relations", [])
+        }
+
+        saved_relations = {
+            normalize_relation(
+                db_class_names[item.class_a_id],
+                db_class_names[item.class_b_id],
+                item.relation_type,
+            )
+            for item in db_relations
+            if item.class_a_id in db_class_names
+            and item.class_b_id in db_class_names
+        }
+
+        missing_relations = [
+            {
+                "from": source,
+                "to": target,
+                "type": relation_type,
+            }
+            for source, target, relation_type in sorted(
+                source_relations - saved_relations
+            )
+        ]
+
+        extra_relations = [
+            {
+                "from": source,
+                "to": target,
+                "type": relation_type,
+            }
+            for source, target, relation_type in sorted(
+                saved_relations - source_relations
+            )
+        ]
+
+        return {
+            "project_id": project_id,
+            "consistent": not (
+                missing_in_database
+                or missing_in_plantuml
+                or missing_relations
+                or extra_relations
+            ),
+            "missing_in_database": missing_in_database,
+            "missing_in_plantuml": missing_in_plantuml,
+            "missing_relations": missing_relations,
+            "extra_relations": extra_relations,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Could not check UML consistency")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Không thể kiểm tra tính nhất quán UML: {exc}",
+        ) from exc
+
+
+@router.post(
+    "/api/projects/{project_id}/preview-plantuml-sync",
+    response_model=dict,
+    tags=["uml"],
+)
+def preview_plantuml_sync(
+    project_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Preview class-model changes without modifying the database."""
+    _require_project(db, project_id)
+
+    source_code = payload.get("source_code", "")
+    if not isinstance(source_code, str) or not source_code.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="source_code không được để trống.",
+        )
+
+    try:
+        parsed = parse_plantuml(source_code)
+
+        # Load the project's current classes.
+        saved_classes = (
+            db.query(ClassEntity)
+            .filter(ClassEntity.project_id == project_id)
+            .order_by(ClassEntity.id)
+            .all()
+        )
+
+        saved_by_name = {
+            item.name.strip().casefold(): item
+            for item in saved_classes
+            if item.name and item.name.strip()
+        }
+
+        parsed_by_name = {}
+        for item in parsed.get("classes", []):
+            name = (item.get("name") or "").strip()
+            if not name:
+                continue
+
+            key = name.casefold()
+            if key in parsed_by_name:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"PlantUML có tên lớp trùng nhau: {name}",
+                )
+            parsed_by_name[key] = item
+
+        add_classes = []
+        update_classes = []
+        keep_classes = []
+        remove_classes = []
+
+        for key, item in parsed_by_name.items():
+            name = item["name"].strip()
+            attributes = item.get("attributes") or []
+            methods = item.get("methods") or []
+            existing = saved_by_name.get(key)
+
+            if existing is None:
+                add_classes.append({
+                    "name": name,
+                    "attributes": attributes,
+                    "methods": methods,
+                })
+                continue
+
+            current_attributes = _decode_lines(existing.attributes)
+            current_methods = _decode_lines(existing.methods)
+
+            if (
+                current_attributes != attributes
+                or current_methods != methods
+                or existing.name != name
+            ):
+                update_classes.append({
+                    "id": existing.id,
+                    "current": {
+                        "name": existing.name,
+                        "attributes": current_attributes,
+                        "methods": current_methods,
+                    },
+                    "proposed": {
+                        "name": name,
+                        "attributes": attributes,
+                        "methods": methods,
+                    },
+                })
+            else:
+                keep_classes.append({
+                    "id": existing.id,
+                    "name": existing.name,
+                })
+
+        for key, item in saved_by_name.items():
+            if key not in parsed_by_name:
+                remove_classes.append({
+                    "id": item.id,
+                    "name": item.name,
+                    "warning": "Chỉ là đề xuất; chưa xóa khỏi database.",
+                })
+
+        return {
+            "project_id": project_id,
+            "preview_only": True,
+            "database_modified": False,
+            "summary": {
+                "add": len(add_classes),
+                "update": len(update_classes),
+                "keep": len(keep_classes),
+                "remove": len(remove_classes),
+            },
+            "add_classes": add_classes,
+            "update_classes": update_classes,
+            "keep_classes": keep_classes,
+            "remove_classes": remove_classes,
+            "relations_note": (
+                "Quan hệ chưa được đồng bộ trong phiên bản preview này."
+            ),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Could not preview PlantUML synchronization")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Không thể xem trước đồng bộ PlantUML: {exc}",
+        ) from exc
 
 def list_unmodeled_specifications(
     project_id: int,
@@ -1955,6 +2275,105 @@ def update_diagram(
     updated = _render_and_update_diagram(db, diagram, data.source_code)
     return DiagramRecord.model_validate(updated)
 
+
+@router.get(
+    "/api/diagrams/{diagram_id}/revisions",
+    response_model=list[DiagramRevisionRecord],
+)
+def list_diagram_revisions(
+    diagram_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[DiagramRevisionRecord]:
+    diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
+    if diagram is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+
+    _require_project(db, diagram.project_id)
+
+    try:
+        revisions = (
+            db.query(DiagramRevision)
+            .filter(DiagramRevision.diagram_id == diagram_id)
+            .order_by(DiagramRevision.version.desc())
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not list diagram revisions")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể đọc lịch sử biểu đồ.",
+        ) from exc
+
+    return [
+        DiagramRevisionRecord.model_validate(revision)
+        for revision in revisions
+    ]
+
+@router.post(
+    "/api/diagrams/{diagram_id}/revisions/{revision_id}/restore",
+    response_model=DiagramRecord,
+)
+def restore_diagram_revision(
+    diagram_id: int,
+    revision_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> DiagramRecord:
+    diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
+    if diagram is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+
+    _require_project(db, diagram.project_id)
+
+    revision = (
+        db.query(DiagramRevision)
+        .filter(
+            DiagramRevision.id == revision_id,
+            DiagramRevision.diagram_id == diagram_id,
+        )
+        .first()
+    )
+    if revision is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy phiên bản của biểu đồ này.",
+        )
+
+    try:
+        image_url = render_plantuml(revision.source_code)
+    except PlantUMLRenderError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Không thể khôi phục vì mã PlantUML không render được: {exc}",
+        ) from exc
+
+    diagram.source_code = revision.source_code
+    diagram.image_url = image_url
+    diagram.version = (diagram.version or 0) + 1
+
+    db.add(
+        DiagramRevision(
+            diagram_id=diagram.id,
+            version=diagram.version,
+            source_code=diagram.source_code,
+            image_url=diagram.image_url,
+            change_type="restore",
+        )
+    )
+
+    try:
+        db.commit()
+        db.refresh(diagram)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not restore diagram revision")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể khôi phục phiên bản biểu đồ.",
+        ) from exc
+
+    return DiagramRecord.model_validate(diagram)
 
 @router.delete("/api/diagrams/{diagram_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_diagram(
