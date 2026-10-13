@@ -26,8 +26,8 @@ import {
   StringListEditor,
   singleLineClass,
   wrapClass,
-} from "./ui/primitives";
-import ProgressOverlay from "./ProgressOverlay";
+} from "./common/ui/primitives";
+import ProgressOverlay from "./common/ProgressOverlay";
 
 /**
  * Một số cấu hình Vite có thể trả về module dạng { default: Component }.
