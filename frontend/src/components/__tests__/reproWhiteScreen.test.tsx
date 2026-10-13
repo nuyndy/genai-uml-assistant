@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useState } from "react";
-import GiaiDoan2 from "../GiaiDoan2";
+import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 
 /**
