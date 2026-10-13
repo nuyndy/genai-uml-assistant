@@ -1,4 +1,4 @@
-import React from "react";
+import type { ExportFormat } from "../../../../types/workflow";
 import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton } from "../../../common/ui/primitives";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
   };
   busy: boolean;
   onAttachDiagram: () => Promise<void>;
+  onExportFormatChange: (format: ExportFormat) => void;
   onStepChange: (step: number) => void;
 }
 
@@ -16,6 +17,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
   state,
   busy,
   onAttachDiagram,
+  onExportFormatChange,
   onStepChange,
 }: Props) {
   return (
@@ -23,11 +25,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
       <Card tone="violet" title="Định dạng xuất">
         <SegmentedControl<string>
           value={state.exportFormat}
-          onChange={(format) => {
-            // This should be handled by coordinator via a prop function
-            // But for now we are keeping the props minimal.
-            // In GiaiDoan3.tsx, we'll handle the state update.
-          }}
+          onChange={onExportFormatChange}
           options={[
             { value: "png", label: "PNG" },
             { value: "svg", label: "SVG" },

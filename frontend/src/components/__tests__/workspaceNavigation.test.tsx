@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useState } from "react";
-import GiaiDoan1 from "../GiaiDoan1";
-import GiaiDoan2 from "../GiaiDoan2";
-import GiaiDoanStepper from "../GiaiDoanStepper";
-import Stepper from "../Stepper";
+import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
+import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
+import GiaiDoanStepper from "../common/GiaiDoanStepper";
+import Stepper from "../common/Stepper";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 
 vi.mock("../../services/requirementService", () => ({

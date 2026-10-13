@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, SoftButton, GhostButton, PrimaryButton } from "../../../common/ui/primitives";
 
 interface Props {

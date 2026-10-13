@@ -1,4 +1,3 @@
-import React from "react";
 import EditorModule from "react-simple-code-editor";
 import type { ComponentType } from "react";
 import { Card, SoftButton, GhostButton, PrimaryButton } from "../../../common/ui/primitives";

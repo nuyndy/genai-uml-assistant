@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, SoftButton, PrimaryButton, EmptyState, Notice, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {

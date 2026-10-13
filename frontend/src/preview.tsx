@@ -1,11 +1,11 @@
 // Preview tạm thời để kiểm tra bố cục: dựng workspace 3 giai đoạn ngoài auth.
 import { createRoot } from "react-dom/client";
 import { useState } from "react";
-import GiaiDoanStepper from "./components/GiaiDoanStepper";
-import Stepper from "./components/Stepper";
-import GiaiDoan1 from "./components/GiaiDoan1";
-import GiaiDoan2 from "./components/GiaiDoan2";
-import GiaiDoan3 from "./components/GiaiDoan3";
+import GiaiDoanStepper from "./components/common/GiaiDoanStepper";
+import Stepper from "./components/common/Stepper";
+import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
+import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
+import GiaiDoan3 from "./components/features/giai-doan-3/GiaiDoan3";
 import { emptyWorkflow, type WorkflowState } from "./types/workflow";
 import type { StageId } from "./stages";
 import "./index.css";

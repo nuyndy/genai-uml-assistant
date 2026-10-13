@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useState } from "react";
-import GiaiDoanStepper from "../GiaiDoanStepper";
-import Stepper from "../Stepper";
-import GiaiDoan1 from "../GiaiDoan1";
-import GiaiDoan2 from "../GiaiDoan2";
-import GiaiDoan3 from "../GiaiDoan3";
+import GiaiDoanStepper from "../common/GiaiDoanStepper";
+import Stepper from "../common/Stepper";
+import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
+import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
+import GiaiDoan3 from "../features/giai-doan-3/GiaiDoan3";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import { vi } from "vitest";
 

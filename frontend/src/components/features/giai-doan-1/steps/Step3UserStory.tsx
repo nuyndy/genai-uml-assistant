@@ -1,6 +1,6 @@
-import React from "react";
 import { Card, GhostButton, PrimaryButton, EmptyState, SoftButton } from "../../../common/ui/primitives";
-import type { RawRequirement, UserStory, UserStoryDraft } from "../../../../types/workflow";
+import type { RawRequirement } from "../../../../types/workflow";
+import type { UserStoryDraft } from "../../../../services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -23,14 +23,11 @@ interface Props {
 }
 
 export default function Step3UserStory({
-  projectId,
   draftRequirements,
   requirementValues,
   storyDrafts,
   loadingStoryDrafts,
   busy,
-  loaded,
-  error,
   allStoryDraftsReady,
   allRequirementsConfirmed,
   generateStoryDrafts,
