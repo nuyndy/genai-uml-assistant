@@ -1,5 +1,4 @@
 import type { ExportFormat } from "../../../../types/workflow";
-import React from "react";
 import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton } from "../../../common/ui/primitives";
 
 interface Props {
