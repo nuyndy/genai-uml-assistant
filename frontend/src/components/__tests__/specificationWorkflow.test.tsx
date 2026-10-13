@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState } from "react";
-import GiaiDoan1 from "../GiaiDoan1";
+import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import type { SpecificationRecord, UserStory } from "../../services/requirementService";
 
