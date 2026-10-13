@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Editor from "react-simple-code-editor";
-import UmlCanvas from "../components/UmlCanvas";
+import UmlCanvas from "./UmlCanvas";
 
 interface UseCase {
   id: number;
