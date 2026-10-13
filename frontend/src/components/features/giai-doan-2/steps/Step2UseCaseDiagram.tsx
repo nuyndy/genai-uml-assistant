@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, SoftButton, PrimaryButton, DiagramPreview } from "../../../common/ui/primitives";
 import { imageExtension } from "../../../../utils/imageExtension";
 
