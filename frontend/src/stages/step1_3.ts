@@ -1,4 +1,4 @@
-import { StepDef } from "./stages";
+import type { StepDef } from "./index";
 
 export const step1_3: StepDef = {
   id: 3,
