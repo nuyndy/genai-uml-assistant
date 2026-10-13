@@ -320,6 +320,7 @@ export default function GiaiDoan3({
             state={state}
             busy={busy}
             onAttachDiagram={handleAttachDiagram}
+            onExportFormatChange={(format) => setState((prev: any) => ({ ...prev, exportFormat: format }))}
             onStepChange={onStepChange}
           />
         )}
