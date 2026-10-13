@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import Stepper from "../Stepper";
-import GiaiDoan2 from "../GiaiDoan2";
+import Stepper from "../common/Stepper";
+import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import { STAGES, type StageId } from "../../stages";
 
