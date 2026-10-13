@@ -766,7 +766,10 @@ def preview_plantuml_sync(
             status_code=400,
             detail=f"Không thể xem trước đồng bộ PlantUML: {exc}",
         ) from exc
-
+@router.get(
+    "/api/projects/{project_id}/specifications-with-stories",
+    response_model=list[SpecificationWithStoryRecord],
+)
 def list_unmodeled_specifications(
     project_id: int,
     db: Session = Depends(get_db),
@@ -863,10 +866,107 @@ def extract_project_actors_use_cases_batch(
         logger.exception("Could not read project specifications for batch extraction")
         raise HTTPException(status_code=500, detail="Không thể đọc đặc tả của dự án.") from exc
     if not specifications:
-        raise HTTPException(
-            status_code=409,
-            detail="Dự án chưa có đặc tả chức năng để sinh use case.",
-        )
+        try:
+            confirmed_stories = (
+                db.query(UserStory)
+                .join(
+                    RawRequirement,
+                    UserStory.requirement_id == RawRequirement.id,
+                )
+                .filter(
+                    RawRequirement.project_id == project_id,
+                    RawRequirement.status == "confirmed",
+                )
+                .order_by(UserStory.id)
+                .all()
+            )
+
+            if not confirmed_stories:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Dự án chưa có yêu cầu được xác nhận. "
+                        "Vui lòng xác nhận yêu cầu trước."
+                    ),
+                )
+
+            for story in confirmed_stories:
+                existing_spec = (
+                    db.query(Specification)
+                    .filter(
+                        Specification.user_story_id == story.id,
+                        Specification.type == "functional",
+                    )
+                    .first()
+                )
+
+                if existing_spec is not None:
+                    continue
+
+                content = "\n".join([
+                    "ĐẶC TẢ CHỨC NĂNG DẪN XUẤT TỪ USER STORY ĐÃ XÁC NHẬN",
+                    "Đây là đầu vào mô hình hóa UML, không phải SRS hoàn chỉnh.",
+                    f"User Story ID: {story.id}",
+                    f"Vai trò: {story.role or ''}",
+                    f"Chức năng: {story.feature or ''}",
+                    f"Lợi ích: {story.benefit or ''}",
+                    f"Tiêu chí chấp nhận: {story.acceptance_criteria or ''}",
+                    f"Ghi chú kỹ thuật: {story.technical_notes or ''}",
+                ])
+
+                db.add(
+                    Specification(
+                        user_story_id=story.id,
+                        type="functional",
+                        content=content,
+                        version=1,
+                    )
+                )
+
+            db.flush()
+
+            specifications = (
+                db.query(Specification)
+                .join(
+                    UserStory,
+                    Specification.user_story_id == UserStory.id,
+                )
+                .join(
+                    RawRequirement,
+                    UserStory.requirement_id == RawRequirement.id,
+                )
+                .filter(
+                    RawRequirement.project_id == project_id,
+                    Specification.type == "functional",
+                )
+                .order_by(Specification.id)
+                .all()
+            )
+
+            db.commit()
+
+        except HTTPException:
+            db.rollback()
+            raise
+        except SQLAlchemyError as exc:
+            db.rollback()
+            logger.exception(
+                "Could not derive functional specifications "
+                "from confirmed stories"
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Không thể chuẩn bị dữ liệu cho mô hình hóa UML.",
+            ) from exc
+
+        if not specifications:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Không tìm thấy đặc tả chức năng hợp lệ. "
+                    "Vui lòng kiểm tra lại User Story đã xác nhận."
+                ),
+            )
 
     spec_context = "\n\n".join(
         _format_specification(item, index=index)

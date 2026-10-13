@@ -30,9 +30,9 @@ import {
 } from "../services/requirementService";
 import type { RawRequirement, SpecDoc, WorkflowState } from "../types/workflow";
 import { STAGES } from "../stages";
-import RequirementFormFields from "./step1/RequirementFormFields";
-import Buoc5TaiLieuSRS from "./step5/Buoc5TaiLieuSRS";
-import ProgressOverlay from "./ProgressOverlay";
+import Step1NhapYeuCau from "./features/giai-doan-1/steps/Step1NhapYeuCau";
+import Step5ChotTaiLieu from "./features/giai-doan-1/steps/Step5ChotTaiLieu";
+import ProgressOverlay from "./common/ProgressOverlay";
 import {
   emptyFunctionalSpecification,
   emptyNonFunctionalSpecification,
@@ -52,7 +52,7 @@ import {
   StepHeading,
   inputClass,
   wrapClass,
-} from "./ui/primitives";
+} from "./common/ui/primitives";
 
 interface Props {
   projectId?: number;

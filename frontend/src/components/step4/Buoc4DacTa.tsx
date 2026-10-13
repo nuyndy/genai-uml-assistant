@@ -7,7 +7,7 @@ import {
   StatusBadge,
   GhostButton,
   wrapClass,
-} from "../ui/primitives";
+} from "../common/ui/primitives";
 import { FunctionalSpecificationEditor } from "../SpecificationEditor";
 import { NonFunctionalSpecificationEditor } from "../SpecificationEditor";
 

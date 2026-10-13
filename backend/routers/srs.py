@@ -478,7 +478,7 @@ def _srs_markdown_from_baseline_snapshot(snapshot: dict) -> str:
 
     # 3.2. Đặc tả phi chức năng
     lines.extend([
-        "### 3.2. Đặc tả phi chức năng",
+        "### 3.2 Đặc tả phi chức năng",
         "",
     ])
 
@@ -540,8 +540,8 @@ def _srs_markdown_from_baseline_snapshot(snapshot: dict) -> str:
 
     return "\n".join(lines)
 
-@router.get("/api/projects/{project_id}/specification-document")
 
+@router.get("/api/projects/{project_id}/specification-document")
 def get_specification_document(
     project_id: int,
     baseline_id: Optional[int] = Query(default=None),
@@ -550,8 +550,8 @@ def get_specification_document(
 ) -> dict[str, object]:
     _require_project(db, project_id)
 
-    # Nếu truyền baseline_id thì xem đúng baseline được yêu cầu,
-    # bao gồm cả baseline đang ở trạng thái draft.
+    baseline = None
+
     if baseline_id is not None:
         baseline = (
             db.query(ProjectBaseline)
@@ -561,14 +561,12 @@ def get_specification_document(
             )
             .first()
         )
-
         if baseline is None:
             raise HTTPException(
                 status_code=404,
                 detail="Không tìm thấy baseline trong dự án.",
             )
     else:
-        # Mặc định: lấy baseline đã duyệt mới nhất.
         baseline = (
             db.query(ProjectBaseline)
             .filter(
@@ -579,23 +577,58 @@ def get_specification_document(
             .first()
         )
 
-        if baseline is None:
+    if baseline is not None:
+        snapshot = baseline.snapshot
+        if not isinstance(snapshot, dict):
             raise HTTPException(
                 status_code=409,
-                detail="Chưa có baseline được duyệt.",
+                detail="Snapshot baseline không hợp lệ.",
             )
-
-    snapshot = baseline.snapshot
-    if not isinstance(snapshot, dict):
-        raise HTTPException(
-            status_code=409,
-            detail="Snapshot baseline không hợp lệ.",
+    else:
+        # Preview từ dữ liệu hiện tại, không tạo baseline giả.
+        meta_row = _get_meta(db, project_id)
+        specifications = _specification_data(db, project_id)
+        stories = (
+            db.query(UserStory)
+            .join(
+                RawRequirement,
+                UserStory.requirement_id == RawRequirement.id,
+            )
+            .filter(RawRequirement.project_id == project_id)
+            .all()
         )
+
+        snapshot = {
+            "entities": {
+                "srs_document": [
+                    {
+                        key: getattr(meta_row, key, None)
+                        for key, _ in META_FIELDS
+                    }
+                ],
+                "specification": [
+                    {
+                        "id": item.id,
+                        "user_story_id": item.user_story_id,
+                        "type": item.type,
+                        "content": item.content,
+                        "version": item.version,
+                    }
+                    for item in specifications
+                ],
+                "user_story": [
+                    {
+                        "id": story.id,
+                        "feature": story.feature,
+                    }
+                    for story in stories
+                ],
+            }
+        }
 
     entities = snapshot.get("entities", {})
     meta_rows = entities.get("srs_document", [])
     meta = meta_rows[0] if meta_rows else {}
-
     metadata = {
         key: meta.get(key)
         for key, _ in META_FIELDS
@@ -612,7 +645,6 @@ def get_specification_document(
 
     for spec in specifications:
         story = stories.get(spec.get("user_story_id"), {})
-
         record = {
             **spec,
             "feature": (
@@ -653,19 +685,9 @@ def get_specification_document(
         },
         {
             "number": "3",
-            "title": "Chi tiết yêu cầu",
-            "subsections": [
-                {
-                    "number": "3.1",
-                    "title": "Đặc tả chức năng",
-                    "specifications": functional,
-                },
-                {
-                    "number": "3.2",
-                    "title": "Đặc tả phi chức năng",
-                    "specifications": nonfunctional,
-                },
-            ],
+            "title": "Yêu cầu cụ thể",
+            "functional": functional,
+            "non_functional": nonfunctional,
         },
         {
             "number": "4",
@@ -673,7 +695,7 @@ def get_specification_document(
             "fields": [
                 {
                     "key": "appendix_notes",
-                    "title": "Ghi chú",
+                    "title": "4. Phụ lục",
                     "content": metadata.get("appendix_notes"),
                 }
             ],
@@ -684,9 +706,15 @@ def get_specification_document(
 
     return {
         "project_id": project_id,
-        "baseline_id": baseline.id,
-        "baseline_version": baseline.version,
-        "updated_at": baseline.approved_at or baseline.created_at,
+        "baseline_id": baseline.id if baseline is not None else None,
+        "baseline_version": (
+            baseline.version if baseline is not None else None
+        ),
+        "updated_at": (
+            (baseline.approved_at or baseline.created_at)
+            if baseline is not None
+            else None
+        ),
         "metadata": metadata,
         "sections": sections,
         "raw_markdown": markdown,

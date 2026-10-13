@@ -7,7 +7,7 @@ import {
   StatusBadge,
   inputClass,
   wrapClass,
-} from "../ui/primitives";
+} from "../common/ui/primitives";
 import type { UserStory, UserStoryDraft } from "../../types/workflow"; // adjust path as needed
 import type { RawRequirement } from "../../types/workflow";
 

@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index
 from sqlalchemy.sql import func
 from database.db import Base
+from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
 
+JSONBCompat = JSON().with_variant(JSONB, "postgresql")
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -207,7 +209,7 @@ class GlossaryTerm(Base):
     )
     term = Column(String(255), nullable=False)
     canonical_term = Column(String(255), nullable=False)
-    aliases = Column(JSONB, nullable=False, server_default="[]")
+    aliases = Column(JSONBCompat, nullable=False, server_default="[]")
     definition = Column(Text, nullable=False, server_default="")
     created_at = Column(
         TIMESTAMP(timezone=True),
@@ -308,8 +310,8 @@ class ProjectBaseline(Base):
     version = Column(Integer, nullable=False)
     name = Column(String(255), nullable=False)
     status = Column(String(20), nullable=False, server_default="draft")
-    snapshot = Column(JSONB, nullable=False)
-    open_issues = Column(JSONB, nullable=False, server_default="[]")
+    snapshot = Column(JSONBCompat, nullable=False)
+    open_issues = Column(JSONBCompat, nullable=False, server_default="[]")
     created_by = Column(
         Integer,
         ForeignKey("users.id", ondelete="SET NULL"),
@@ -349,7 +351,7 @@ class EntityRevision(Base):
     entity_type = Column(String(50), nullable=False)
     entity_id = Column(Integer, nullable=False)
     version = Column(Integer, nullable=False)
-    content = Column(JSONB, nullable=False)
+    content = Column(JSONBCompat, nullable=False)
     change_type = Column(
         String(30),
         nullable=False,

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
+from routers.uml import parse_plantuml
 from database.db import get_db
 from database.models import (
     Actor,
@@ -106,15 +107,6 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if story_ids else []
     )
 
-    logger.warning(
-        "BASELINE DEBUG project_id=%s requirement_ids=%s story_ids=%s "
-        "project_spec_ids=%s story_spec_ids=%s",
-        project_id,
-        requirement_ids,
-        story_ids,
-        [s.id for s in project_specs],
-        [s.id for s in story_specs],
-    )
     # Gộp hai nhóm, tránh trùng đặc tả.
     specs_by_id = {
         spec.id: spec
@@ -299,7 +291,118 @@ def get_baseline(
         "created_at": row.created_at,
         "approved_at": row.approved_at,
     }
+
 @router.post("/{project_id}/baselines/{baseline_id}/approve")
+
+def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """Kiểm tra class diagram trong snapshot so với class và relation đã lưu."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+
+    classes = entities.get("class_entity", [])
+    relations = entities.get("class_relation", [])
+    diagrams = entities.get("diagram", [])
+
+    if not all(isinstance(items, list) for items in (classes, relations, diagrams)):
+        return [{"type": "invalid_snapshot", "message": "Dữ liệu class, relation hoặc diagram không hợp lệ."}]
+
+    class_names = {
+        str(item.get("name", "")).strip().casefold()
+        for item in classes
+        if isinstance(item, dict) and str(item.get("name", "")).strip()
+    }
+    class_ids = {
+        item.get("id")
+        for item in classes
+        if isinstance(item, dict) and item.get("id") is not None
+    }
+
+    saved_relations = set()
+    for item in relations:
+        if not isinstance(item, dict):
+            continue
+        a_id = item.get("class_a_id")
+        b_id = item.get("class_b_id")
+        if a_id not in class_ids or b_id not in class_ids:
+            return [{
+                "type": "invalid_class_relation",
+                "message": "Quan hệ lớp tham chiếu đến class không tồn tại trong snapshot.",
+            }]
+        names_by_id = {
+            row.get("id"): str(row.get("name", "")).strip().casefold()
+            for row in classes
+            if isinstance(row, dict) and row.get("name")
+        }
+        a_name = names_by_id.get(a_id)
+        b_name = names_by_id.get(b_id)
+        if a_name and b_name:
+            endpoints = tuple(sorted((a_name, b_name)))
+            relation_type = str(item.get("relation_type") or "association").strip().casefold()
+            saved_relations.add((*endpoints, relation_type))
+
+    issues = []
+    class_diagrams = [
+        item for item in diagrams
+        if isinstance(item, dict) and item.get("type") == "class"
+    ]
+
+    if not class_diagrams:
+        return issues
+
+    # Nếu có nhiều biểu đồ lớp, kiểm tra phiên bản mới nhất.
+    diagram = max(class_diagrams, key=lambda item: item.get("version") or 0)
+    source_code = diagram.get("source_code")
+    if not isinstance(source_code, str) or not source_code.strip():
+        return [{"type": "empty_class_diagram", "diagram_id": diagram.get("id")}]
+
+    try:
+        parsed = parse_plantuml(source_code)
+    except Exception as exc:
+        return [{
+            "type": "unparseable_class_diagram",
+            "diagram_id": diagram.get("id"),
+            "message": str(exc),
+        }]
+
+    parsed_classes = {
+        str(item.get("name", "")).strip().casefold()
+        for item in parsed.get("classes", [])
+        if str(item.get("name", "")).strip()
+    }
+    if parsed_classes != class_names:
+        issues.append({
+            "type": "class_mismatch",
+            "diagram_id": diagram.get("id"),
+            "missing_in_snapshot": sorted(parsed_classes - class_names),
+            "missing_in_diagram": sorted(class_names - parsed_classes),
+        })
+
+    parsed_relations = set()
+    for item in parsed.get("relations", []):
+        source = str(item.get("from", "")).strip().casefold()
+        target = str(item.get("to", "")).strip().casefold()
+        if source and target:
+            parsed_relations.add((
+                *sorted((source, target)),
+                str(item.get("type") or "association").strip().casefold(),
+            ))
+
+    if parsed_relations != saved_relations:
+        issues.append({
+            "type": "class_relation_mismatch",
+            "diagram_id": diagram.get("id"),
+            "missing_in_snapshot": [
+                {"from": a, "to": b, "type": relation_type}
+                for a, b, relation_type in sorted(parsed_relations - saved_relations)
+            ],
+            "missing_in_diagram": [
+                {"from": a, "to": b, "type": relation_type}
+                for a, b, relation_type in sorted(saved_relations - parsed_relations)
+            ],
+        })
+
+    return issues
 def approve_baseline(
     project_id: int,
     baseline_id: int,
@@ -307,6 +410,7 @@ def approve_baseline(
     current_user: User = Depends(get_current_user),
 ):
     _owned_project(project_id, db, current_user)
+
     row = (
         db.query(ProjectBaseline)
         .filter(
@@ -316,23 +420,83 @@ def approve_baseline(
         .with_for_update()
         .first()
     )
+
     if row is None:
-        raise HTTPException(status_code=404, detail="Không tìm thấy baseline.")
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy baseline.",
+        )
+
     if row.status != "draft":
         raise HTTPException(
             status_code=409,
             detail="Chỉ baseline ở trạng thái draft mới được duyệt.",
         )
+
+    # Snapshot phải có cấu trúc hợp lệ.
+    snapshot = row.snapshot
+    if (
+        not isinstance(snapshot, dict)
+        or snapshot.get("project_id") != project_id
+        or not isinstance(snapshot.get("entities"), dict)
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Snapshot baseline không hợp lệ hoặc không thuộc project này.",
+        )
+
+    # Không duyệt khi còn vấn đề chưa được xử lý.
+    open_issues = row.open_issues
+    if open_issues is None:
+        open_issues = []
+
+    if not isinstance(open_issues, list):
+        raise HTTPException(
+            status_code=409,
+            detail="Danh sách open_issues của baseline không hợp lệ.",
+        )
+
+    if open_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": (
+                    "Baseline còn vấn đề chưa xử lý; "
+                    "hãy xử lý hoặc ghi nhận việc chấp nhận sai lệch trước khi duyệt."
+                ),
+                "open_issues": open_issues,
+            },
+        )
+        uml_issues = _check_class_diagram_snapshot(snapshot)
+    if uml_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline vì UML chưa nhất quán.",
+                "uml_issues": uml_issues,
+            },
+        )
     row.status = "approved"
     row.approved_at = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(row)
+
+    try:
+        db.commit()
+        db.refresh(row)
+    except SQLAlchemyError:
+        db.rollback()
+        logger.exception("Could not approve project baseline")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể duyệt baseline.",
+        )
+
     return {
         "id": row.id,
         "version": row.version,
         "status": row.status,
         "approved_at": row.approved_at,
     }
+
 @router.post("/{project_id}/trace-links")
 def create_trace_link(
     project_id: int,

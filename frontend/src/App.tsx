@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import Stepper from "./components/Stepper";
-import GiaiDoanStepper from "./components/GiaiDoanStepper";
-import GiaiDoan1 from "./components/GiaiDoan1";
-import GiaiDoan2 from "./components/GiaiDoan2";
-import GiaiDoan3 from "./components/GiaiDoan3";
+import Stepper from "./components/common/Stepper";
+import GiaiDoanStepper from "./components/common/GiaiDoanStepper";
+import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
+import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
+import GiaiDoan3 from "./components/features/giai-doan-3/GiaiDoan3";
 import { useAuth } from "./auth/AuthContext";
 import LoginPage from "./auth/LoginPage";
 import HomePage from "./components/home/HomePage";
@@ -12,8 +12,8 @@ import {
   type Project,
 } from "./components/home/projectStore";
 import { STAGES, type StageId } from "./stages";
-import { StageBackdrop } from "./components/ui/primitives";
-import ErrorBoundary from "./components/ErrorBoundary";
+import { StageBackdrop } from "./components/common/ui/primitives";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import { emptyWorkflow, type WorkflowState } from "./types/workflow";
 
 function App() {
@@ -125,7 +125,14 @@ function App() {
     workflow.userStoryId !== null &&
     workflow.specs.length > 0;
   const stage2Complete =
-    stage1Complete && workflow.umlClasses.length > 0 && workflow.classDiagramUrl !== null;
+    stage1Complete &&
+    workflow.actorsUseCasesConfirmed &&
+    workflow.useCaseDiagramConfirmed &&
+    workflow.scenariosConfirmed &&
+    workflow.interactionsConfirmed &&
+    workflow.classDiagramConfirmed &&
+    workflow.umlClasses.length > 0 &&
+    workflow.classDiagramUrl !== null;
 
   /** Các giai đoạn đã thực sự hoàn thành, dùng để tô xanh đúng tiến độ. */
   const completedStages = [

@@ -1,12 +1,12 @@
 import React from "react";
-import { Card, EmptyState, PrimaryButton, RemoveButton, SoftButton, StatusBadge, wrapClass } from "../ui/primitives";
-import RequirementFormFields from "../step1/RequirementFormFields";
-import type { RequirementInput } from "../step1/types";
+import { Card, EmptyState, PrimaryButton, RemoveButton, SoftButton, StatusBadge, wrapClass } from "../../../common/ui/primitives";
+import RequirementFormFields from "../../../step1/RequirementFormFields";
+import type { RequirementInput } from "../../../step1/types";
 import type {
   RawRequirement,
   RequirementRecord,
   RequirementCoverageAnalysis,
-} from "../../types/workflow"; // adjust import path if needed
+} from "../../../../types/workflow";
 
 interface Props {
   newRequirement: RawRequirement;
@@ -33,7 +33,7 @@ interface Props {
   requirementTitle: (raw: RawRequirement) => string;
 }
 
-export default function Buoc1NhapYeuCau({
+export default function Step1NhapYeuCau({
   newRequirement,
   requirementValues,
   requirements,

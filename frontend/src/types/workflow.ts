@@ -141,9 +141,23 @@ export interface WorkflowState {
   relations: Relation[];
 
   /* Giai đoạn 3 */
+  
+  /* Trạng thái xác nhận nghiệp vụ */
+  actorsUseCasesConfirmed: boolean;
+  useCaseDiagramConfirmed: boolean;
+  scenariosConfirmed: boolean;
+  interactionsConfirmed: boolean;
+  classDiagramConfirmed: boolean;
+
+  /* Giai đoạn 3: đồng bộ SRS và hoàn thiện sản phẩm */
+  srsSynced: boolean;
+  consistencyChecked: boolean;
+  baselineApproved: boolean;
+
   diagramCode: string;
   previewImageUrl: string | null;
   exportFormat: ExportFormat;
+
 }
 
 export const emptyWorkflow = (): WorkflowState => ({
@@ -173,6 +187,16 @@ export const emptyWorkflow = (): WorkflowState => ({
   classDiagramUrl: null,
   classDiagramCode: null,
   relations: [],
+
+  actorsUseCasesConfirmed: false,
+  useCaseDiagramConfirmed: false,
+  scenariosConfirmed: false,
+  interactionsConfirmed: false,
+  classDiagramConfirmed: false,
+
+  srsSynced: false,
+  consistencyChecked: false,
+  baselineApproved: false,
 
   diagramCode: "@startuml\n@enduml",
   previewImageUrl: null,

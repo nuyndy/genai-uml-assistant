@@ -444,8 +444,8 @@ def test_metadata_and_word_only_export(client, db_session):
         json={"format": "pdf"},
         headers=headers,
     )
-    assert word_file.status_code == 200
-    assert word_file.content.startswith(b"PK")
+    assert word_file.status_code == 409
+    assert "baseline" in word_file.json()["detail"].lower()
     assert rejected_pdf.status_code == 422
 
 

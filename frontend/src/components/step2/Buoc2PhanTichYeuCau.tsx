@@ -7,7 +7,7 @@ import {
   StatusBadge,
   inputClass,
   wrapClass,
-} from "../ui/primitives";
+} from "../common/ui/primitives";
 import type {
   RequirementRecord,
   RequirementAnalysis,

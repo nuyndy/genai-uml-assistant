@@ -1,4 +1,4 @@
-import { STAGES, type StageId } from "../stages";
+import { STAGES, type StageId } from "../../stages";
 
 interface StepperProps {
   stage: StageId;

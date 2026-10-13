@@ -414,3 +414,87 @@ export function deleteDiagram(diagramId: number) {
 export function getProjectUmlState(projectId: number) {
   return apiFetch<ProjectUmlState>(`/api/projects/${projectId}/uml-state`);
 }
+
+export interface ProjectBaseline {
+  id: number;
+  version: number;
+  name: string;
+  status: "draft" | "approved" | string;
+  created_at: string | null;
+  approved_at: string | null;
+  open_issues: unknown[];
+}
+
+export interface UmlConsistencyResult {
+  project_id: number;
+  consistent: boolean;
+  missing_in_database: string[];
+  missing_in_plantuml: string[];
+  missing_relations: Array<{
+    from: string;
+    to: string;
+    type: string;
+  }>;
+  extra_relations: Array<{
+    from: string;
+    to: string;
+    type: string;
+  }>;
+}
+
+/** Lấy danh sách baseline của dự án, mới nhất trước. */
+export function listProjectBaselines(
+  projectId: number,
+): Promise<ProjectBaseline[]> {
+  return apiFetch<ProjectBaseline[]>(
+    `/api/projects/${projectId}/baselines`,
+  );
+}
+
+/** Tạo baseline bản nháp từ trạng thái dữ liệu hiện tại. */
+export function createProjectBaseline(
+  projectId: number,
+  name: string,
+  openIssues: unknown[] = [],
+): Promise<ProjectBaseline> {
+  return apiFetch<ProjectBaseline>(
+    `/api/projects/${projectId}/baselines`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        name,
+        open_issues: openIssues,
+      }),
+    },
+  );
+}
+
+/** Duyệt baseline; backend sẽ từ chối nếu còn vấn đề chưa xử lý. */
+export function approveProjectBaseline(
+  projectId: number,
+  baselineId: number,
+): Promise<{
+  id: number;
+  version: number;
+  status: string;
+  approved_at: string | null;
+}> {
+  return apiFetch(
+    `/api/projects/${projectId}/baselines/${baselineId}/approve`,
+    { method: "POST" },
+  );
+}
+
+/** So sánh mã PlantUML biểu đồ lớp với mô hình UML đã lưu. */
+export function checkProjectUmlConsistency(
+  projectId: number,
+  sourceCode: string,
+): Promise<UmlConsistencyResult> {
+  return apiFetch<UmlConsistencyResult>(
+    `/api/projects/${projectId}/check-uml-consistency`,
+    {
+      method: "POST",
+      body: JSON.stringify({ source_code: sourceCode }),
+    },
+  );
+}

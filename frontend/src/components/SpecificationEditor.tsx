@@ -1,5 +1,5 @@
 import type { FieldMapping, FunctionalSpecification, NonFunctionalSpecification } from "../services/requirementService";
-import { inputClass } from "./ui/primitives";
+import { inputClass } from "./common/ui/primitives";
 
 export type FunctionalSpecificationTab = "overview" | "flows" | "business-data";
 

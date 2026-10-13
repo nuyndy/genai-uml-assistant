@@ -1,4 +1,4 @@
-import { STAGES, STAGE_ORDER, type StageId } from "../stages";
+import { STAGES, STAGE_ORDER, type StageId } from "../../stages";
 
 interface GiaiDoanStepperProps {
   /** Giai đoạn lớn đang mở. */
