@@ -1,3 +1,4 @@
+import type { ExportFormat } from "../../../../types/workflow";
 import React from "react";
 import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton } from "../../../common/ui/primitives";
 
@@ -9,7 +10,7 @@ interface Props {
   };
   busy: boolean;
   onAttachDiagram: () => Promise<void>;
-  onExportFormatChange: (format: string) => void;
+  onExportFormatChange: (format: ExportFormat) => void;
   onStepChange: (step: number) => void;
 }
 
