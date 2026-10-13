@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, EmptyState, PrimaryButton, RemoveButton, SoftButton, StatusBadge, wrapClass } from "../../../common/ui/primitives";
 import RequirementFormFields from "../../../step1/RequirementFormFields";
 import type { RequirementInput } from "../../../step1/types";
