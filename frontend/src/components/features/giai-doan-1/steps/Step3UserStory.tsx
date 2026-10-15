@@ -1,4 +1,4 @@
-import { Card, GhostButton, PrimaryButton, EmptyState, SoftButton } from "../../../common/ui/primitives";
+import { Card, GhostButton, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
 import type { UserStoryDraft } from "../../../../services/requirementService";
 
@@ -38,133 +38,109 @@ export default function Step3UserStory({
   wrapClass,
   inputClass,
 }: Props) {
+  const total = draftRequirements.length;
+  const readyCount = draftRequirements.filter((item) => {
+    const story = storyDrafts[item.id];
+    return Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
+  }).length;
+  const canConfirm = !busy && !loadingStoryDrafts && allStoryDraftsReady;
+  const textWrap = wrapClass || defaultWrapClass;
+
   return (
-    <div className="space-y-5">
-      <Card
-        tone="violet"
-        title="Kiểm duyệt User Story"
-      >
-        <p className="text-sm text-slate-700">
-          Bản nháp User Story từ các yêu cầu đã nhập. Kiểm tra và chỉnh sửa nội dung chưa phù hợp trước khi xác nhận.
-        </p>
-      </Card>
-      {allRequirementsConfirmed ? (
-        <Card tone="emerald" title="Các yêu cầu đã được xác nhận">
-          <p className="text-sm text-slate-700">
-            User story cho các yêu cầu đã được lưu. Có thể tiếp tục sang Bước 4.
-          </p>
-        </Card>
-      ) : draftRequirements.length === 0 ? (
-        <EmptyState
-          title="Chưa có yêu cầu để rà soát"
-          hint="Quay lại Bước 1 để thêm yêu cầu."
-        />
-      ) : (
-        <>
-          <Card
-            tone="violet"
-            title="Bản nháp User Story do AI bổ sung"
-            subtitle="Được tạo từ yêu cầu đã nhập. Kiểm duyệt và chỉnh nội dung nếu cần trước khi xác nhận."
-            actions={
-              <SoftButton
-                disabled={busy || loadingStoryDrafts}
-                onClick={() => void generateStoryDrafts()}
-              >
-                {loadingStoryDrafts ? "Đang phân tích..." : "Tạo lại bản nháp AI"}
-              </SoftButton>
-            }
-          >
-            {loadingStoryDrafts ? (
-              <p className="text-sm text-slate-600">AI đang phân tích yêu cầu và tạo bản nháp User Story...</p>
-            ) : (
-              <div className="space-y-5">
-                {draftRequirements.map((item) => {
-                  const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "" };
-                  const story = storyDrafts[item.id];
-                  return (
-                    <section
-                      key={item.id}
-                      className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4"
-                    >
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                          Yêu cầu gốc
-                        </p>
-                        <p className={`mt-1 text-sm text-slate-700 ${wrapClass}`}>
-                          {requirementTitle(rawValue)} để {rawValue.purpose}
-                        </p>
-                      </div>
-                      {!story ? (
-                        <p className="text-sm text-amber-700">
-                          Chưa có bản nháp. Thử tạo lại bằng AI.
-                        </p>
-                      ) : (
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <label className="block text-sm font-medium text-slate-700">
-                            Vai trò
-                            <input
-                              aria-label={`Vai trò User Story ${item.id}`}
-                              value={story.role ?? ""}
-                              onChange={(event) => changeStoryDraft(item.id, "role", event.target.value)}
-                              className={`${inputClass} mt-1`}
-                            />
-                          </label>
-                          <label className="block text-sm font-medium text-slate-700">
-                            Chức năng
-                            <input
-                              aria-label={`Chức năng User Story ${item.id}`}
-                              value={story.feature}
-                              onChange={(event) => changeStoryDraft(item.id, "feature", event.target.value)}
-                              className={`${inputClass} mt-1`}
-                            />
-                          </label>
-                          <label className="block text-sm font-medium text-slate-700 md:col-span-2">
-                            Lợi ích / mục đích
-                            <textarea
-                              aria-label={`Lợi ích User Story ${item.id}`}
-                              value={story.benefit ?? ""}
-                              onChange={(event) => changeStoryDraft(item.id, "benefit", event.target.value)}
-                              rows={2}
-                              className={`${inputClass} mt-1 resize-y`}
-                            />
-                          </label>
-                          <label className="block text-sm font-medium text-slate-700 md:col-span-2">
-                            Tiêu chí chấp nhận
-                            <textarea
-                              aria-label={`Tiêu chí chấp nhận User Story ${item.id}`}
-                              value={story.acceptance_criteria ?? ""}
-                              onChange={(event) =>
-                                changeStoryDraft(item.id, "acceptance_criteria", event.target.value)
-                              }
-                              rows={4}
-                              className={`${inputClass} mt-1 resize-y`}
-                            />
-                          </label>
-                        </div>
-                      )}
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        </>
-      )}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(2)}>Quay lại Bước 2</GhostButton>
-        {allRequirementsConfirmed ? (
-          <PrimaryButton onClick={() => onStepChange(4)}>Tiếp tục sang Bước 4</PrimaryButton>
-        ) : (
-          <PrimaryButton disabled={busy || loadingStoryDrafts || !allStoryDraftsReady} onClick={() => void confirmAll()}>
-            {busy ? "Đang xác nhận..." : "Xác nhận yêu cầu & sang Bước 4"}
-          </PrimaryButton>
-        )}
+    <div className="space-y-6">
+      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">
+        <div aria-hidden="true" className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-emerald-100/80 blur-2xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Phân tích và chốt yêu cầu</p>
+            <h2 className={`mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl ${textWrap}`}>Xác nhận yêu cầu & User Story</h2>
+            <p className={`mt-2 text-sm leading-6 text-slate-600 ${textWrap}`}>Rà soát bản nháp do AI đề xuất, chỉnh sửa vai trò, chức năng, lợi ích và tiêu chí chấp nhận. Chỉ xác nhận khi nội dung phù hợp với nghiệp vụ.</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">03</span>
+            <span><span className="block text-sm font-semibold text-slate-900">Kiểm duyệt User Story</span><span className="block text-xs text-slate-500">Bước 3 / 5</span></span>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-sm text-slate-600">Yêu cầu cần duyệt</p><p className="mt-1 text-2xl font-semibold text-slate-900">{total}</p><p className="mt-1 text-xs text-slate-500">Yêu cầu đang ở trạng thái bản nháp</p></div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm text-emerald-800">User Story đã đủ trường</p><p className="mt-1 text-2xl font-semibold text-emerald-900">{allRequirementsConfirmed ? total : readyCount}</p><p className="mt-1 text-xs text-emerald-800">Vai trò, chức năng, lợi ích và tiêu chí</p></div>
+        <div className="col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4 lg:col-span-1"><p className="text-sm text-amber-900">Trạng thái kiểm duyệt</p><div className="mt-2"><StatusBadge tone={allRequirementsConfirmed ? "success" : allStoryDraftsReady ? "success" : "warn"}>{allRequirementsConfirmed ? "Đã xác nhận" : allStoryDraftsReady ? "Sẵn sàng xác nhận" : "Cần hoàn thiện"}</StatusBadge></div><p className="mt-2 text-xs text-amber-900">{allRequirementsConfirmed ? "Các yêu cầu đã được lưu và xác nhận." : "Kiểm tra nội dung trước khi chốt."}</p></div>
       </div>
-      {!allStoryDraftsReady && draftRequirements.length > 0 && !loadingStoryDrafts && (
-        <p className="text-right text-sm text-amber-700">
-          Cần có bản nháp User Story cho mọi yêu cầu trước khi xác nhận.
-        </p>
+
+      {allRequirementsConfirmed ? (
+        <Card tone="emerald" title="Yêu cầu đã được xác nhận" subtitle="Các User Story đã lưu thành công.">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className={`text-sm leading-6 text-slate-700 ${textWrap}`}>Bạn có thể tiếp tục sang Bước 4 để tạo đặc tả chức năng và phi chức năng.</p>
+            <PrimaryButton onClick={() => onStepChange(4)}>Tiếp tục sang Bước 4 <span aria-hidden="true">→</span></PrimaryButton>
+          </div>
+        </Card>
+      ) : total === 0 ? (
+        <Card title="Chưa có yêu cầu để rà soát">
+          <EmptyState title="Danh sách yêu cầu đang trống" hint="Quay lại Bước 1 để thêm yêu cầu, sau đó phân tích và tạo User Story." />
+          <div className="mt-4 flex justify-start"><GhostButton onClick={() => onStepChange(1)}>Quay lại Bước 1</GhostButton></div>
+        </Card>
+      ) : (
+        <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
+          <SoftButton disabled={busy || loadingStoryDrafts} onClick={() => void generateStoryDrafts()}>
+            {loadingStoryDrafts ? "Đang tạo bản nháp..." : "Tạo lại bằng AI"}
+          </SoftButton>
+        }>
+          {loadingStoryDrafts ? (
+            <div role="status" aria-live="polite" className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+              <p className="text-sm font-semibold text-emerald-900">AI đang tạo User Story</p>
+              <p className="mt-1 text-sm text-emerald-800">Đang chuẩn bị bản nháp cho {total} yêu cầu. Vui lòng chờ kết quả.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {draftRequirements.map((item, index) => {
+                const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
+                const story = storyDrafts[item.id];
+                const storyReady = Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
+                return (
+                  <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/70 p-4 sm:p-5">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-start justify-between gap-2"><h3 className={`break-words text-sm font-semibold leading-6 text-slate-900 ${textWrap}`}>{requirementTitle(rawValue)}</h3><StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường bắt buộc" : story ? "Cần hoàn thiện" : "Chưa có bản nháp"}</StatusBadge></div>
+                        <p className={`mt-1 text-sm leading-5 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
+                        <p className="mt-1 text-xs text-slate-500">Mã yêu cầu: REQ-{String(item.id).padStart(3, "0")}</p>
+                      </div>
+                    </div>
+                    {!story ? (
+                      <div className="p-4 sm:p-5"><p className="text-sm text-amber-800">Chưa có bản nháp cho yêu cầu này. Hãy tạo lại bản nháp bằng AI.</p></div>
+                    ) : (
+                      <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+                        <label className="block text-sm font-medium text-slate-700">Vai trò <span className="text-rose-600">*</span>
+                          <input aria-label={`Vai trò User Story ${item.id}`} value={story.role ?? ""} onChange={(event) => changeStoryDraft(item.id, "role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} placeholder="Ví dụ: Khách hàng" />
+                        </label>
+                        <label className="block text-sm font-medium text-slate-700">Chức năng <span className="text-rose-600">*</span>
+                          <input aria-label={`Chức năng User Story ${item.id}`} value={story.feature} onChange={(event) => changeStoryDraft(item.id, "feature", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} placeholder="Tôi muốn thực hiện chức năng gì?" />
+                        </label>
+                        <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích <span className="text-rose-600">*</span>
+                          <textarea aria-label={`Lợi ích User Story ${item.id}`} value={story.benefit ?? ""} onChange={(event) => changeStoryDraft(item.id, "benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 resize-y bg-white ${textWrap}`} placeholder="Để đạt được lợi ích hoặc mục tiêu nào?" />
+                        </label>
+                        <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận <span className="text-rose-600">*</span>
+                          <textarea aria-label={`Tiêu chí chấp nhận User Story ${item.id}`} value={story.acceptance_criteria ?? ""} onChange={(event) => changeStoryDraft(item.id, "acceptance_criteria", event.target.value)} rows={4} className={`${inputClass} mt-1.5 resize-y bg-white ${textWrap}`} placeholder="Mô tả điều kiện để xác định chức năng hoạt động đúng..." />
+                          <span className="mt-1 block text-xs font-normal text-slate-500">Nên mô tả kết quả quan sát được để có thể kiểm thử.</span>
+                        </label>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+          <div className="mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>AI chỉ tạo bản nháp; bạn chịu trách nhiệm rà soát nội dung trước khi lưu xác nhận.</p>
+            <PrimaryButton disabled={!canConfirm} onClick={() => void confirmAll()}>{busy ? "Đang xác nhận..." : "Xác nhận yêu cầu & User Story"} <span aria-hidden="true">→</span></PrimaryButton>
+          </div>
+          {!allStoryDraftsReady && !loadingStoryDrafts && <p className="mt-3 text-right text-sm text-amber-800">Cần hoàn thiện đủ 4 trường cho mọi User Story trước khi xác nhận.</p>}
+        </Card>
       )}
+
+      {!allRequirementsConfirmed && <div className="flex justify-start"><GhostButton onClick={() => onStepChange(2)}>← Quay lại Bước 2</GhostButton></div>}
     </div>
   );
 }
