@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 
 /**
  * Lớp style dùng chung cho input/textarea/select.
- * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-violet-100.
+ * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-emerald-100.
  */
 export const inputClass =
-  "w-full min-w-0 rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-400 focus:bg-white focus:ring-4 focus:ring-violet-100";
+  "w-full min-w-0 rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100";
 
 /** Ô nhập 1 dòng: chiều cao cố định để các ô cùng hàng thẳng nhau. */
 export const singleLineClass = `${inputClass} h-10`;
@@ -24,7 +24,7 @@ const BTN_H = "h-11";
 
 /**
  * Nền trang trí: gradient tím rất nhạt + lưới mờ + quầng sáng, giúp bố cục
- * bớt phẳng mà vẫn giữ tông tím chủ đạo.
+ * bớt phẳng với tông xanh lá và kem.
  */
 export function StageBackdrop() {
   return (
@@ -32,16 +32,16 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-violet-50/70 via-slate-50 to-slate-50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 via-white to-amber-50/50" />
       <div
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(139,92,246,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.07) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(16,185,129,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.07) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-violet-200/25 blur-3xl" />
+      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-emerald-200/25 blur-3xl" />
       <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-emerald-100/25 blur-3xl" />
     </div>
   );
@@ -61,12 +61,12 @@ export function Card({
   title?: string;
   subtitle?: string;
   actions?: ReactNode;
-  tone?: "plain" | "violet" | "emerald" | "amber" | "rose";
+  tone?: "plain" | "emerald" | "emerald" | "amber" | "rose";
   children: ReactNode;
 }) {
   const accent = {
     plain: "",
-    violet: "border-l-4 border-l-violet-500",
+    emerald: "border-l-4 border-l-emerald-500",
     emerald: "border-l-4 border-l-emerald-500",
     amber: "border-l-4 border-l-amber-400",
     rose: "border-l-4 border-l-rose-400",
@@ -104,7 +104,7 @@ export function Card({
   );
 }
 
-/** Nút chính (violet). */
+/** Nút chính (emerald). */
 export function PrimaryButton({
   children,
   onClick,
@@ -124,14 +124,14 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-violet-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
   );
 }
 
-/** Nút phụ (violet nhạt), dùng cho hành động gọi AI. */
+/** Nút phụ (emerald nhạt), dùng cho hành động gọi AI. */
 export function SoftButton({
   children,
   onClick,
@@ -149,7 +149,7 @@ export function SoftButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border-violet-200 bg-violet-50 px-4 text-sm font-medium text-violet-700 transition hover:bg-violet-100 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border-emerald-200 bg-emerald-50 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -196,7 +196,7 @@ export function MiniButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border-violet-200 bg-violet-50 px-4 text-sm font-medium text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border-emerald-200 bg-emerald-50 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -237,7 +237,7 @@ const STATUS_STYLE: Record<StatusTone, string> = {
   success: "bg-emerald-100 text-emerald-700 ring-emerald-200",
   warn: "bg-amber-100 text-amber-800 ring-amber-200",
   danger: "bg-rose-100 text-rose-700 ring-rose-200",
-  info: "bg-violet-100 text-violet-700 ring-violet-200",
+  info: "bg-emerald-100 text-emerald-700 ring-emerald-200",
   muted: "bg-slate-100 text-slate-600 ring-slate-200",
 };
 
@@ -245,7 +245,7 @@ const STATUS_DOT: Record<StatusTone, string> = {
   success: "bg-emerald-500",
   warn: "bg-amber-500",
   danger: "bg-rose-500",
-  info: "bg-violet-500",
+  info: "bg-emerald-500",
   muted: "bg-slate-400",
 };
 
@@ -270,7 +270,7 @@ export function StatusBadge({
   );
 }
 
-/** Badge phân loại đặc tả: chức năng (violet) và phi chức năng (amber). */
+/** Badge phân loại đặc tả: chức năng (emerald) và phi chức năng (amber). */
 export function SpecBadge({ type }: { type: "functional" | "non_functional" }) {
   return type === "functional" ? (
     <StatusBadge tone="info">Chức năng</StatusBadge>
@@ -439,7 +439,7 @@ export function StringListEditor({
       <button
         type="button"
         onClick={() => onChange([...items, ""])}
-        className="inline-flex h-9 items-center gap-1 rounded-lg px-1 text-sm font-medium text-violet-600 transition hover:text-violet-800"
+        className="inline-flex h-9 items-center gap-1 rounded-lg px-1 text-sm font-medium text-emerald-600 transition hover:text-emerald-800"
       >
         {addLabel ?? "+ Thêm"}
       </button>
@@ -471,7 +471,7 @@ export function DiagramPreview({
           <a
             href={imageUrl}
             download={downloadName}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-violet-600 transition hover:bg-violet-50 hover:text-violet-700"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700"
           >
             ⬇ Tải ảnh về
           </a>
@@ -565,12 +565,12 @@ export function StepHeading({
         {icon && (
           <span
             aria-hidden="true"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-base text-violet-700 shadow-sm"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-base text-emerald-700 shadow-sm"
           >
             {icon}
           </span>
         )}
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-600">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">
           {step}
         </p>
       </div>
@@ -610,7 +610,7 @@ export function SegmentedControl<T extends string>({
           aria-pressed={value === o.value}
           className={`inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-medium transition ${
             value === o.value
-              ? "bg-violet-600 text-white shadow-sm"
+              ? "bg-emerald-600 text-white shadow-sm"
               : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
           }`}
         >
