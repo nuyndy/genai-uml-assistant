@@ -179,14 +179,14 @@ function App() {
 
   // 2) Workspace: 3 GIAI ĐOẠN lớn, mỗi giai đoạn có sub-stepper riêng.
   return (
-    <div className="relative min-h-screen bg-slate-50">
+    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
       <div className="fixed inset-0 z-0">
         <StageBackdrop />
       </div>
 
       <div className="relative z-10">
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 flex items-center justify-between gap-3 py-3">
+      <div className="border-b border-emerald-200 bg-white/95 backdrop-blur">
+        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-3">
           <button
             type="button"
             onClick={handleBackHome}
