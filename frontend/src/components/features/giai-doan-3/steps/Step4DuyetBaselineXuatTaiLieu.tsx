@@ -22,7 +22,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
 }: Props) {
   return (
     <div className="space-y-6">
-      <Card tone="violet" title="Định dạng xuất">
+      <Card tone="emerald" title="Định dạng xuất">
         <SegmentedControl<string>
           value={state.exportFormat}
           onChange={onExportFormatChange}
@@ -63,7 +63,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
             <a
               href={state.previewImageUrl}
               download={`diagram.${state.exportFormat}`}
-              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-violet-700 hover:shadow-md"
+              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 hover:shadow-md"
             >
               ⬇ Xuất file ảnh (.{state.exportFormat})
             </a>
