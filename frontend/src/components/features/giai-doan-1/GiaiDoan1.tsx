@@ -900,7 +900,6 @@ export default function GiaiDoan1({
       busy={busy}
       onStepChange={onStepChange}
       saveSrsMetadataDraft={saveSrsMetadataDraft}
-      exportSrs={exportSrs}
       saveSrsSpecification={saveSrsSpecification}
       setSrsMetadata={setSrsMetadata}
       setSrsSpecDrafts={setSrsSpecDrafts}
