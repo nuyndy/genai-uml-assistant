@@ -1,4 +1,4 @@
-﻿import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   Card,
   GhostButton,
@@ -85,6 +85,7 @@ export default function Step4DacTa({
   generatingStories,
   generatingNonFunctional,
   busy,
+  error,
   generateFunctionalSpecification,
   saveSpecification,
   createNonFunctionalSpecification,
@@ -102,10 +103,11 @@ export default function Step4DacTa({
         (item) => item.user_story_id === story.id && item.type === "functional",
       ),
     );
+  const canContinue = allFunctionalReady && Boolean(nonFunctionalSpecification) && !busy;
 
   return (
-    <div className="space-y-5">
-      <Card tone="violet" title="Đặc tả chức năng">
+    <div className="space-y-6">\n      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">\n        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">\n          <div className="max-w-2xl">\n            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Hoàn thiện mô hình</p>\n            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Đặc tả chức năng &amp; phi chức năng</h2>\n            <p className="mt-2 text-sm leading-6 text-slate-600">Sinh đặc tả từ User Story đã xác nhận, rà soát luồng xử lý và yêu cầu chất lượng, sau đó lưu trước khi hoàn thiện tài liệu SRS.</p>\n          </div>\n          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">04</span><span><span className="block text-sm font-semibold text-slate-900">Xây dựng đặc tả</span><span className="block text-xs text-slate-500">Bước 4 / 5</span></span></div>\n        </div>\n      </section>\n      {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+      <Card tone="emerald" title="Đặc tả chức năng">
         {stories.length === 0 ? (
           <EmptyState title="Chưa có user story" hint="Xác nhận yêu cầu ở Bước 3 trước." />
         ) : (
@@ -143,7 +145,7 @@ export default function Step4DacTa({
                   >
                     <span className="min-w-0 flex-1">
                       <span
-                        className={`block text-xs font-semibold uppercase tracking-wide text-violet-700 ${wrapClass}`}
+                        className={`block text-xs font-semibold uppercase tracking-wide text-emerald-800 ${wrapClass}`}
                       >
                         {code}
                       </span>
@@ -184,8 +186,8 @@ export default function Step4DacTa({
                                 }
                                 className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition ${
                                   activeTab === tab
-                                    ? "border-violet-600 text-violet-700"
-                                    : "border-transparent text-slate-500 hover:text-slate-800"
+                                    ? "border-emerald-600 text-emerald-800"
+                                    : "border-transparent text-slate-500 hover:text-emerald-800"
                                 }`}
                               >
                                 {label}
@@ -245,7 +247,7 @@ export default function Step4DacTa({
         )}
       </Card>
 
-      <Card tone="violet" title="Đặc tả phi chức năng">
+      <Card tone="emerald" title="Đặc tả phi chức năng">
         {!nonFunctionalSpecification ? (
           <div className="space-y-3">
             <p className="text-sm text-slate-600">
@@ -307,9 +309,10 @@ export default function Step4DacTa({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <GhostButton onClick={() => onStepChange(3)}>Quay lại Bước 3</GhostButton>
-        <PrimaryButton disabled={busy || !allFunctionalReady} onClick={() => onStepChange(5)}>
+        <PrimaryButton disabled={!canContinue} onClick={() => onStepChange(5)}>
           Tiếp tục sang Bước 5
         </PrimaryButton>
+          {!canContinue && <p className="max-w-sm text-right text-xs text-amber-800">Cần tạo đặc tả chức năng cho mọi User Story và đặc tả phi chức năng trước khi tiếp tục.</p>}
       </div>
     </div>
   );
