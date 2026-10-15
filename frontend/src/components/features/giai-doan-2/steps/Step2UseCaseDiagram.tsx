@@ -27,7 +27,7 @@ export default function Step2UseCaseDiagram({
   return (
     <div className="space-y-6">
       <Card
-        tone="violet"
+        tone="emerald"
         title="Biểu đồ use case tổng quát"
         actions={
           <SoftButton
@@ -64,7 +64,7 @@ export default function Step2UseCaseDiagram({
         </PrimaryButton>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => onStepChange(1)} className="text-sm text-slate-500 hover:text-violet-600">← Quay lại</button>
+        <button onClick={() => onStepChange(1)} className="text-sm text-slate-500 hover:text-emerald-600">← Quay lại</button>
         <PrimaryButton disabled={!confirmed} onClick={() => onStepChange(3)}>Tiếp tục sang Bước 3</PrimaryButton>
       </div>
     </div>
