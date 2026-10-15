@@ -45,14 +45,14 @@ export const STAGES: Record<StageId, StageDef> = {
       },
       {
         id: 4,
-        label: "Lập đặc tả FR/NFR",
-        hint: "Sinh, rà soát và xác nhận yêu cầu chức năng, phi chức năng",
+        label: "Xây dựng đặc tả FR/NFR",
+        hint: "Sinh và rà soát đặc tả dựa trên User Story đã xác nhận",
         icon: "▤",
       },
       {
         id: 5,
-        label: "Chốt tài liệu yêu cầu",
-        hint: "Kiểm tra độ bao phủ và tổng hợp kết quả giai đoạn 1",
+        label: "Rà soát và đồng bộ SRS",
+        hint: "Xem bản nháp, rà soát nội dung và đồng bộ đặc tả; chưa xuất tài liệu chính thức",
         icon: "▦",
       },
     ],
