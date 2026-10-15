@@ -74,7 +74,7 @@ export default function Step2ChinhSuaCapNhat({
   return (
     <div className="space-y-6">
       {/* Tác nhân */}
-      <Card tone="violet" title="Tác nhân">
+      <Card tone="emerald" title="Tác nhân">
         {state.actors.length === 0 ? (
           <div className="py-8 text-center text-sm text-slate-500">Chưa có tác nhân nào</div>
         ) : (
@@ -111,7 +111,7 @@ export default function Step2ChinhSuaCapNhat({
                   actors: [...prev.actors, { id: nextRelationId, name: "" }],
                 }))
               }
-              className="mt-2 text-xs text-violet-600 hover:underline"
+              className="mt-2 text-xs text-emerald-600 hover:underline"
             >
               + Thêm tác nhân
             </button>
@@ -120,7 +120,7 @@ export default function Step2ChinhSuaCapNhat({
       </Card>
 
       {/* Use case */}
-      <Card tone="violet" title="Use case">
+      <Card tone="emerald" title="Use case">
         {state.usecases.length === 0 ? (
           <div className="py-8 text-center text-sm text-slate-500">Chưa có use case nào</div>
         ) : (
@@ -155,7 +155,7 @@ export default function Step2ChinhSuaCapNhat({
       </Card>
 
       {/* Lớp */}
-      <Card tone="violet" title="Lớp">
+      <Card tone="emerald" title="Lớp">
         {state.umlClasses.length === 0 ? (
           <div className="py-8 text-center text-sm text-slate-500">Chưa có lớp nào</div>
         ) : (
@@ -216,7 +216,7 @@ export default function Step2ChinhSuaCapNhat({
                             ),
                           }))
                         }
-                        className="text-xs text-violet-600 hover:underline"
+                        className="text-xs text-emerald-600 hover:underline"
                       >
                         + Thêm
                       </button>
@@ -252,7 +252,7 @@ export default function Step2ChinhSuaCapNhat({
                             ),
                           }))
                         }
-                        className="text-xs text-violet-600 hover:underline"
+                        className="text-xs text-emerald-600 hover:underline"
                       >
                         + Thêm
                       </button>
@@ -268,7 +268,7 @@ export default function Step2ChinhSuaCapNhat({
                   umlClasses: [...prev.umlClasses, { id: nextClassId, name: "", attributes: [], methods: [] }],
                 }))
               }
-              className="text-sm text-violet-600 hover:underline"
+              className="text-sm text-emerald-600 hover:underline"
             >
               + Thêm lớp
             </button>
@@ -277,7 +277,7 @@ export default function Step2ChinhSuaCapNhat({
       </Card>
 
       {/* Quan hệ */}
-      <Card tone="violet" title="Quan hệ">
+      <Card tone="emerald" title="Quan hệ">
         {state.relations.length === 0 ? (
           <div className="py-8 text-center text-sm text-slate-500">Chưa có quan hệ nào</div>
         ) : (
@@ -338,7 +338,7 @@ export default function Step2ChinhSuaCapNhat({
                   relations: [...prev.relations, { id: nextRelationId, from: "", to: "", type: "association" }],
                 }))
               }
-              className="mt-2 text-xs text-violet-600 hover:underline"
+              className="mt-2 text-xs text-emerald-600 hover:underline"
             >
               + Thêm quan hệ
             </button>
