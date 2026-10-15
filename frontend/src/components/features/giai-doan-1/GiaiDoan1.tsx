@@ -521,9 +521,11 @@ export default function GiaiDoan1({
     if (step !== 3 || !loaded || !projectId || !draftIdsKey) return;
     const key = `${projectId}:${draftIdsKey}`;
     if (storyPreviewKey.current === key) return;
+    // Không tự ghi đè bản nháp đã chỉnh sửa khi danh sách yêu cầu thay đổi.
+    if (storyDraftsEdited) return;
     storyPreviewKey.current = key;
     void generateStoryDrafts();
-  }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step]);
+  }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step, storyDraftsEdited]);
 
   const regenerateStoryDrafts = () => {
     if (storyDraftsEdited && !window.confirm(
