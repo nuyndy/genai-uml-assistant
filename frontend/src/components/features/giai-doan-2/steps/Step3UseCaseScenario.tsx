@@ -65,7 +65,7 @@ export default function Step3UseCaseScenario({
   return (
     <div className="space-y-5">
       <Card
-        tone="violet"
+        tone="emerald"
         title="Sinh kịch bản use case"
         actions={
           <PrimaryButton
