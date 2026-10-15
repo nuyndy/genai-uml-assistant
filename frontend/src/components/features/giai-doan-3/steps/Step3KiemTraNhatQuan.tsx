@@ -19,7 +19,7 @@ export default function Step3KiemTraNhatQuan({
   return (
     <div className="space-y-6">
       <Card
-        tone="violet"
+        tone="emerald"
         title="Xem trước và hiển thị"
         actions={
           <SoftButton
