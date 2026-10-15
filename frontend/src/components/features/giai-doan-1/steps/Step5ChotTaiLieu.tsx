@@ -31,7 +31,6 @@ interface Props {
   busy: boolean;
   onStepChange: (step: number) => void;
   saveSrsMetadataDraft: () => void | Promise<void>;
-  exportSrs: () => void | Promise<void>;
   saveSrsSpecification: (record: SpecificationRecord, content: SpecDraft) => Promise<void>;
   setSrsMetadata: Dispatch<SetStateAction<SrsMetadata>>;
   setSrsSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
@@ -49,7 +48,6 @@ export default function Step5ChotTaiLieu({
   busy,
   onStepChange,
   saveSrsMetadataDraft,
-  exportSrs,
   saveSrsSpecification,
   setSrsMetadata,
   setSrsSpecDrafts,
@@ -76,12 +74,12 @@ export default function Step5ChotTaiLieu({
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Hoàn thiện tài liệu</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Chốt và xuất tài liệu SRS</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Rà soát nội dung tổng hợp, cập nhật phần giới thiệu và đặc tả trực tiếp trong tài liệu. Lưu các thay đổi trước khi xuất bản Word.</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Rà soát và đồng bộ tài liệu SRS</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Rà soát nội dung tổng hợp và chỉnh sửa bản nháp SRS. Đối chiếu với đặc tả đã duyệt, xử lý thay đổi và kiểm tra tính nhất quán trước khi chuyển sang bước phê duyệt cuối.</p>
           </div>
           <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">05</span>
-            <span><span className="block text-sm font-semibold text-slate-900">Chốt tài liệu</span><span className="block text-xs text-slate-500">Bước 5 / 5</span></span>
+            <span><span className="block text-sm font-semibold text-slate-900">Rà soát SRS</span><span className="block text-xs text-slate-500">Bước 5 / 5</span></span>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -92,12 +90,12 @@ export default function Step5ChotTaiLieu({
       </section>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
         <div className="flex flex-wrap items-center gap-2">
-          {srsMetadataDirty ? <StatusBadge tone="warn">Phần giới thiệu chưa lưu</StatusBadge> : <StatusBadge tone="success">Phần giới thiệu đã lưu</StatusBadge>}
+          {srsMetadataDirty ? <StatusBadge tone="warn">Phần giới thiệu có thay đổi</StatusBadge> : <StatusBadge tone="success">Phần giới thiệu đã lưu</StatusBadge> }
           <span className="text-xs text-slate-500">Các thay đổi đặc tả được lưu tự động sau khi ngừng nhập.</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>Lưu phần giới thiệu</SoftButton>
-          <PrimaryButton disabled={busy} onClick={() => void exportSrs()}>Tải xuống file Word (.docx)</PrimaryButton>
+          <PrimaryButton disabled={busy} onClick={() => onStepChange(5)}>Tiếp tục kiểm tra và phê duyệt</PrimaryButton>
         </div>
       </div>
       <Card
@@ -121,7 +119,7 @@ export default function Step5ChotTaiLieu({
         )}
       </Card>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
-        <div><p className="text-sm font-semibold text-slate-900">Hoàn tất Giai đoạn 1</p><p className="mt-1 text-xs text-slate-500">Kiểm tra lần cuối, lưu nội dung và xuất bản Word khi sẵn sàng.</p></div>
+        <div><p className="text-sm font-semibold text-slate-900">Chưa chốt tài liệu</p><p className="mt-1 text-xs text-slate-500">Bước này dành cho rà soát và đồng bộ; chưa xuất file chính thức.</p></div>
         <GhostButton onClick={() => onStepChange(4)}>Quay lại Bước 4</GhostButton>
       </div>
     </div>
