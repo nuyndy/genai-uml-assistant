@@ -159,6 +159,7 @@ export default function GiaiDoan1({
   const [newRequirement, setNewRequirement] = useState(state.rawRequirement);
   const [stories, setStories] = useState<UserStory[]>([]);
   const [storyDrafts, setStoryDrafts] = useState<Record<number, UserStoryDraft>>({});
+  const [storyDraftsEdited, setStoryDraftsEdited] = useState(false);
   const [loadingStoryDrafts, setLoadingStoryDrafts] = useState(false);
   const [specifications, setSpecifications] = useState<SpecificationRecord[]>(
     projectId
@@ -507,6 +508,7 @@ export default function GiaiDoan1({
       setStoryDrafts(
         Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
       );
+      setStoryDraftsEdited(false);
     } catch (reason) {
       setError(`Không thể tạo bản nháp user story: ${formatError(reason)}`);
     } finally {
@@ -516,16 +518,19 @@ export default function GiaiDoan1({
   }, [projectId]);
 
   useEffect(() => {
-    if (step !== 3) {
-      storyPreviewKey.current = "";
-      return;
-    }
-    if (!loaded || !projectId) return;
+    if (step !== 3 || !loaded || !projectId || !draftIdsKey) return;
     const key = `${projectId}:${draftIdsKey}`;
     if (storyPreviewKey.current === key) return;
     storyPreviewKey.current = key;
     void generateStoryDrafts();
   }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step]);
+
+  const regenerateStoryDrafts = () => {
+    if (storyDraftsEdited && !window.confirm(
+      "Tạo lại User Story sẽ thay thế các chỉnh sửa chưa xác nhận. Bạn có muốn tiếp tục?",
+    )) return;
+    void generateStoryDrafts();
+  };
 
   const changeStoryDraft = (
     requirementId: number,
@@ -540,6 +545,7 @@ export default function GiaiDoan1({
         [field]: value,
       },
     }));
+    setStoryDraftsEdited(true);
   };
 
   const confirmAll = async () => {
@@ -847,7 +853,7 @@ export default function GiaiDoan1({
       error={error}
       allStoryDraftsReady={allStoryDraftsReady}
       allRequirementsConfirmed={allRequirementsConfirmed}
-      generateStoryDrafts={generateStoryDrafts}
+      generateStoryDrafts={regenerateStoryDrafts}
       changeStoryDraft={changeStoryDraft}
       confirmAll={confirmAll}
       onStepChange={onStepChange}
