@@ -106,7 +106,18 @@ export default function Step4DacTa({
   const canContinue = allFunctionalReady && Boolean(nonFunctionalSpecification) && !busy;
 
   return (
-    <div className="space-y-6">\n      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">\n        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">\n          <div className="max-w-2xl">\n            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Hoàn thiện mô hình</p>\n            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Đặc tả chức năng &amp; phi chức năng</h2>\n            <p className="mt-2 text-sm leading-6 text-slate-600">Sinh đặc tả từ User Story đã xác nhận, rà soát luồng xử lý và yêu cầu chất lượng, sau đó lưu trước khi hoàn thiện tài liệu SRS.</p>\n          </div>\n          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">04</span><span><span className="block text-sm font-semibold text-slate-900">Xây dựng đặc tả</span><span className="block text-xs text-slate-500">Bước 4 / 5</span></span></div>\n        </div>\n      </section>\n      {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+    <div className="space-y-6">
+      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Hoàn thiện mô hình</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Đặc tả chức năng &amp; phi chức năng</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Sinh đặc tả từ User Story đã xác nhận, rà soát luồng xử lý và yêu cầu chất lượng, sau đó lưu trước khi hoàn thiện tài liệu SRS.</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">04</span><span><span className="block text-sm font-semibold text-slate-900">Xây dựng đặc tả</span><span className="block text-xs text-slate-500">Bước 4 / 5</span></span></div>
+        </div>
+      </section>
+      {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
       <Card tone="emerald" title="Đặc tả chức năng">
         {stories.length === 0 ? (
           <EmptyState title="Chưa có user story" hint="Xác nhận yêu cầu ở Bước 3 trước." />
