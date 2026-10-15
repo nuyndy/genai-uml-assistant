@@ -38,7 +38,7 @@ export default function GiaiDoanStepper({
       aria-label="Các giai đoạn của quy trình"
       className="border-b border-slate-200 bg-white"
     >
-      <div className="mx-auto max-w-6xl px-4 py-3">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         <ol className="flex items-center gap-2">
           {STAGE_ORDER.map((id, index) => {
             const def = STAGES[id];
@@ -128,7 +128,7 @@ export default function GiaiDoanStepper({
             className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200"
           >
             <div
-              className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500 transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-800 to-emerald-500 transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
