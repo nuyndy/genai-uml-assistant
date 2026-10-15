@@ -1,4 +1,4 @@
-﻿import { useRef } from "react";
+import { useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   Card,
@@ -71,22 +71,38 @@ export default function Step5ChotTaiLieu({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        {srsMetadataDirty && <StatusBadge tone="warn">Có thay đổi chưa lưu</StatusBadge>}
-        <SoftButton
-          disabled={busy || !srsMetadataDirty}
-          onClick={() => void saveSrsMetadataDraft()}
-        >
-          Lưu phần giới thiệu
-        </SoftButton>
-        <PrimaryButton disabled={busy} onClick={() => void exportSrs()}>
-          Tải xuống file Word (.docx)
-        </PrimaryButton>
+    <div className="space-y-6">
+      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Hoàn thiện tài liệu</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Chốt và xuất tài liệu SRS</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Rà soát nội dung tổng hợp, cập nhật phần giới thiệu và đặc tả trực tiếp trong tài liệu. Lưu các thay đổi trước khi xuất bản Word.</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">05</span>
+            <span><span className="block text-sm font-semibold text-slate-900">Chốt tài liệu</span><span className="block text-xs text-slate-500">Bước 5 / 5</span></span>
+          </div>
+        </div>
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Tổng đặc tả</p><p className="mt-1 text-xl font-semibold text-slate-900">{specifications.length}</p></div>
+          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Đặc tả chức năng</p><p className="mt-1 text-xl font-semibold text-slate-900">{srsFunctionalForEditor.length}</p></div>
+          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Đặc tả phi chức năng</p><p className="mt-1 text-xl font-semibold text-slate-900">{srsNonFunctionalForEditor.length}</p></div>
+        </div>
+      </section>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {srsMetadataDirty ? <StatusBadge tone="warn">Phần giới thiệu chưa lưu</StatusBadge> : <StatusBadge tone="success">Phần giới thiệu đã lưu</StatusBadge>}
+          <span className="text-xs text-slate-500">Các thay đổi đặc tả được lưu tự động sau khi ngừng nhập.</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>Lưu phần giới thiệu</SoftButton>
+          <PrimaryButton disabled={busy} onClick={() => void exportSrs()}>Tải xuống file Word (.docx)</PrimaryButton>
+        </div>
       </div>
       <Card
-        tone="plain"
-        title="Tài liệu SRS"
+        tone="emerald"
+        title="Bản xem và chỉnh sửa tài liệu SRS"
         actions={<StatusBadge tone="success">{specifications.length} mục</StatusBadge>}
       >
         {srsMarkdown || specifications.length > 0 ? (
@@ -104,7 +120,8 @@ export default function Step5ChotTaiLieu({
           />
         )}
       </Card>
-      <div className="flex justify-start">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
+        <div><p className="text-sm font-semibold text-slate-900">Hoàn tất Giai đoạn 1</p><p className="mt-1 text-xs text-slate-500">Kiểm tra lần cuối, lưu nội dung và xuất bản Word khi sẵn sàng.</p></div>
         <GhostButton onClick={() => onStepChange(4)}>Quay lại Bước 4</GhostButton>
       </div>
     </div>
