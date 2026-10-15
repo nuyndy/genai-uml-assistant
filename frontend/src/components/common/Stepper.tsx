@@ -40,7 +40,7 @@ export default function Stepper({
                     complete
                       ? "bg-emerald-500 text-white"
                       : active
-                        ? "bg-violet-600 text-white"
+                        ? "bg-emerald-800 text-white"
                         : "bg-slate-100 text-slate-400"
                   }`}
                 >
@@ -51,7 +51,7 @@ export default function Stepper({
                     complete
                       ? "text-emerald-600"
                       : active
-                        ? "text-slate-900"
+                        ? "text-emerald-950"
                         : "text-slate-400"
                   }`}
                 >
