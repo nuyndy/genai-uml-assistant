@@ -4,7 +4,6 @@ import {
   Card,
   EmptyState,
   GhostButton,
-  PrimaryButton,
   SoftButton,
   StatusBadge,
 } from "../../../common/ui/primitives";
