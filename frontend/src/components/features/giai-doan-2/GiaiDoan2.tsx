@@ -569,7 +569,7 @@ export default function GiaiDoan2({
 
   if (projectId && loadedProjectId !== projectId) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-12 text-center text-sm text-slate-500">
+      <div className="w-full max-w-none px-4 py-8 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
         Đang tải dữ liệu UML từ database...
       </div>
     );
@@ -580,7 +580,7 @@ export default function GiaiDoan2({
   if (specifications && !hasFunctionalSpecification) {
     const hasAnySpecification = specifications.length > 0;
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12">
+      <div className="w-full max-w-none px-4 py-8 sm:px-6 lg:px-8">
         <Card
           tone="amber"
           title={hasAnySpecification ? "Dự án chưa có đặc tả chức năng" : "Dự án chưa có đặc tả"}
@@ -629,7 +629,7 @@ export default function GiaiDoan2({
           onCancel={() => setPendingRegenerate(null)}
         />
       )}
-      <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-4 py-8">
+      <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         <StepHeading step={`Bước ${step} / 5`} title={def.label} icon={def.icon} />
         {specificationError && <Notice tone="warn">{specificationError}</Notice>}
         {error && <Notice tone="danger">{error}</Notice>}
