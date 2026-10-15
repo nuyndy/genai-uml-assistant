@@ -84,7 +84,7 @@ export default function Step5ClassDiagram({
   return (
     <div className="space-y-6">
       <Card
-        tone="violet"
+        tone="emerald"
         title="Mô hình lớp suy luận"
         actions={
           <SoftButton disabled={busy || !projectId} onClick={regenerate}>
@@ -156,7 +156,7 @@ export default function Step5ClassDiagram({
                           type="button"
                           disabled={busy}
                           onClick={() => startEditing(item)}
-                          className="text-xs text-violet-600 hover:underline disabled:opacity-50"
+                          className="text-xs text-emerald-600 hover:underline disabled:opacity-50"
                         >
                           ✎ Sửa
                         </button>
@@ -218,7 +218,7 @@ function ClassEditor({
   onDelete: () => void;
 }) {
   return (
-    <div className="space-y-4 rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+    <div className="space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
       <div className="min-w-0">
         <FieldLabel>Tên lớp</FieldLabel>
         <input
@@ -303,7 +303,7 @@ function LineListEditor({
       <button
         type="button"
         onClick={() => onChange([...rows, ""])}
-        className="inline-flex h-9 items-center gap-1 rounded-lg px-1 text-sm font-medium text-violet-600 transition hover:text-violet-800"
+        className="inline-flex h-9 items-center gap-1 rounded-lg px-1 text-sm font-medium text-emerald-600 transition hover:text-emerald-800"
       >
         {addLabel}
       </button>
