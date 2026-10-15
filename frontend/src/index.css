@@ -1,15 +1,103 @@
 @import "tailwindcss";
+
+/* Design tokens — bảng màu thống nhất của GenAI UML Assistant */
 :root {
+  /* Nền */
+  --bg: #F5F2E4;
+  --surface: #FBF9F0;
+  --surface-alt: #EADFC6;
+  --border: #D9C9A8;
+
+  /* Chữ */
+  --text: #1A1D1B;
+  --text-muted: #6B5E4B;
+  --heading: #0A3323;
+
+  /* Thương hiệu */
+  --primary: #0A3323;
+  --primary-hover: #1B4D37;
+  --secondary: #2E6B4F;
+
+  /* Nhấn */
+  --accent: #A96A66;
+  --accent-text: #8F4A44;
+
+  /* Trạng thái */
+  --success: #4E8F6F;
+  --warning: #B8893B;
+  --danger: #8F4A44;
+
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #334155;
-  background: #f8fafc;
+  color: var(--text);
+  background: var(--bg);
   color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ánh xạ các utility màu đang dùng sang bảng màu thương hiệu.
+   Giữ nguyên class hiện tại để tránh phải viết lại toàn bộ component. */
+@theme {
+  --color-slate-50: #FBF9F0;
+  --color-slate-100: #F5F2E4;
+  --color-slate-200: #D9C9A8;
+  --color-slate-300: #C7B58F;
+  --color-slate-400: #9A8A70;
+  --color-slate-500: #6B5E4B;
+  --color-slate-600: #514638;
+  --color-slate-700: #39372F;
+  --color-slate-800: #1A1D1B;
+  --color-slate-900: #0A3323;
+  --color-slate-950: #06271A;
+
+  --color-violet-50: #F5F2E4;
+  --color-violet-100: #EADFC6;
+  --color-violet-200: #D9C9A8;
+  --color-violet-300: #B7C9B9;
+  --color-violet-400: #4E8F6F;
+  --color-violet-500: #2E6B4F;
+  --color-violet-600: #0A3323;
+  --color-violet-700: #1B4D37;
+  --color-violet-800: #0A3323;
+  --color-violet-900: #06271A;
+  --color-violet-950: #041D13;
+
+  --color-emerald-50: #EDF4EC;
+  --color-emerald-100: #DCE9DB;
+  --color-emerald-200: #B7D0BD;
+  --color-emerald-300: #8FB69B;
+  --color-emerald-400: #4E8F6F;
+  --color-emerald-500: #4E8F6F;
+  --color-emerald-600: #2E6B4F;
+  --color-emerald-700: #0A3323;
+  --color-emerald-800: #0A3323;
+  --color-emerald-900: #06271A;
+
+  --color-amber-50: #F8F0DF;
+  --color-amber-100: #EADFC6;
+  --color-amber-200: #D9C9A8;
+  --color-amber-300: #D0B477;
+  --color-amber-400: #B8893B;
+  --color-amber-500: #B8893B;
+  --color-amber-600: #946B2B;
+  --color-amber-700: #765323;
+  --color-amber-800: #5F431F;
+  --color-amber-900: #463218;
+
+  --color-rose-50: #F7EDEA;
+  --color-rose-100: #EEDAD5;
+  --color-rose-200: #DDBBB4;
+  --color-rose-300: #C98F86;
+  --color-rose-400: #A96A66;
+  --color-rose-500: #A96A66;
+  --color-rose-600: #8F4A44;
+  --color-rose-700: #8F4A44;
+  --color-rose-800: #743B36;
+  --color-rose-900: #5C302C;
 }
 
 #root {
@@ -22,6 +110,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100svh;
+  color: var(--text);
+  background: var(--bg);
 }
 
 code,
@@ -29,8 +119,9 @@ code,
   font-family: ui-monospace, Consolas, monospace;
   display: inline-flex;
   border-radius: 4px;
-  color: #0f172a;
+  color: var(--heading);
 }
+
 @keyframes progress-indeterminate {
   from {
     transform: translateX(-110%);
