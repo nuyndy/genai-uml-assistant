@@ -809,6 +809,9 @@ export default function GiaiDoan1({
       onAddRequirement={addRequirement}
       onRemoveRequirement={removeRequirement}
       onCheckCoverage={checkRequirementCoverage}
+      onToggleCoverageSuggestion={(index, selected) =>
+        setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: selected }))
+      }
       onAddSelectedCoverage={addSelectedCoverageSuggestions}
       onStepChange={onStepChange}
       requirementTitle={requirementTitle}
