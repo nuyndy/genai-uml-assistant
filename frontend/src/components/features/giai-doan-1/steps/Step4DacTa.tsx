@@ -106,11 +106,11 @@ export default function Step4DacTa({
   const canContinue = allFunctionalReady && Boolean(nonFunctionalSpecification) && !busy;
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">
+    <div className="w-full min-w-0 space-y-5">
+      <section className="relative overflow-hidden rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-100 via-white to-amber-100 p-5 sm:p-7">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Đặc tả yêu cầu</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-900">Giai đoạn 1 · Đặc tả yêu cầu</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Đặc tả chức năng &amp; phi chức năng</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">Sinh đặc tả từ User Story đã xác nhận, rà soát luồng xử lý và yêu cầu chất lượng, sau đó lưu để đồng bộ vào bản nháp SRS ở bước rà soát.</p>
           </div>
@@ -122,7 +122,7 @@ export default function Step4DacTa({
         {stories.length === 0 ? (
           <EmptyState title="Chưa có user story" hint="Xác nhận yêu cầu ở Bước 3 trước." />
         ) : (
-          <div className="space-y-4">
+          <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
             {stories.map((story) => {
               const specification = specifications.find(
                 (item) => item.user_story_id === story.id && item.type === "functional",
@@ -139,7 +139,7 @@ export default function Step4DacTa({
               return (
                 <section
                   key={story.id}
-                  className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                  className="min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
                 >
                   <button
                     type="button"
@@ -197,8 +197,8 @@ export default function Step4DacTa({
                                 }
                                 className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition ${
                                   activeTab === tab
-                                    ? "border-emerald-600 text-emerald-800"
-                                    : "border-transparent text-slate-500 hover:text-emerald-800"
+                                    ? "border-emerald-700 text-emerald-900"
+                                    : "border-transparent text-slate-600 hover:bg-emerald-50 hover:text-emerald-900"
                                 }`}
                               >
                                 {label}
