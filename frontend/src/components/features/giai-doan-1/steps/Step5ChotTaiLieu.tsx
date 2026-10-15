@@ -95,7 +95,6 @@ export default function Step5ChotTaiLieu({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>Lưu phần giới thiệu</SoftButton>
-          <PrimaryButton disabled={busy} onClick={() => onStepChange(5)}>Tiếp tục kiểm tra và phê duyệt</PrimaryButton>
         </div>
       </div>
       <Card
