@@ -15,7 +15,6 @@ import {
   previewProjectUserStories,
   saveSrsMetadata,
   updateSpecification,
-  exportSpecificationDocument,
   type FunctionalSpecification,
   type NonFunctionalSpecification,
   type RequirementAnalysis,
@@ -199,8 +198,7 @@ export default function GiaiDoan1({
   const autoGenerationAttempts = useRef(new Set<string>());
   const generationInFlight = useRef(new Set<string>());
 
-  // Lưu ý: kiểm tra stages/index.ts xem chỉ số 1 có đúng là Giai đoạn 1 không.
-  const definition = STAGES[1].steps[step - 1];
+  const definition = STAGES[1].steps[step - 1] ?? STAGES[1].steps[0];
 
   const draftRequirements = useMemo(
     () => requirements.filter((item) => item.status === "draft"),
@@ -728,25 +726,6 @@ export default function GiaiDoan1({
     step,
     stories,
   ]);
-
-  const exportSrs = async () => {
-    if (!projectId) return;
-    setBusy(true);
-    setError("");
-    try {
-      const { blob, filename } = await exportSpecificationDocument(projectId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } catch (reason) {
-      setError(`Không thể xuất tài liệu: ${formatError(reason)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const saveSrsMetadataDraft = async () => {
     if (!projectId) return;
