@@ -74,7 +74,7 @@ export default function Step4InteractionDiagram({
   return (
     <div className="space-y-6">
       <Card
-        tone="violet"
+        tone="emerald"
         title="Sinh biểu đồ tương tác"
         actions={
           <div className="flex flex-wrap items-center gap-3">
@@ -86,7 +86,7 @@ export default function Step4InteractionDiagram({
                   onClick={() => setDiagramType(value)}
                   className={`rounded-lg px-3 py-2 text-xs font-medium ${
                     currentDiagramType === value
-                      ? "bg-violet-600 text-white"
+                      ? "bg-emerald-600 text-white"
                       : "text-slate-600 hover:bg-white"
                   }`}
                 >
