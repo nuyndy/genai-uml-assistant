@@ -12,7 +12,7 @@ interface Props {
   disabled?: boolean;
 }
 
-/** Cột trái: form nhập các thành phần cốt lõi của yêu cầu. */
+/** Biểu mẫu nhập yêu cầu theo cấu trúc Actor – Action – Object – Purpose. */
 export default function RequirementFormFields({
   value,
   onChange,
@@ -21,111 +21,123 @@ export default function RequirementFormFields({
   onChangeList,
   onCheck,
   error,
-  checkLabel = "Kiểm tra cấu trúc yêu cầu",
+  checkLabel = "Thêm yêu cầu",
   disabled = false,
 }: Props) {
   return (
-    <div className="bg-white rounded-2xl border-slate-200 p-6 space-y-5 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900 border-b border-slate-100 pb-3">
-        Thông tin Yêu cầu Đầu vào
-      </h2>
+    <div className="space-y-5">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-sm font-medium text-slate-900">Cấu trúc một yêu cầu tốt</p>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          <span className="font-medium text-emerald-700">Vai trò</span> thực hiện{" "}
+          <span className="font-medium text-emerald-700">hành động</span> trên{" "}
+          <span className="font-medium text-emerald-700">đối tượng</span> để đạt{" "}
+          <span className="font-medium text-emerald-700">mục đích</span>.
+        </p>
+      </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-          Vai trò (Actor) <span className="text-violet-500">*</span>
+        <label htmlFor="requirement-actor" className="mb-1.5 block text-sm font-medium text-slate-700">
+          Vai trò (Actor) <span className="text-rose-600">*</span>
         </label>
         <input
+          id="requirement-actor"
           value={value.actor}
           disabled={disabled}
-          onChange={(e) => onChange("actor", e.target.value)}
-          placeholder="VD: Sinh viên, Khách hàng"
+          onChange={(event) => onChange("actor", event.target.value)}
+          placeholder="Ví dụ: Sinh viên, Quản trị viên, Khách hàng"
           className={inputClass}
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="requirement-action" className="mb-1.5 block text-sm font-medium text-slate-700">
+            Hành động <span className="text-rose-600">*</span>
+          </label>
+          <input
+            id="requirement-action"
+            value={value.action}
+            disabled={disabled}
+            onChange={(event) => onChange("action", event.target.value)}
+            placeholder="Ví dụ: Đăng ký, Thanh toán"
+            className={inputClass}
+            autoComplete="off"
+          />
+        </div>
+        <div>
+          <label htmlFor="requirement-target" className="mb-1.5 block text-sm font-medium text-slate-700">
+            Đối tượng <span className="text-rose-600">*</span>
+          </label>
+          <input
+            id="requirement-target"
+            value={value.targetObject}
+            disabled={disabled}
+            onChange={(event) => onChange("targetObject", event.target.value)}
+            placeholder="Ví dụ: Học phần, Đơn hàng"
+            className={inputClass}
+            autoComplete="off"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="requirement-purpose" className="mb-1.5 block text-sm font-medium text-slate-700">
+          Mục đích <span className="text-rose-600">*</span>
+        </label>
+        <input
+          id="requirement-purpose"
+          value={value.purpose}
+          disabled={disabled}
+          onChange={(event) => onChange("purpose", event.target.value)}
+          placeholder="Ví dụ: Theo dõi tiến độ, tiết kiệm thời gian"
+          className={inputClass}
+          autoComplete="off"
         />
       </div>
 
       {preConditions && businessRules && onChangeList && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="space-y-4 border-t border-slate-200 pt-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Điều kiện trước
-            </label>
-            <textarea
-              value={preConditions.join("\n")}
-              disabled={disabled}
-              onChange={(event) =>
-                onChangeList(
-                  "preConditions",
-                  event.target.value.split("\n").map((item) => item.trim()).filter(Boolean),
-                )
-              }
-              rows={3}
-              placeholder="Mỗi điều kiện trên một dòng"
-              className={`${inputClass} resize-y`}
-            />
+            <h3 className="text-sm font-semibold text-slate-900">Thông tin bổ sung (không bắt buộc)</h3>
+            <p className="mt-1 text-xs text-slate-500">Mỗi điều kiện hoặc quy tắc nhập trên một dòng.</p>
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Quy tắc nghiệp vụ
-            </label>
-            <textarea
-              value={businessRules.join("\n")}
-              disabled={disabled}
-              onChange={(event) =>
-                onChangeList(
-                  "businessRules",
-                  event.target.value.split("\n").map((item) => item.trim()).filter(Boolean),
-                )
-              }
-              rows={3}
-              placeholder="Mỗi quy tắc trên một dòng"
-              className={`${inputClass} resize-y`}
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="requirement-preconditions" className="mb-1.5 block text-sm font-medium text-slate-700">
+                Điều kiện trước
+              </label>
+              <textarea
+                id="requirement-preconditions"
+                value={preConditions.join("\n")}
+                disabled={disabled}
+                onChange={(event) => onChangeList("preConditions", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean))}
+                rows={3}
+                placeholder="Ví dụ: Người dùng đã đăng nhập"
+                className={`${inputClass} resize-y`}
+              />
+            </div>
+            <div>
+              <label htmlFor="requirement-business-rules" className="mb-1.5 block text-sm font-medium text-slate-700">
+                Quy tắc nghiệp vụ
+              </label>
+              <textarea
+                id="requirement-business-rules"
+                value={businessRules.join("\n")}
+                disabled={disabled}
+                onChange={(event) => onChangeList("businessRules", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean))}
+                rows={3}
+                placeholder="Ví dụ: Mỗi tài khoản chỉ được đặt một lịch cùng thời điểm"
+                className={`${inputClass} resize-y`}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Hành động <span className="text-violet-500">*</span>
-          </label>
-          <input
-            value={value.action}
-            disabled={disabled}
-            onChange={(e) => onChange("action", e.target.value)}
-            placeholder="VD: Đăng ký, Thanh toán"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Đối tượng <span className="text-violet-500">*</span>
-          </label>
-          <input
-            value={value.targetObject}
-            disabled={disabled}
-            onChange={(e) => onChange("targetObject", e.target.value)}
-            placeholder="VD: Học phần, Đơn hàng"
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-          Mục đích <span className="text-violet-500">*</span>
-        </label>
-        <input
-          value={value.purpose}
-          disabled={disabled}
-          onChange={(e) => onChange("purpose", e.target.value)}
-          placeholder="VD: Tự động hóa quy trình, Tiết kiệm thời gian"
-          className={inputClass}
-        />
-      </div>
-
       {error && (
-        <div className="rounded-xl border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
         </div>
       )}
@@ -134,7 +146,7 @@ export default function RequirementFormFields({
         type="button"
         onClick={onCheck}
         disabled={disabled}
-        className="w-full inline-flex justify-center items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {checkLabel}
       </button>
