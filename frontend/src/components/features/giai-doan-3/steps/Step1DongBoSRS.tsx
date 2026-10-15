@@ -39,7 +39,7 @@ export default function Step1DongBoSRS({
 }: Props) {
   return (
     <div className="space-y-6">
-      <Card tone="violet" title="Đồng bộ SRS và quản lý baseline">
+      <Card tone="emerald" title="Đồng bộ SRS và quản lý baseline">
         <div className="flex flex-wrap gap-3">
           <SoftButton disabled={busy} onClick={onSyncSrs}>
             1. Tải / đồng bộ SRS
