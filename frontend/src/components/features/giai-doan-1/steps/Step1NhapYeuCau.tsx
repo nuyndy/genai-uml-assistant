@@ -27,6 +27,7 @@ interface Props {
   onAddRequirement: () => void;
   onRemoveRequirement: (id: number) => void;
   onCheckCoverage: () => void;
+  onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
   onAddSelectedCoverage: () => void;
   onStepChange: (step: number) => void;
   requirementTitle: (raw: RawRequirement) => string;
@@ -49,6 +50,7 @@ export default function Step1NhapYeuCau({
   onAddRequirement,
   onRemoveRequirement,
   onCheckCoverage,
+  onToggleCoverageSuggestion,
   onAddSelectedCoverage,
   onStepChange,
   requirementTitle,
@@ -170,13 +172,9 @@ export default function Step1NhapYeuCau({
                               Boolean(selectedCoverageSuggestions[index])
                             }
                             disabled={busy || alreadyAdded}
-                            onChange={(event) => {
-                              const newSelections = {
-                                ...selectedCoverageSuggestions,
-                              };
-                              newSelections[index] = event.target.checked;
-                              // Call parent setter via passed function if needed
-                            }}
+                            onChange={(event) =>
+                              onToggleCoverageSuggestion(index, event.target.checked)
+                            }
                             className="mt-1 h-4 w-4 shrink-0 accent-violet-600"
                           />
                           <span className="min-w-0 text-sm text-slate-700">
