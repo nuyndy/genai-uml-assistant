@@ -39,6 +39,8 @@ interface Props {
   loaded?: boolean;
   error?: string;
   runBatchAnalysis: () => void | Promise<void>;
+  onConfirm: () => void;
+  confirmed: boolean;
   onStepChange: (step: number) => void;
   requirementTitle?: (raw: never) => string;
   wrapClass: string;
@@ -51,6 +53,8 @@ export default function Step1ActorUseCase({
   loadingAnalysis,
   busy,
   runBatchAnalysis,
+  onConfirm,
+  confirmed,
   onStepChange,
   wrapClass,
 }: Props) {
@@ -147,13 +151,26 @@ export default function Step1ActorUseCase({
           </div>
         )}
 
-        <div className="mt-5 flex justify-end">
-          <PrimaryButton
-            disabled={busy || loadingAnalysis || useCases.length === 0}
-            onClick={() => onStepChange(2)}
-          >
-            Tiếp tục sang Bước 2
-          </PrimaryButton>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-slate-500" role="status">
+            {confirmed
+              ? "Danh sách Actor và Use Case đã được xác nhận trong phiên làm việc."
+              : "Rà soát danh sách đã lưu trước khi xác nhận. Gợi ý AI chưa tự động trở thành dữ liệu chính thức."}
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <SoftButton
+              disabled={busy || loadingAnalysis || actors.length === 0 || useCases.length === 0}
+              onClick={onConfirm}
+            >
+              {confirmed ? "Đã xác nhận danh sách" : "Xác nhận Actor và Use Case"}
+            </SoftButton>
+            <PrimaryButton
+              disabled={busy || loadingAnalysis || !confirmed}
+              onClick={() => onStepChange(2)}
+            >
+              Tiếp tục sang Bước 2
+            </PrimaryButton>
+          </div>
         </div>
       </Card>
     </div>
