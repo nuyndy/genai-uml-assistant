@@ -480,6 +480,44 @@ def approve_baseline(
             detail="Không thể duyệt baseline khi chưa có đặc tả FR/NFR.",
         )
 
+    # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
+    actors = entities.get("actor", [])
+    use_cases = entities.get("use_case", [])
+    diagrams = entities.get("diagram", [])
+    if not isinstance(actors, list) or not actors:
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt baseline khi chưa có Actor.",
+        )
+    if not isinstance(use_cases, list) or not use_cases:
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt baseline khi chưa có Use Case.",
+        )
+    if not isinstance(diagrams, list):
+        raise HTTPException(
+            status_code=409,
+            detail="Danh sách biểu đồ trong snapshot không hợp lệ.",
+        )
+    diagram_types = {
+        item.get("type")
+        for item in diagrams
+        if isinstance(item, dict)
+    }
+    missing_diagrams = [
+        diagram_type
+        for diagram_type in ("use_case", "class")
+        if diagram_type not in diagram_types
+    ]
+    if missing_diagrams:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Chưa đủ biểu đồ UML để duyệt baseline.",
+                "missing_diagram_types": missing_diagrams,
+            },
+        )
+
     # Không duyệt khi còn vấn đề chưa được xử lý.
     open_issues = row.open_issues
     if open_issues is None:
