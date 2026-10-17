@@ -123,10 +123,15 @@ function App() {
     (specification) =>
       specification.type === "functional" && specification.approved,
   );
+  const hasApprovedNonFunctionalSpecification = workflow.specs.some(
+    (specification) =>
+      specification.type === "non_functional" && specification.approved,
+  );
   const stage1Complete =
     workflow.requirementLocked &&
     workflow.userStoryId !== null &&
-    hasApprovedFunctionalSpecification;
+    hasApprovedFunctionalSpecification &&
+    hasApprovedNonFunctionalSpecification;
 
   const allUseCasesHaveScenarios =
     workflow.usecases.length > 0 &&
