@@ -33,6 +33,7 @@ interface Props {
   onGenerateSingle: (useCaseId: number) => void | Promise<void>;
   onSaveDiagram: (diagramId: number, code: string) => void | Promise<void>;
   onConfirm: () => void;
+  confirmed: boolean;
   onStepChange: (step: number) => void;
   wrapClass: string;
   inputClass?: string;
@@ -54,6 +55,7 @@ export default function Step4InteractionDiagram({
   onGenerateSingle,
   onSaveDiagram,
   onConfirm,
+  confirmed,
   onStepChange,
   wrapClass,
   inputClass = "w-full rounded-lg border border-slate-300 p-3 text-sm",
@@ -70,6 +72,18 @@ export default function Step4InteractionDiagram({
     await onSaveDiagram(diagramId, draft);
     setEditingUseCaseId(null);
   };
+
+  const allDiagramsReady =
+    scenarios.length > 0 &&
+    scenarios.every((useCase) =>
+      interactions.some(
+        (item) =>
+          item.usecaseId === useCase.id &&
+          item.type === currentDiagramType &&
+          Boolean(item.imageUrl) &&
+          Boolean(item.sourceCode?.trim()),
+      ),
+    );
 
   return (
     <div className="space-y-6">
@@ -195,16 +209,20 @@ export default function Step4InteractionDiagram({
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
         <p className="text-sm text-slate-700">
-          Kiểm tra các biểu đồ rồi xác nhận để tiếp tục.
+          {allDiagramsReady
+            ? confirmed
+              ? "Các biểu đồ đã được xác nhận."
+              : "Kiểm tra các biểu đồ rồi xác nhận để tiếp tục."
+            : "Cần sinh và render đầy đủ biểu đồ cho từng kịch bản trước khi xác nhận."}
         </p>
-        <PrimaryButton disabled={busy || scenarios.length === 0} onClick={onConfirm}>
+        <PrimaryButton disabled={busy || !allDiagramsReady} onClick={onConfirm}>
           Xác nhận biểu đồ tương tác
         </PrimaryButton>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <GhostButton onClick={() => onStepChange(3)}>Quay lại Bước 3</GhostButton>
-        <PrimaryButton disabled={busy} onClick={() => onStepChange(5)}>
+        <PrimaryButton disabled={busy || !confirmed || !allDiagramsReady} onClick={() => onStepChange(5)}>
           Tiếp tục sang Bước 5
         </PrimaryButton>
       </div>
