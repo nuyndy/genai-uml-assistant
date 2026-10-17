@@ -517,7 +517,14 @@ export default function GiaiDoan2({
       scenarios={scenarios}
       interactions={state.interactions}
       currentDiagramType={diagramType}
-      setDiagramType={setDiagramType}
+      setDiagramType={(nextType) => {
+        setDiagramType(nextType);
+        setState((previous) => ({
+          ...previous,
+          interactionsConfirmed: false,
+          classDiagramConfirmed: false,
+        }));
+      }}
       busy={busy}
       projectId={projectId}
       onGenerateBatch={() =>
