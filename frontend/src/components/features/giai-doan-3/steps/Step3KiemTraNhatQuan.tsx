@@ -1,4 +1,4 @@
-import { Card, SoftButton, GhostButton, PrimaryButton } from "../../../common/ui/primitives";
+import { Card, SoftButton, GhostButton, PrimaryButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -6,64 +6,77 @@ interface Props {
     diagramCode: string;
   };
   busy: boolean;
+  consistencyResult: any;
   onRenderAndSave: () => Promise<void>;
+  onConsistencyCheck: () => Promise<void>;
+  stage3Message: string;
   onStepChange: (step: number) => void;
 }
 
 export default function Step3KiemTraNhatQuan({
   state,
   busy,
+  consistencyResult,
   onRenderAndSave,
+  onConsistencyCheck,
+  stage3Message,
   onStepChange,
 }: Props) {
   return (
     <div className="space-y-6">
       <Card
         tone="emerald"
-        title="Xem trước và hiển thị"
+        title="Kiểm tra nhất quán"
         actions={
-          <SoftButton
-            disabled={busy}
-            onClick={onRenderAndSave}
-          >
-            {busy ? "Đang render..." : "Render và xem trước"}
-          </SoftButton>
+          <div className="flex flex-wrap gap-2">
+            <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onRenderAndSave}>
+              {busy ? "Đang xử lý..." : "Render và lưu sơ đồ"}
+            </SoftButton>
+            <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+              Kiểm tra UML
+            </PrimaryButton>
+          </div>
         }
       >
-        <div className="relative min-h-[400px] flex items-center justify-center border rounded-xl bg-slate-50 overflow-hidden">
-          {state.previewImageUrl ? (
-            <img
-              src={state.previewImageUrl}
-              alt="Diagram Preview"
-              className="max-w-full h-auto"
-            />
-          ) : (
-            <div className="text-center p-8">
-              <p className="text-sm text-slate-500">Chưa có ảnh xem trước</p>
-              <p className="text-xs text-slate-400 mt-1">Bấm nút "Render và xem trước" để tạo ảnh từ mã hiện tại.</p>
-            </div>
+        {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
+        <div className="mt-4 rounded-xl border border-slate-200 p-4 text-sm">
+          <p className="font-medium">Kết quả kiểm tra</p>
+          <p className="mt-1 text-slate-600">
+            {consistencyResult
+              ? consistencyResult.consistent
+                ? "Không phát hiện sai lệch trong phạm vi kiểm tra."
+                : "Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML."
+              : "Chưa chạy kiểm tra nhất quán."}
+          </p>
+          {consistencyResult && !consistencyResult.consistent && (
+            <ul className="mt-3 list-disc space-y-1 pl-5">
+              {(consistencyResult.missing_in_database ?? []).map((item: string, index: number) => (
+                <li key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</li>
+              ))}
+              {(consistencyResult.missing_in_plantuml ?? []).map((item: string, index: number) => (
+                <li key={`puml-${index}`}>Thiếu trong PlantUML: {item}</li>
+              ))}
+              {(consistencyResult.missing_relations ?? []).map((item: any, index: number) => (
+                <li key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</li>
+              ))}
+              {(consistencyResult.extra_relations ?? []).map((item: any, index: number) => (
+                <li key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</li>
+              ))}
+            </ul>
           )}
         </div>
-        <div className="mt-4 p-3 rounded-lg bg-slate-100 text-[10px] font-mono text-slate-500">
-          Endpoint: POST /diagram/render
+        <div className="relative mt-4 flex min-h-[320px] items-center justify-center overflow-hidden rounded-xl border bg-slate-50">
+          {state.previewImageUrl ? (
+            <img src={state.previewImageUrl} alt="Xem trước biểu đồ" className="h-auto max-w-full" />
+          ) : (
+            <p className="p-8 text-sm text-slate-500">Render sơ đồ để xem trước trước khi duyệt baseline.</p>
+          )}
         </div>
       </Card>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3">
-          <GhostButton onClick={() => onStepChange(1)}>
-            ← Quay lại sửa thành phần
-          </GhostButton>
-          <GhostButton onClick={() => onStepChange(2)}>
-            ← Quay lại sửa mã
-          </GhostButton>
-        </div>
-
-        <PrimaryButton
-          disabled={!state.previewImageUrl}
-          onClick={() => onStepChange(4)}
-        >
-          Ưng ý, tiếp tục xuất →
+      <div className="flex justify-between gap-3">
+        <GhostButton onClick={() => onStepChange(2)}>← Quay lại chỉnh sửa</GhostButton>
+        <PrimaryButton disabled={!consistencyResult?.consistent} onClick={() => onStepChange(4)}>
+          Tiếp tục duyệt baseline →
         </PrimaryButton>
       </div>
     </div>
