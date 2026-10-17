@@ -777,6 +777,14 @@ def export_specification_document(
                 ),
             )
 
+    # Cổng xuất bản bắt buộc áp dụng ở backend, kể cả khi client truyền
+    # trực tiếp baseline_id của một bản nháp.
+    if baseline.status != "approved":
+        raise HTTPException(
+            status_code=409,
+            detail="Chỉ baseline đã được duyệt mới được phép xuất SRS DOCX chính thức.",
+        )
+
     if not isinstance(baseline.snapshot, dict):
         raise HTTPException(
             status_code=409,
