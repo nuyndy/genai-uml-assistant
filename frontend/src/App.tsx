@@ -119,19 +119,54 @@ function App() {
    * ít nhất một đặc tả. Giai đoạn 2 hoàn thành khi đã có mô hình lớp (bước
    * cuối) cùng biểu đồ use case.
    */
+  const hasApprovedFunctionalSpecification = workflow.specs.some(
+    (specification) =>
+      specification.type === "functional" && specification.approved,
+  );
   const stage1Complete =
     workflow.requirementLocked &&
     workflow.userStoryId !== null &&
-    workflow.specs.length > 0;
+    hasApprovedFunctionalSpecification;
+
+  const allUseCasesHaveScenarios =
+    workflow.usecases.length > 0 &&
+    workflow.usecases.every((useCase) => {
+      const scenario = workflow.scenarios[useCase.id];
+      return Boolean(
+        scenario &&
+          (scenario.mainFlow.length > 0 ||
+            scenario.altFlows.length > 0 ||
+            scenario.exceptions.length > 0),
+      );
+    });
+
+  const allUseCasesHaveInteractionDiagrams =
+    workflow.usecases.length > 0 &&
+    workflow.usecases.every((useCase) =>
+      workflow.interactions.some(
+        (diagram) =>
+          diagram.usecaseId === useCase.id &&
+          Boolean(diagram.imageUrl) &&
+          Boolean(diagram.sourceCode?.trim()),
+      ),
+    );
+
   const stage2Complete =
     stage1Complete &&
     workflow.actorsUseCasesConfirmed &&
+    workflow.actors.length > 0 &&
+    workflow.usecases.length > 0 &&
     workflow.useCaseDiagramConfirmed &&
+    Boolean(workflow.useCaseDiagramUrl) &&
+    Boolean(workflow.useCaseDiagramCode?.trim()) &&
     workflow.scenariosConfirmed &&
+    allUseCasesHaveScenarios &&
     workflow.interactionsConfirmed &&
+    allUseCasesHaveInteractionDiagrams &&
     workflow.classDiagramConfirmed &&
     workflow.umlClasses.length > 0 &&
-    workflow.classDiagramUrl !== null;
+    Boolean(workflow.classDiagramUrl) &&
+    Boolean(workflow.classDiagramCode?.trim());
 
   /** Các giai đoạn đã thực sự hoàn thành, dùng để tô xanh đúng tiến độ. */
   const completedStages = [
