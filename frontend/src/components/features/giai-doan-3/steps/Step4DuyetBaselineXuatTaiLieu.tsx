@@ -1,5 +1,5 @@
 import type { ExportFormat } from "../../../../types/workflow";
-import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton } from "../../../common/ui/primitives";
+import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -10,6 +10,13 @@ interface Props {
   busy: boolean;
   onAttachDiagram: () => Promise<void>;
   onExportFormatChange: (format: ExportFormat) => void;
+  baselines: any[];
+  selectedBaselineId: number | null;
+  setSelectedBaselineId: (id: number | null) => void;
+  consistencyResult: any;
+  onCreateBaseline: () => Promise<void>;
+  onApproveBaseline: () => Promise<void>;
+  onExportSrs: () => Promise<void>;
   onStepChange: (step: number) => void;
 }
 
@@ -18,6 +25,13 @@ export default function Step4DuyetBaselineXuatTaiLieu({
   busy,
   onAttachDiagram,
   onExportFormatChange,
+  baselines,
+  selectedBaselineId,
+  setSelectedBaselineId,
+  consistencyResult,
+  onCreateBaseline,
+  onApproveBaseline,
+  onExportSrs,
   onStepChange,
 }: Props) {
   return (
@@ -85,6 +99,48 @@ export default function Step4DuyetBaselineXuatTaiLieu({
 
         <div className="mt-4 p-3 rounded-lg bg-slate-100 text-[10px] font-mono text-slate-500">
           Endpoint: POST /diagram/export và POST /specs/attach-diagram
+        </div>
+      </Card>
+
+
+      <Card tone="emerald" title="Duyệt baseline và xuất SRS">
+        <div className="mb-4 flex flex-wrap gap-3">
+          <SoftButton
+            disabled={busy || !consistencyResult?.consistent}
+            onClick={onCreateBaseline}
+          >
+            Tạo baseline
+          </SoftButton>
+          <SoftButton
+            disabled={busy || selectedBaselineId === null || !consistencyResult?.consistent}
+            onClick={onApproveBaseline}
+          >
+            Duyệt baseline
+          </SoftButton>
+          <PrimaryButton
+            disabled={busy || !baselines.some((item) => item.status === "approved")}
+            onClick={onExportSrs}
+          >
+            Xuất SRS chính thức (DOCX)
+          </PrimaryButton>
+        </div>
+        <div className="space-y-2">
+          {baselines.length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có baseline. Hãy kiểm tra nhất quán trước khi tạo.</p>
+          ) : baselines.map((baseline) => (
+            <label key={baseline.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-3">
+              <input
+                type="radio"
+                name="project-baseline"
+                checked={selectedBaselineId === baseline.id}
+                onChange={() => setSelectedBaselineId(baseline.id)}
+              />
+              <span className="flex-1 text-sm">Phiên bản {baseline.version} — {baseline.name}</span>
+              <StatusBadge tone={baseline.status === "approved" ? "success" : "neutral"}>
+                {baseline.status === "approved" ? "Đã duyệt" : "Bản nháp"}
+              </StatusBadge>
+            </label>
+          ))}
         </div>
       </Card>
 
