@@ -119,19 +119,20 @@ function App() {
    * ít nhất một đặc tả. Giai đoạn 2 hoàn thành khi đã có mô hình lớp (bước
    * cuối) cùng biểu đồ use case.
    */
-  const hasApprovedFunctionalSpecification = workflow.specs.some(
-    (specification) =>
-      specification.type === "functional" && specification.approved,
+  // Backend hiện chưa lưu trạng thái duyệt riêng cho FR/NFR.
+  // Vì vậy chỉ xác nhận giai đoạn hoàn tất khi yêu cầu đã khóa và có đủ
+  // hai loại đặc tả; không coi cờ approved giả lập trên frontend là bằng chứng duyệt.
+  const hasFunctionalSpecification = workflow.specs.some(
+    (specification) => specification.type === "functional",
   );
-  const hasApprovedNonFunctionalSpecification = workflow.specs.some(
-    (specification) =>
-      specification.type === "non_functional" && specification.approved,
+  const hasNonFunctionalSpecification = workflow.specs.some(
+    (specification) => specification.type === "non_functional",
   );
   const stage1Complete =
     workflow.requirementLocked &&
     workflow.userStoryId !== null &&
-    hasApprovedFunctionalSpecification &&
-    hasApprovedNonFunctionalSpecification;
+    hasFunctionalSpecification &&
+    hasNonFunctionalSpecification;
 
   const allUseCasesHaveScenarios =
     workflow.usecases.length > 0 &&
