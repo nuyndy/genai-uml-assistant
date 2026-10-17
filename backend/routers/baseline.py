@@ -467,7 +467,9 @@ def approve_baseline(
                 "open_issues": open_issues,
             },
         )
-        uml_issues = _check_class_diagram_snapshot(snapshot)
+
+    # Luôn kiểm tra snapshot UML trước khi duyệt, kể cả khi không có open issues.
+    uml_issues = _check_class_diagram_snapshot(snapshot)
     if uml_issues:
         raise HTTPException(
             status_code=409,
