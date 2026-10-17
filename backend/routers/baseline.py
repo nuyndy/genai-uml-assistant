@@ -457,7 +457,7 @@ def approve_baseline(
             detail="Không thể duyệt baseline khi dự án chưa có yêu cầu đầu vào.",
         )
     unconfirmed = [
-        item.get("id")
+        item.get("id") if isinstance(item, dict) else None
         for item in requirements
         if not isinstance(item, dict) or item.get("status") != "confirmed"
     ]
