@@ -278,22 +278,12 @@ export default function GiaiDoan3({
 
         {step === 1 && (
           <Step1DongBoSRS
-            projectId={projectId}
             srsLoaded={srsLoaded}
             srsMarkdown={srsMarkdown}
             srsSynced={state.srsSynced}
             busy={busy}
             onSyncSrs={syncSrs}
-            onConsistencyCheck={runConsistencyCheck}
-            onCreateBaseline={createBaseline}
-            onApproveBaseline={approveBaseline}
-            onExportSrs={exportApprovedSrs}
-            baselines={baselines}
-            selectedBaselineId={selectedBaselineId}
-            setSelectedBaselineId={setSelectedBaselineId}
-            consistencyResult={consistencyResult}
             stage3Message={stage3Message}
-            setStage3Message={setStage3Message}
           />
         )}
         {step === 2 && (
@@ -312,6 +302,9 @@ export default function GiaiDoan3({
             state={state}
             busy={busy}
             onRenderAndSave={handleRenderAndSave}
+            onConsistencyCheck={runConsistencyCheck}
+            consistencyResult={consistencyResult}
+            stage3Message={stage3Message}
             onStepChange={onStepChange}
           />
         )}
@@ -321,6 +314,13 @@ export default function GiaiDoan3({
             busy={busy}
             onAttachDiagram={handleAttachDiagram}
             onExportFormatChange={(format) => setState((prev: any) => ({ ...prev, exportFormat: format }))}
+            baselines={baselines}
+            selectedBaselineId={selectedBaselineId}
+            setSelectedBaselineId={setSelectedBaselineId}
+            consistencyResult={consistencyResult}
+            onCreateBaseline={createBaseline}
+            onApproveBaseline={approveBaseline}
+            onExportSrs={exportApprovedSrs}
             onStepChange={onStepChange}
           />
         )}
