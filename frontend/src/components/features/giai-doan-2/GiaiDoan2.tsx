@@ -353,6 +353,7 @@ export default function GiaiDoan2({
     const classes = await generateClasses(projectId);
     setState((previous) => ({
       ...previous,
+      classDiagramConfirmed: false,
       umlClasses: classes.map((item) => ({
         id: item.id,
         name: item.name,
@@ -363,6 +364,7 @@ export default function GiaiDoan2({
     const diagram = await generateClassDiagram(projectId);
     setState((previous) => ({
       ...previous,
+      classDiagramConfirmed: false,
       classDiagramUrl: diagram.image_url,
       classDiagramCode: diagram.source_code,
       classDiagramConfirmed: false,
@@ -427,7 +429,13 @@ export default function GiaiDoan2({
           }));
         }, "Đang render lại từ mã đã sửa...")
       }
-      onConfirm={() => setState((previous) => ({ ...previous, useCaseDiagramConfirmed: true }))}
+      onConfirm={() => setState((previous) => ({
+        ...previous,
+        useCaseDiagramConfirmed: true,
+        scenariosConfirmed: false,
+        interactionsConfirmed: false,
+        classDiagramConfirmed: false,
+      }))}
       onStepChange={onStepChange}
     />
   );
@@ -481,7 +489,12 @@ export default function GiaiDoan2({
           await refreshSavedState();
         }, "Đang lưu kịch bản use case...")
       }
-      confirmAll={() => setState((previous) => ({ ...previous, scenariosConfirmed: true }))}
+      confirmAll={() => setState((previous) => ({
+        ...previous,
+        scenariosConfirmed: true,
+        interactionsConfirmed: false,
+        classDiagramConfirmed: false,
+      }))}
       onStepChange={onStepChange}
       wrapClass={wrapClass}
     />
@@ -516,7 +529,11 @@ export default function GiaiDoan2({
           setState((previous) => ({ ...previous, interactionsConfirmed: false }));
         }, "Đang render lại từ mã đã sửa...");
       }}
-      onConfirm={() => setState((previous) => ({ ...previous, interactionsConfirmed: true }))}
+      onConfirm={() => setState((previous) => ({
+        ...previous,
+        interactionsConfirmed: true,
+        classDiagramConfirmed: false,
+      }))}
       onStepChange={onStepChange}
       wrapClass={wrapClass}
       inputClass={inputClass}
@@ -560,6 +577,7 @@ export default function GiaiDoan2({
           await deleteClass(id);
           setState((previous) => ({
             ...previous,
+            classDiagramConfirmed: false,
             umlClasses: previous.umlClasses.filter((item) => item.id !== id),
           }));
           setEditingClassId(null);
