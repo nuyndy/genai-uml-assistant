@@ -330,6 +330,8 @@ export default function GiaiDoan2({
     setState((previous) => ({
       ...previous,
       scenariosConfirmed: false,
+      interactionsConfirmed: false,
+      classDiagramConfirmed: false,
       scenarios: {
         ...previous.scenarios,
         [useCaseId]: {
@@ -404,6 +406,9 @@ export default function GiaiDoan2({
                 useCaseDiagramUrl: diagram.image_url,
                 useCaseDiagramCode: diagram.source_code,
                 useCaseDiagramConfirmed: false,
+                scenariosConfirmed: false,
+                interactionsConfirmed: false,
+                classDiagramConfirmed: false,
               }));
             }, "Đang sinh biểu đồ use case..."),
         )
@@ -415,6 +420,10 @@ export default function GiaiDoan2({
             ...previous,
             useCaseDiagramUrl: diagram.image_url,
             useCaseDiagramCode: diagram.source_code,
+            useCaseDiagramConfirmed: false,
+            scenariosConfirmed: false,
+            interactionsConfirmed: false,
+            classDiagramConfirmed: false,
           }));
         }, "Đang render lại từ mã đã sửa...")
       }
@@ -531,6 +540,7 @@ export default function GiaiDoan2({
           });
           setState((previous) => ({
             ...previous,
+            classDiagramConfirmed: false,
             umlClasses: previous.umlClasses.map((item) =>
               item.id === saved.id
                 ? {
