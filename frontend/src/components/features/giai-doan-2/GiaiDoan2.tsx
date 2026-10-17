@@ -382,6 +382,17 @@ export default function GiaiDoan2({
       loaded={loadedProjectId !== undefined}
       error={error}
       runBatchAnalysis={runExtract}
+      confirmed={state.actorsUseCasesConfirmed}
+      onConfirm={() =>
+        setState((previous) => ({
+          ...previous,
+          actorsUseCasesConfirmed: true,
+          useCaseDiagramConfirmed: false,
+          scenariosConfirmed: false,
+          interactionsConfirmed: false,
+          classDiagramConfirmed: false,
+        }))
+      }
       onStepChange={onStepChange}
       requirementTitle={(raw: any) => raw.name}
       wrapClass={wrapClass}
