@@ -445,6 +445,41 @@ def approve_baseline(
             detail="Snapshot baseline không hợp lệ hoặc không thuộc project này.",
         )
 
+    # Cổng nghiệp vụ: không duyệt baseline nếu yêu cầu đầu vào chưa được xác nhận
+    # hoặc chưa có User Story và đặc tả FR/NFR trong snapshot.
+    entities = snapshot["entities"]
+    requirements = entities.get("raw_requirement", [])
+    stories = entities.get("user_story", [])
+    specifications = entities.get("specification", [])
+    if not isinstance(requirements, list) or not requirements:
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt baseline khi dự án chưa có yêu cầu đầu vào.",
+        )
+    unconfirmed = [
+        item.get("id")
+        for item in requirements
+        if not isinstance(item, dict) or item.get("status") != "confirmed"
+    ]
+    if unconfirmed:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Còn yêu cầu chưa được xác nhận; hãy quay lại Giai đoạn 1.",
+                "requirement_ids": unconfirmed,
+            },
+        )
+    if not isinstance(stories, list) or not stories:
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt baseline khi chưa có User Story.",
+        )
+    if not isinstance(specifications, list) or not specifications:
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt baseline khi chưa có đặc tả FR/NFR.",
+        )
+
     # Không duyệt khi còn vấn đề chưa được xử lý.
     open_issues = row.open_issues
     if open_issues is None:
