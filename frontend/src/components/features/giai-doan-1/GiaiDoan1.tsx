@@ -105,7 +105,8 @@ function toSpecDoc(specification: SpecificationRecord): SpecDoc {
     feature: specification.feature,
     type: specification.type,
     content: specification.content,
-    approved: true,
+    // API hiện chưa trả trạng thái duyệt; không được tự gán đã duyệt cho bản ghi.
+    approved: false,
     version: specification.version,
   };
 }
