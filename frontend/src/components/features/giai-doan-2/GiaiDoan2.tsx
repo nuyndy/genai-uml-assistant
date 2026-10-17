@@ -546,6 +546,7 @@ export default function GiaiDoan2({
         interactionsConfirmed: true,
         classDiagramConfirmed: false,
       }))}
+      confirmed={state.interactionsConfirmed}
       onStepChange={onStepChange}
       wrapClass={wrapClass}
       inputClass={inputClass}
