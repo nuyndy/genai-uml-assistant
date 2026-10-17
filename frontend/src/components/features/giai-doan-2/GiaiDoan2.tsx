@@ -506,6 +506,7 @@ export default function GiaiDoan2({
         interactionsConfirmed: false,
         classDiagramConfirmed: false,
       }))}
+      confirmed={state.scenariosConfirmed}
       onStepChange={onStepChange}
       wrapClass={wrapClass}
     />
