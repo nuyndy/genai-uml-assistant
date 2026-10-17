@@ -22,6 +22,7 @@ interface Props {
   onGenerateSingle: (useCaseId: number) => void | Promise<void>;
   onSaveScenario: (useCaseId: number) => void | Promise<void>;
   confirmAll: () => void;
+  confirmed: boolean;
   busy: boolean;
   projectId?: number;
   onStepChange: (step: number) => void;
@@ -48,6 +49,7 @@ export default function Step3UseCaseScenario({
   onGenerateSingle,
   onSaveScenario,
   confirmAll,
+  confirmed,
   busy,
   projectId,
   onStepChange,
@@ -161,7 +163,7 @@ export default function Step3UseCaseScenario({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <GhostButton onClick={() => onStepChange(2)}>Quay lại Bước 2</GhostButton>
-        <PrimaryButton disabled={busy} onClick={() => onStepChange(4)}>
+        <PrimaryButton disabled={busy || !confirmed} onClick={() => onStepChange(4)}>
           Tiếp tục sang Bước 4
         </PrimaryButton>
       </div>
