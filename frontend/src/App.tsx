@@ -96,14 +96,13 @@ function App() {
       return 1;
     }
     if (stage === 2) {
-      if (workflow.classDiagramUrl) return total;
-      if (workflow.umlClasses.length > 0) return 5;
-      if (workflow.interactions.length > 0) return 5;
-      if (Object.keys(workflow.scenarios).length > 0) return 5;
-      // Biểu đồ UC đã lưu mã nguồn cũng đủ để mở Bước 3: kịch bản use case
-      // được sinh từ dữ liệu actor/use case, không phụ thuộc ảnh đã render.
-      if (workflow.useCaseDiagramCode) return 3;
-      if (workflow.actors.length > 0 && workflow.usecases.length > 0) return 3;
+      // Chỉ mở bước kế tiếp sau khi người dùng xác nhận bước hiện tại.
+      // Có dữ liệu hoặc có ảnh biểu đồ không đồng nghĩa với đã duyệt.
+      if (workflow.classDiagramConfirmed && workflow.classDiagramUrl) return total;
+      if (workflow.interactionsConfirmed) return 5;
+      if (workflow.scenariosConfirmed) return 4;
+      if (workflow.useCaseDiagramConfirmed) return 3;
+      if (workflow.actorsUseCasesConfirmed) return 2;
       return 1;
     }
     if (workflow.previewImageUrl) return 4;
