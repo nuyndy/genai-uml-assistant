@@ -1,4 +1,6 @@
-export const API_BASE = "http://localhost:8000";
+const configuredApiBase = import.meta.env.VITE_API_BASE?.trim();
+
+export const API_BASE = (configuredApiBase || "http://localhost:8000").replace(/\/+$/, "");
 const TOKEN_KEY = "genai-uml:token";
 
 export interface AuthUser {
