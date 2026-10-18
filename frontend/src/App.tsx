@@ -122,17 +122,19 @@ function App() {
   // Backend hiện chưa lưu trạng thái duyệt riêng cho FR/NFR.
   // Vì vậy chỉ xác nhận giai đoạn hoàn tất khi yêu cầu đã khóa và có đủ
   // hai loại đặc tả; không coi cờ approved giả lập trên frontend là bằng chứng duyệt.
-  const hasFunctionalSpecification = workflow.specs.some(
-    (specification) => specification.type === "functional",
+  const hasApprovedFunctionalSpecification = workflow.specs.some(
+    (specification) =>
+      specification.type === "functional" && specification.approved,
   );
-  const hasNonFunctionalSpecification = workflow.specs.some(
-    (specification) => specification.type === "non_functional",
+  const hasApprovedNonFunctionalSpecification = workflow.specs.some(
+    (specification) =>
+      specification.type === "non_functional" && specification.approved,
   );
   const stage1Complete =
     workflow.requirementLocked &&
     workflow.userStoryId !== null &&
-    hasFunctionalSpecification &&
-    hasNonFunctionalSpecification;
+    hasApprovedFunctionalSpecification &&
+    hasApprovedNonFunctionalSpecification;
 
   const allUseCasesHaveScenarios =
     workflow.usecases.length > 0 &&
