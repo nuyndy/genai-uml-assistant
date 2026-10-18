@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { STAGES } from "../../../stages";
 import { attachDiagramToDoc, renderDiagram } from "../../../services/aiService";
 import {
@@ -15,7 +15,6 @@ import {
   checkProjectUmlConsistency,
 } from "../../../services/umlService";
 import {
-  Card,
   StepHeading,
   singleLineClass,
   wrapClass,
