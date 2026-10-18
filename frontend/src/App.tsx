@@ -192,6 +192,31 @@ function App() {
     return 1;
   };
 
+  /** Giải thích rõ điều kiện còn thiếu để người dùng không bị khóa mà không biết lý do. */
+  const stageLockReason = (): string => {
+    if (!stage1Complete) {
+      if (!workflow.requirementLocked) return "Giai đoạn 2 đang khóa: hãy xác nhận yêu cầu ở Giai đoạn 1.";
+      if (workflow.userStoryId === null) return "Giai đoạn 2 đang khóa: dự án chưa có User Story.";
+      if (!hasApprovedFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần duyệt ít nhất một đặc tả chức năng (FR).";
+      if (!hasApprovedNonFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần duyệt đặc tả phi chức năng (NFR).";
+      return "Giai đoạn 2 đang khóa: dữ liệu Giai đoạn 1 chưa hoàn tất đồng bộ.";
+    }
+    if (!stage2Complete) {
+      if (!workflow.actorsUseCasesConfirmed || workflow.actors.length === 0 || workflow.usecases.length === 0)
+        return "Giai đoạn 3 đang khóa: hãy xác nhận Actor và Use Case ở Giai đoạn 2, Bước 1.";
+      if (!workflow.useCaseDiagramConfirmed || !workflow.useCaseDiagramUrl || !workflow.useCaseDiagramCode?.trim())
+        return "Giai đoạn 3 đang khóa: hãy tạo và xác nhận biểu đồ Use Case ở Bước 2.";
+      if (!workflow.scenariosConfirmed || !allUseCasesHaveScenarios)
+        return "Giai đoạn 3 đang khóa: cần hoàn thiện và xác nhận kịch bản cho mọi Use Case ở Bước 3.";
+      if (!workflow.interactionsConfirmed || !allUseCasesHaveInteractionDiagrams)
+        return "Giai đoạn 3 đang khóa: cần tạo và xác nhận biểu đồ tương tác cho mọi Use Case ở Bước 4.";
+      if (!workflow.classDiagramConfirmed || workflow.umlClasses.length === 0 || !workflow.classDiagramUrl || !workflow.classDiagramCode?.trim())
+        return "Giai đoạn 3 đang khóa: cần tạo và xác nhận biểu đồ lớp ở Bước 5.";
+      return "Giai đoạn 3 đang khóa: dữ liệu UML chưa hoàn tất đồng bộ.";
+    }
+    return "";
+  };
+
   // 0) Cổng đăng nhập: chưa đăng nhập thì chặn toàn bộ app.
   if (loading) {
     return (
@@ -275,6 +300,11 @@ function App() {
           setStep(1);
         }}
       />
+      {stageLockReason() && (
+        <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 sm:px-6 lg:px-8">
+          {stageLockReason()}
+        </div>
+      )}
 
       <Stepper
         stage={stage}
