@@ -21,6 +21,7 @@ from database.models import (
     RawRequirement,
     SrsDocument,
     Specification,
+    SpecificationApproval,
     TraceLink,
     UcActorRelation,
     UseCase,
@@ -477,6 +478,43 @@ def approve_baseline(
         raise HTTPException(
             status_code=409,
             detail="Không thể duyệt baseline khi chưa có đặc tả FR/NFR.",
+        )
+
+    # Trạng thái duyệt phải được xác minh từ cơ sở dữ liệu, không tin dữ liệu
+    # do client gửi hoặc chỉ có trong snapshot baseline.
+    specification_ids = [
+        item.get("id")
+        for item in specifications
+        if isinstance(item, dict) and isinstance(item.get("id"), int)
+    ]
+    current_specifications = (
+        db.query(Specification)
+        .filter(Specification.id.in_(specification_ids))
+        .all()
+        if specification_ids else []
+    )
+    approval_rows = (
+        db.query(SpecificationApproval)
+        .filter(SpecificationApproval.specification_id.in_(specification_ids))
+        .all()
+        if specification_ids else []
+    )
+    approved_ids = {
+        row.specification_id for row in approval_rows if row.status == "approved"
+    }
+    current_specification_ids = {row.id for row in current_specifications}
+    expected_types = {"functional", "non_functional"}
+    actual_types = {row.type for row in current_specifications}
+    missing_approval_ids = sorted(current_specification_ids - approved_ids)
+    missing_types = sorted(expected_types - actual_types)
+    if missing_approval_ids or missing_types or current_specification_ids != set(specification_ids):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline khi FR/NFR chưa được duyệt đầy đủ hoặc dữ liệu đặc tả đã thay đổi.",
+                "specification_ids_chua_duyet": missing_approval_ids,
+                "loai_dac_ta_con_thieu": missing_types,
+            },
         )
 
     # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
