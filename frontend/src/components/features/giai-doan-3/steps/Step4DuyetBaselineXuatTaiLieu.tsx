@@ -39,7 +39,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
       <Card tone="emerald" title="Định dạng xuất">
         <SegmentedControl<string>
           value={state.exportFormat}
-          onChange={onExportFormatChange}
+          onChange={(format) => onExportFormatChange(format as ExportFormat)}
           options={[
             { value: "png", label: "PNG" },
             { value: "svg", label: "SVG" },
@@ -136,7 +136,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
                 onChange={() => setSelectedBaselineId(baseline.id)}
               />
               <span className="flex-1 text-sm">Phiên bản {baseline.version} — {baseline.name}</span>
-              <StatusBadge tone={baseline.status === "approved" ? "success" : "neutral"}>
+              <StatusBadge tone={baseline.status === "approved" ? "success" : "info"}>
                 {baseline.status === "approved" ? "Đã duyệt" : "Bản nháp"}
               </StatusBadge>
             </label>
