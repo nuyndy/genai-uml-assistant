@@ -49,7 +49,7 @@ export async function apiFetch<T>(
   } catch {
     throw new ApiError(
       0,
-      `Không kết nối được backend tại ${API_BASE}. Hãy chắc chắn server đang chạy.`,
+      `Không gọi được backend tại ${API_BASE}. Hãy kiểm tra server, cấu hình VITE_API_BASE và lỗi CORS trong Console của trình duyệt.`,
     );
   }
 
@@ -89,7 +89,7 @@ export async function apiFetchBlob(
   } catch {
     throw new ApiError(
       0,
-      `Không kết nối được backend tại ${API_BASE}. Hãy chắc chắn server đang chạy.`,
+      `Không gọi được backend tại ${API_BASE}. Hãy kiểm tra server, cấu hình VITE_API_BASE và lỗi CORS trong Console của trình duyệt.`,
     );
   }
   if (res.status === 401) {
