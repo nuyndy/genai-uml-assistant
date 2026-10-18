@@ -8,7 +8,15 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from database.db import get_db
-from database.models import Project, RawRequirement, Specification, UseCase, User, UserStory
+from database.models import (
+    Project,
+    RawRequirement,
+    Specification,
+    SpecificationApproval,
+    UseCase,
+    User,
+    UserStory,
+)
 from routers.auth import get_current_user
 from routers.ownership import require_project_owner
 from routers.requirement import _require_project
@@ -16,6 +24,7 @@ from schemas.specification import (
     FunctionalSpecification,
     GenerateSpecificationInput,
     NonFunctionalSpecification,
+    SpecificationApprovalResult,
     SpecificationRecord,
     SpecificationUpdate,
 )
@@ -203,6 +212,79 @@ def generate_project_specifications_batch(
     ]
 
 
+@router.get(
+    "/api/specifications/{specification_id}/approval",
+    response_model=SpecificationApprovalResult,
+)
+def get_specification_approval(
+    specification_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> SpecificationApprovalResult:
+    specification = _specification(db, specification_id)
+    approval = db.query(SpecificationApproval).filter(
+        SpecificationApproval.specification_id == specification.id
+    ).first()
+    return SpecificationApprovalResult(
+        specification_id=specification.id,
+        approval_status=approval.status if approval else "draft",
+        approved_at=approval.approved_at.isoformat() if approval and approval.approved_at else None,
+    )
+
+
+@router.post(
+    "/api/specifications/{specification_id}/approve",
+    response_model=SpecificationApprovalResult,
+)
+def approve_specification(
+    specification_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> SpecificationApprovalResult:
+    specification = _specification(db, specification_id)
+    try:
+        value = json.loads(specification.content)
+        schema = (
+            FunctionalSpecification
+            if specification.type == "functional"
+            else NonFunctionalSpecification
+        )
+        schema.model_validate(value)
+        approval = db.query(SpecificationApproval).filter(
+            SpecificationApproval.specification_id == specification.id
+        ).with_for_update().first()
+        if approval is None:
+            approval = SpecificationApproval(
+                specification_id=specification.id,
+                status="approved",
+                approved_by=user.id,
+            )
+            db.add(approval)
+        else:
+            approval.status = "approved"
+            approval.approved_by = user.id
+            approval.approved_at = __import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc
+            )
+        db.commit()
+        db.refresh(approval)
+    except (json.JSONDecodeError, ValidationError, ValueError, TypeError) as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể duyệt đặc tả có nội dung chưa hợp lệ.",
+        ) from exc
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not approve specification")
+        raise HTTPException(status_code=500, detail="Không thể duyệt đặc tả.") from exc
+    return SpecificationApprovalResult(
+        specification_id=specification.id,
+        approval_status=approval.status,
+        approved_at=approval.approved_at.isoformat() if approval.approved_at else None,
+    )
+
+
 @router.patch(
     "/api/specifications/{specification_id}",
     response_model=SpecificationRecord,
@@ -230,6 +312,14 @@ def update_specification(
     specification.content = content.model_dump_json()
     specification.version += 1
     try:
+        # Mọi thay đổi nội dung đều thu hồi phê duyệt trước đó.
+        approval = db.query(SpecificationApproval).filter(
+            SpecificationApproval.specification_id == specification.id
+        ).with_for_update().first()
+        if approval is not None:
+            approval.status = "draft"
+            approval.approved_by = None
+            approval.approved_at = None
         db.commit()
         db.refresh(specification)
     except SQLAlchemyError as exc:
