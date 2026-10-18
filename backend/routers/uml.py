@@ -16,6 +16,7 @@ from database.models import (
     Project,
     RawRequirement,
     Specification,
+    SpecificationApproval,
     UcActorRelation,
     UseCase,
     User,
@@ -62,6 +63,41 @@ router = APIRouter(
     dependencies=[Depends(require_project_owner)],
 )
 logger = logging.getLogger(__name__)
+
+
+def _require_approved_specifications(db: Session, project_id: int) -> None:
+    """Chặn bắt đầu/chỉnh sửa mô hình UML nếu FR/NFR chưa được duyệt."""
+    rows = (
+        db.query(Specification.id, Specification.type, SpecificationApproval.status)
+        .join(UserStory, Specification.user_story_id == UserStory.id)
+        .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+        .outerjoin(
+            SpecificationApproval,
+            SpecificationApproval.specification_id == Specification.id,
+        )
+        .filter(RawRequirement.project_id == project_id)
+        .all()
+    )
+    if not rows:
+        raise HTTPException(
+            status_code=409,
+            detail="Chưa có đặc tả FR/NFR cho dự án; chưa thể bắt đầu mô hình hóa UML.",
+        )
+    missing_types = sorted(
+        {"functional", "non_functional"} - {row.type for row in rows}
+    )
+    pending_ids = sorted(
+        row.id for row in rows if row.status != "approved"
+    )
+    if missing_types or pending_ids:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Chưa thể tiếp tục Giai đoạn 2 khi FR/NFR chưa được duyệt đầy đủ.",
+                "loai_dac_ta_con_thieu": missing_types,
+                "dac_ta_chua_duyet": pending_ids,
+            },
+        )
 
 
 def _project_for_specification(db: Session, specification_id: int) -> int:
@@ -811,7 +847,8 @@ def extract_actors_use_cases(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> ExtractActorsUseCasesResult:
-    _project_for_specification(db, specification_id)
+    project_id = _project_for_specification(db, specification_id)
+    _require_approved_specifications(db, project_id)
     try:
         specification = db.query(Specification).filter(
             Specification.id == specification_id
@@ -848,6 +885,7 @@ def extract_project_actors_use_cases_batch(
     _: User = Depends(get_current_user),
 ) -> ExtractProjectActorsUseCasesResult:
     _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     try:
         # Chỉ đặc tả CHỨC NĂNG mới sinh được use case; đặc tả phi chức năng
         # không mô tả hành vi nên nếu trộn vào chỉ khiến AI bịa nghiệp vụ.
@@ -1021,6 +1059,7 @@ def save_project_actor_use_cases_batch(
     _: User = Depends(get_current_user),
 ) -> SaveActorUseCasesBatchResult:
     _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     specification_ids = {item.specification_id for item in data.use_cases}
     try:
         specifications = (
@@ -1447,6 +1486,7 @@ def generate_use_case_diagram(
     _: User = Depends(get_current_user),
 ) -> DiagramRecord:
     project = _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     try:
         actors = db.query(Actor).filter(Actor.project_id == project_id).order_by(Actor.id).all()
         use_cases = (
