@@ -92,8 +92,15 @@ class SpecificationRecord(BaseModel):
     type: SpecificationType
     content: str
     version: int
+    approval_status: Literal["draft", "approved"] = "draft"
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SpecificationApprovalResult(BaseModel):
+    specification_id: int
+    approval_status: Literal["draft", "approved"]
+    approved_at: str | None = None
 
 
 class SpecificationDocument(BaseModel):
