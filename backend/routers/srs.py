@@ -785,10 +785,21 @@ def export_specification_document(
             detail="Chỉ baseline đã được duyệt mới được phép xuất SRS DOCX chính thức.",
         )
 
-    if not isinstance(baseline.snapshot, dict):
+    if (
+        not isinstance(baseline.snapshot, dict)
+        or baseline.snapshot.get("project_id") != project_id
+        or not isinstance(baseline.snapshot.get("entities"), dict)
+    ):
         raise HTTPException(
             status_code=409,
-            detail="Snapshot baseline không hợp lệ, không thể xuất DOCX.",
+            detail="Snapshot baseline không hợp lệ hoặc không thuộc project này, không thể xuất DOCX.",
+        )
+
+    entities = baseline.snapshot["entities"]
+    if not isinstance(entities.get("specification"), list):
+        raise HTTPException(
+            status_code=409,
+            detail="Snapshot baseline thiếu danh sách đặc tả, không thể xuất DOCX.",
         )
 
     markdown = _srs_markdown_from_baseline_snapshot(
