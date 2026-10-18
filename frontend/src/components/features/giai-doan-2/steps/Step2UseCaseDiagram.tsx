@@ -8,7 +8,6 @@ interface Props {
   busy: boolean;
   projectId?: number;
   onRegenerate: () => void;
-  onSave: (nextCode: string) => void;
   onConfirm: () => void;
   onStepChange: (step: number) => void;
 }
@@ -20,7 +19,6 @@ export default function Step2UseCaseDiagram({
   busy,
   projectId,
   onRegenerate,
-  onSave,
   onConfirm,
   onStepChange,
 }: Props) {
@@ -42,7 +40,7 @@ export default function Step2UseCaseDiagram({
           imageUrl={imageUrl}
           emptyTitle="Chưa có ảnh biểu đồ Use Case"
           emptyHint='Bấm "Sinh biểu đồ" để tạo biểu đồ tổng cho project.'
-          downloadName={`use-case-diagram.${imageExtension(imageUrl)}`}
+          downloadName={`use-case-diagram.${imageExtension(imageUrl ?? "")}`}
         />
         {imageCode && (
           <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50 font-mono text-xs whitespace-pre-wrap">
