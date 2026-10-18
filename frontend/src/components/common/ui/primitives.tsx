@@ -61,12 +61,11 @@ export function Card({
   title?: string;
   subtitle?: string;
   actions?: ReactNode;
-  tone?: "plain" | "emerald" | "emerald" | "amber" | "rose";
+  tone?: "plain" | "emerald" | "amber" | "rose";
   children: ReactNode;
 }) {
   const accent = {
     plain: "",
-    emerald: "border-l-4 border-l-emerald-500",
     emerald: "border-l-4 border-l-emerald-500",
     amber: "border-l-4 border-l-amber-400",
     rose: "border-l-4 border-l-rose-400",
