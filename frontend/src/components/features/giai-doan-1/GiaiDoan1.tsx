@@ -641,7 +641,24 @@ export default function GiaiDoan1({
     setBusy(true);
     setError("");
     try {
-      await approveSpecification(specification.id);
+      const approval = await approveSpecification(specification.id);
+      // Cập nhật trạng thái ngay từ phản hồi xác nhận của backend, không chờ
+      // danh sách đặc tả được tải lại mới mở khóa Giai đoạn 2.
+      setSpecifications((previous) =>
+        previous.map((item) =>
+          item.id === specification.id
+            ? { ...item, approval_status: approval.approval_status }
+            : item,
+        ),
+      );
+      setState((previous) => ({
+        ...previous,
+        specs: previous.specs.map((item) =>
+          item.id === specification.id
+            ? { ...item, approved: approval.approval_status === "approved" }
+            : item,
+        ),
+      }));
       await refreshSpecifications();
       await refreshSrsDocument();
     } catch (reason) {
