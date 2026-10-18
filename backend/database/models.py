@@ -298,6 +298,34 @@ class TraceLink(Base):
     )
 
 
+class SpecificationApproval(Base):
+    """Lưu trạng thái duyệt đặc tả độc lập để không cần sửa bảng hiện có."""
+
+    __tablename__ = "specification_approval"
+
+    id = Column(Integer, primary_key=True, index=True)
+    specification_id = Column(
+        Integer,
+        ForeignKey("specification.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    status = Column(String(20), nullable=False, server_default="draft")
+    approved_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    approved_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
 class ProjectBaseline(Base):
     __tablename__ = "project_baseline"
 
