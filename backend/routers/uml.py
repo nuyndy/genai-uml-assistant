@@ -1588,6 +1588,8 @@ def generate_use_case_scenario(
     _: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     use_case = _use_case(db, use_case_id)
+    project_id = _project_for_use_case(db, use_case_id)
+    _require_approved_specifications(db, project_id)
     try:
         specification = db.query(Specification).filter(
             Specification.id == use_case.specification_id
@@ -1623,6 +1625,7 @@ def generate_project_use_case_scenarios_batch(
     _: User = Depends(get_current_user),
 ) -> UseCaseScenarioBatchResult:
     _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     try:
         rows = (
             db.query(UseCase, Specification)
@@ -1770,6 +1773,7 @@ def generate_interaction_diagram(
 ) -> DiagramRecord:
     use_case = _use_case(db, use_case_id)
     project_id = _project_for_use_case(db, use_case_id)
+    _require_approved_specifications(db, project_id)
     main_flow = _decode_lines(use_case.main_flow)
     alt_flow = _decode_lines(use_case.alt_flow)
     if not main_flow and not alt_flow:
@@ -1975,6 +1979,7 @@ def create_class(
     _: User = Depends(get_current_user),
 ) -> ClassEntityRecord:
     _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     try:
         if db.query(ClassEntity.id).filter(
             ClassEntity.project_id == project_id,
@@ -2332,6 +2337,7 @@ def create_class_diagram(
     _: User = Depends(get_current_user),
 ) -> DiagramRecord:
     _require_project(db, project_id)
+    _require_approved_specifications(db, project_id)
     try:
         classes = (
             db.query(ClassEntity)
