@@ -110,6 +110,13 @@ def generate_specification(
     if existing is not None:
         specification = existing
         specification.content = content.model_dump_json()
+        approval = db.query(SpecificationApproval).filter(
+            SpecificationApproval.specification_id == existing.id
+        ).first()
+        if approval is not None:
+            approval.status = "draft"
+            approval.approved_by = None
+            approval.approved_at = None
     else:
         specification = Specification(
             user_story_id=story.id,
@@ -259,6 +266,7 @@ def approve_specification(
                 specification_id=specification.id,
                 status="approved",
                 approved_by=user.id,
+                approved_at=datetime.now(timezone.utc),
             )
             db.add(approval)
         else:
