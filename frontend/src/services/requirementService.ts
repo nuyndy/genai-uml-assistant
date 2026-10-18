@@ -81,6 +81,7 @@ export interface SpecificationRecord {
   type: "functional" | "non_functional";
   content: string;
   version: number;
+  approval_status: "draft" | "approved";
 }
 
 export interface FieldMapping {
