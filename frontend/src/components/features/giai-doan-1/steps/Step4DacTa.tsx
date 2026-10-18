@@ -27,8 +27,8 @@ interface Props {
   specifications: SpecificationRecord[];
   expandedFunctionalSpecifications: number[];
   setExpandedFunctionalSpecifications: Dispatch<SetStateAction<number[]>>;
-  functionalSpecificationTabs: Record<number, string>;
-  setFunctionalSpecificationTabs: Dispatch<SetStateAction<Record<number, string>>>;
+  functionalSpecificationTabs: Record<number, "overview" | "flows" | "business-data">;
+  setFunctionalSpecificationTabs: Dispatch<SetStateAction<Record<number, "overview" | "flows" | "business-data">>>;
   specDrafts: Record<number, SpecDraft>;
   setSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
   generatingStories: Record<number, boolean>;
