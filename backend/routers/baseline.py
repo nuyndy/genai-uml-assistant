@@ -445,6 +445,18 @@ def approve_baseline(
             detail="Snapshot baseline không hợp lệ hoặc không thuộc project này.",
         )
 
+    # Baseline là ảnh chụp bất biến: nếu dữ liệu dự án đã đổi sau khi tạo
+    # snapshot, yêu cầu tạo baseline mới thay vì duyệt một bản đã lỗi thời.
+    current_snapshot = _project_snapshot(db, project_id)
+    if current_snapshot != snapshot:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Dữ liệu dự án đã thay đổi sau khi tạo baseline. "
+                "Tạo baseline mới để bảo đảm snapshot phản ánh dữ liệu hiện tại."
+            ),
+        )
+
     # Cổng nghiệp vụ: không duyệt baseline nếu yêu cầu đầu vào chưa được xác nhận
     # hoặc chưa có User Story và đặc tả FR/NFR trong snapshot.
     entities = snapshot["entities"]
