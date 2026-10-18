@@ -36,6 +36,7 @@ const mocked = vi.hoisted(() => {
     type: "functional",
     content: JSON.stringify(content),
     version,
+    approval_status: "draft",
   });
 
   return {
