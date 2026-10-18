@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   analyzeProjectRequirementsBatch,
+  approveSpecification,
   checkProjectRequirementCoverage,
   confirmProjectRequirementsBatch,
   createRequirement,
@@ -105,8 +106,7 @@ function toSpecDoc(specification: SpecificationRecord): SpecDoc {
     feature: specification.feature,
     type: specification.type,
     content: specification.content,
-    // API hiện chưa trả trạng thái duyệt; không được tự gán đã duyệt cho bản ghi.
-    approved: false,
+    approved: specification.approval_status === "approved",
     version: specification.version,
   };
 }
@@ -637,6 +637,20 @@ export default function GiaiDoan1({
     }
   }, [projectId, refreshSpecifications, refreshSrsDocument, setState]);
 
+  const approveSavedSpecification = async (specification: SpecificationRecord) => {
+    setBusy(true);
+    setError("");
+    try {
+      await approveSpecification(specification.id);
+      await refreshSpecifications();
+      await refreshSrsDocument();
+    } catch (reason) {
+      setError(`Không thể duyệt đặc tả: ${formatError(reason)}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const saveSpecification = async (
     specification: SpecificationRecord,
     content: FunctionalSpecification | NonFunctionalSpecification,
@@ -862,6 +876,7 @@ export default function GiaiDoan1({
       error={error}
       generateFunctionalSpecification={generateFunctionalSpecification}
       saveSpecification={saveSpecification}
+      approveSpecification={approveSavedSpecification}
       createNonFunctionalSpecification={createNonFunctionalSpecification}
       onStepChange={onStepChange}
       wrapClass={wrapClass}
