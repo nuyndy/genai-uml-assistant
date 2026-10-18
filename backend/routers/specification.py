@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ValidationError
@@ -263,9 +264,7 @@ def approve_specification(
         else:
             approval.status = "approved"
             approval.approved_by = user.id
-            approval.approved_at = __import__("datetime").datetime.now(
-                __import__("datetime").timezone.utc
-            )
+            approval.approved_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(approval)
     except (json.JSONDecodeError, ValidationError, ValueError, TypeError) as exc:
