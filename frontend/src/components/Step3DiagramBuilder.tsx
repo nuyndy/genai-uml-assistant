@@ -39,7 +39,7 @@ export default function Step3DiagramBuilder({
   const [code, setCode] = useState(
     "@startuml\nactor Actor1\nusecase UC1\nActor1 --> UC1\n@enduml"
   );
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
   const [rendering, setRendering] = useState(false);
 
   const addActor = () => setActors([...actors, { id: Date.now(), name: "" }]);
@@ -75,12 +75,6 @@ export default function Step3DiagramBuilder({
     try {
       // Placeholder — gọi API render PlantUML thật: POST /render-diagram { source_code }
       await new Promise((r) => setTimeout(r, 800));
-      setImageUrl(
-        "data:image/svg+xml;utf8," +
-          encodeURIComponent(
-            `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><rect width='100%' height='100%' fill='%23f8fafc'/><text x='50%' y='50%' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14'>Ảnh biểu đồ sẽ hiện ở đây</text></svg>`
-          )
-      );
     } finally {
       setRendering(false);
     }
