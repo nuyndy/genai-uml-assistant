@@ -1370,6 +1370,9 @@ def delete_use_case(
         use_case = db.query(UseCase).filter(UseCase.id == use_case_id).first()
         if use_case is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy use case.")
+        project_id = _project_for_use_case(db, use_case_id)
+        _require_project(db, project_id)
+        _require_approved_specifications(db, project_id)
         db.query(UcActorRelation).filter(
             UcActorRelation.use_case_id == use_case_id
         ).delete(synchronize_session=False)
@@ -1469,6 +1472,9 @@ def delete_actor_relation(
         ).first()
         if relation is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy quan hệ tác nhân.")
+        project_id = _project_for_use_case(db, relation.use_case_id)
+        _require_project(db, project_id)
+        _require_approved_specifications(db, project_id)
         db.delete(relation)
         db.commit()
     except HTTPException:
@@ -2103,6 +2109,8 @@ def delete_class(
         entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
         if entity is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy lớp.")
+        _require_project(db, entity.project_id)
+        _require_approved_specifications(db, entity.project_id)
         db.query(ClassRelation).filter(
             (ClassRelation.class_a_id == class_id)
             | (ClassRelation.class_b_id == class_id)
@@ -2135,6 +2143,8 @@ def create_class_relation(
             raise HTTPException(status_code=404, detail="Không tìm thấy một trong các lớp.")
         if class_a.project_id != class_b.project_id:
             raise HTTPException(status_code=422, detail="Hai lớp phải thuộc cùng một dự án.")
+        _require_project(db, class_a.project_id)
+        _require_approved_specifications(db, class_a.project_id)
         if class_a.id == class_b.id:
             raise HTTPException(status_code=422, detail="Không thể tạo quan hệ lớp với chính nó.")
         relation = ClassRelation(
@@ -2206,6 +2216,11 @@ def delete_class_relation(
         ).first()
         if relation is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy quan hệ lớp.")
+        class_a = db.query(ClassEntity).filter(ClassEntity.id == relation.class_a_id).first()
+        if class_a is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy lớp thuộc quan hệ.")
+        _require_project(db, class_a.project_id)
+        _require_approved_specifications(db, class_a.project_id)
         db.delete(relation)
         db.commit()
     except HTTPException:
