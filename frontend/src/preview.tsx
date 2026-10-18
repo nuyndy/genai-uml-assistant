@@ -65,6 +65,7 @@ export function Demo() {
     if (stage === 1) {
       return (
         <GiaiDoan1
+          projectId={projectId ?? 1}
           projectId={projectId}
           state={wf}
           setState={setWf}
@@ -88,7 +89,7 @@ export function Demo() {
         </div>
       </div>
       <div className="relative z-10">
-        <GiaiDoanStepper stage={stage} maxUnlockedStage={3} />
+        <GiaiDoanStepper stage={stage} maxUnlockedStage={3} completedStages={[]} />
         <Stepper stage={stage} step={step} maxUnlockedStep={5} />
         <main>
           {renderPanel()}
