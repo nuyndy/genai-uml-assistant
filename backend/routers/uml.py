@@ -1229,6 +1229,8 @@ def update_actor(
         actor = db.query(Actor).filter(Actor.id == actor_id).first()
         if actor is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy tác nhân.")
+        _require_project(db, actor.project_id)
+        _require_approved_specifications(db, actor.project_id)
         duplicate = db.query(Actor.id).filter(
             Actor.project_id == actor.project_id,
             func.lower(Actor.name) == data.name.lower(),
@@ -1258,6 +1260,8 @@ def delete_actor(
         actor = db.query(Actor).filter(Actor.id == actor_id).first()
         if actor is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy tác nhân.")
+        _require_project(db, actor.project_id)
+        _require_approved_specifications(db, actor.project_id)
         db.query(UcActorRelation).filter(
             UcActorRelation.actor_id == actor_id
         ).delete(synchronize_session=False)
@@ -1727,6 +1731,8 @@ def update_use_case(
     _: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     use_case = _use_case(db, use_case_id)
+    project_id = _project_for_use_case(db, use_case_id)
+    _require_approved_specifications(db, project_id)
     changes = data.model_dump(exclude_unset=True)
     if not changes:
         raise HTTPException(status_code=422, detail="Cần cung cấp ít nhất một trường để cập nhật.")
@@ -2053,6 +2059,8 @@ def update_class(
         entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
         if entity is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy lớp.")
+        _require_project(db, entity.project_id)
+        _require_approved_specifications(db, entity.project_id)
         changes = data.model_dump(exclude_unset=True)
         if not changes:
             raise HTTPException(status_code=422, detail="Cần cung cấp ít nhất một trường để cập nhật.")
@@ -2418,6 +2426,8 @@ def update_diagram(
         raise HTTPException(status_code=500, detail="Không thể đọc biểu đồ.") from exc
     if diagram is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+    _require_project(db, diagram.project_id)
+    _require_approved_specifications(db, diagram.project_id)
     updated = _render_and_update_diagram(db, diagram, data.source_code)
     return DiagramRecord.model_validate(updated)
 
