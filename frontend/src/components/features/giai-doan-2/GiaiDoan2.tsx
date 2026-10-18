@@ -367,7 +367,6 @@ export default function GiaiDoan2({
       classDiagramConfirmed: false,
       classDiagramUrl: diagram.image_url,
       classDiagramCode: diagram.source_code,
-      classDiagramConfirmed: false,
     }));
   }
 
