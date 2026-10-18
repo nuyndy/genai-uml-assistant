@@ -292,8 +292,6 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
-@router.post("/{project_id}/baselines/{baseline_id}/approve")
-
 def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """Kiểm tra class diagram trong snapshot so với class và relation đã lưu."""
     entities = snapshot.get("entities", {})
@@ -403,6 +401,7 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
         })
 
     return issues
+@router.post("/{project_id}/baselines/{baseline_id}/approve")
 def approve_baseline(
     project_id: int,
     baseline_id: int,
