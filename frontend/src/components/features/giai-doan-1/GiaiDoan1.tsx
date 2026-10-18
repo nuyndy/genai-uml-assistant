@@ -659,7 +659,8 @@ export default function GiaiDoan1({
             : item,
         ),
       }));
-      await refreshSpecifications();
+      // Không tải đè trạng thái vừa được backend xác nhận bằng một request
+      // danh sách có thể đến chậm; lần tải lại dự án sau vẫn lấy trạng thái chuẩn từ API.
       await refreshSrsDocument();
     } catch (reason) {
       setError(`Không thể duyệt đặc tả: ${formatError(reason)}`);
