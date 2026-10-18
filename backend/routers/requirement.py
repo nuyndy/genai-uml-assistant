@@ -193,21 +193,77 @@ def check_project_requirement_coverage(
         raise HTTPException(
             status_code=500, detail="Không thể đọc yêu cầu để kiểm tra mức bao phủ."
         ) from exc
+    try:
+        stories = (
+            db.query(UserStory)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UserStory.id.asc())
+            .all()
+        )
+        specifications = (
+            db.query(Specification, UserStory.feature)
+            .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+            .filter(
+                or_(
+                    Specification.project_id == project_id,
+                    UserStory.requirement_id.in_(
+                        db.query(RawRequirement.id).filter(
+                            RawRequirement.project_id == project_id
+                        )
+                    ),
+                )
+            )
+            .order_by(Specification.id.asc())
+            .all()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read stories/specifications for coverage check")
+        raise HTTPException(
+            status_code=500, detail="Không thể đọc User Story và đặc tả để kiểm tra độ bao phủ."
+        ) from exc
+
+    story_items = [
+        {
+            "role": story.role or "",
+            "feature": story.feature,
+            "benefit": story.benefit or "",
+            "acceptance_criteria": story.acceptance_criteria or "",
+        }
+        for story in stories
+    ]
+    specification_items = [
+        {
+            "type": spec.type,
+            "feature": feature or "Đặc tả phi chức năng",
+            "content": spec.content,
+        }
+        for spec, feature in specifications
+    ]
     prompt = (
-        "Bạn là chuyên gia phân tích yêu cầu phần mềm. Đánh giá xem danh sách yêu cầu "
-        "đã bao quát các chức năng cần thiết cho hệ thống hay chưa. Dựa trên tên dự án "
-        "và các yêu cầu hiện có; không giả định một ngành nghiệp vụ cụ thể nếu dữ liệu "
-        "không cho biết. Chỉ đề xuất chức năng thiết yếu còn thiếu, không trùng lặp "
-        "hoặc diễn đạt lại chức năng đã có. Mỗi đề xuất phải cụ thể, có tác nhân, hành "
-        "động, đối tượng, mục đích; không bịa quy tắc nghiệp vụ hoặc điều kiện chưa có "
-        "căn cứ. Tối đa 10 đề xuất. Nếu đã đủ hoặc thiếu căn cứ để đề xuất thì trả "
-        "suggestions rỗng và giải thích trong summary. Trả về duy nhất JSON hợp lệ theo "
-        'cấu trúc {"is_sufficient": boolean, "summary": string, "suggestions": '
+        "Bạn là chuyên gia phân tích yêu cầu và thiết kế phần mềm. Hãy rà soát độ bao phủ "
+        "chức năng của hệ thống bằng cách đối chiếu TẤT CẢ yêu cầu gốc, User Story và đặc tả "
+        "đã có. Không chỉ nhắc lại các yêu cầu: hãy kiểm tra các nhóm nghiệp vụ thường bị "
+        "bỏ sót nhưng có liên quan trực tiếp đến mục tiêu hệ thống, ví dụ quản lý dữ liệu, "
+        "tìm kiếm/lọc, xác thực và phân quyền, kiểm tra dữ liệu đầu vào, trạng thái và vòng "
+        "đời xử lý, thông báo, lịch sử/audit, báo cáo/xuất dữ liệu, xử lý lỗi và cấu hình. "
+        "Đây chỉ là danh sách kiểm tra, KHÔNG mặc định rằng mọi nhóm đều cần có. Chỉ đề xuất "
+        "nhóm phù hợp với tên hệ thống và bằng chứng trong dữ liệu. So sánh theo ý nghĩa "
+        "nghiệp vụ, không chỉ so khớp từ khóa; không đề xuất chức năng đã được bao phủ bởi "
+        "yêu cầu, User Story hoặc đặc tả khác. Nếu một chức năng có vẻ hữu ích nhưng chưa đủ "
+        "căn cứ, vẫn có thể nêu như gợi ý cần người dùng xác nhận, và ghi rõ giả định trong "
+        "reason; tuyệt đối không tự thêm quy tắc nghiệp vụ vào dữ liệu đã lưu. Tối đa 10 gợi ý. "
+        "Nếu thực sự không tìm thấy điểm thiếu, trả suggestions rỗng và giải thích ngắn gọn. "
+        "Trả về duy nhất JSON hợp lệ theo cấu trúc "
+        '{"is_sufficient": boolean, "summary": string, "suggestions": '
         '[{"actor": string, "action": string, "target_object": string, '
         '"purpose": string, "pre_conditions": [string], "business_rules": [string], '
-        '"reason": string}]}. Mọi đề xuất chỉ là gợi ý, chưa được lưu.\n\n'
+        '"reason": string}]}. Mỗi gợi ý phải có actor, action, target_object, purpose cụ thể. '
+        "Mọi đề xuất chỉ là gợi ý, chưa được lưu cho đến khi người dùng chọn.\n\n"
         f"Tên hệ thống: {project.name}\n"
-        f"Yêu cầu hiện có: {json.dumps(items, ensure_ascii=False)}"
+        f"Yêu cầu gốc: {json.dumps(items, ensure_ascii=False)}\n"
+        f"User Story hiện có: {json.dumps(story_items, ensure_ascii=False)}\n"
+        f"Đặc tả hiện có: {json.dumps(specification_items, ensure_ascii=False)}"
     )
     try:
         return generate_json(prompt, RequirementCoverageAnalysis)
