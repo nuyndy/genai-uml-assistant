@@ -37,6 +37,7 @@ interface Props {
   error?: string;
   generateFunctionalSpecification: (story: UserStory, regenerate?: boolean) => Promise<void>;
   saveSpecification: (specification: SpecificationRecord, content: SpecDraft) => Promise<void>;
+  approveSpecification: (specification: SpecificationRecord) => Promise<void>;
   createNonFunctionalSpecification: (regenerate?: boolean) => Promise<void>;
   onStepChange: (step: number) => void;
   wrapClass: string;
@@ -88,6 +89,7 @@ export default function Step4DacTa({
   error,
   generateFunctionalSpecification,
   saveSpecification,
+  approveSpecification,
   createNonFunctionalSpecification,
   onStepChange,
   wrapClass,
@@ -229,6 +231,12 @@ export default function Step4DacTa({
                               >
                                 Lưu thay đổi
                               </PrimaryButton>
+                              <SoftButton
+                                disabled={busy || specification.approval_status === "approved"}
+                                onClick={() => void approveSpecification(specification)}
+                              >
+                                {specification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}
+                              </SoftButton>
                             </div>
                             <p className="mt-2 text-right text-xs text-slate-500">
                               Phiên bản {specification.version}. Có thể sửa trực tiếp các trường.
@@ -311,6 +319,12 @@ export default function Step4DacTa({
                   >
                     Lưu thay đổi
                   </PrimaryButton>
+                  <SoftButton
+                    disabled={busy || nonFunctionalSpecification.approval_status === "approved"}
+                    onClick={() => void approveSpecification(nonFunctionalSpecification)}
+                  >
+                    {nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}
+                  </SoftButton>
                 </div>
               </>
             );
