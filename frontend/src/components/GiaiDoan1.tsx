@@ -819,7 +819,7 @@ export default function GiaiDoan1({
   const B1 = (
     <div className="space-y-5">
       <Card
-        tone="violet"
+        tone="plain"
         title="Nhập yêu cầu người dùng"
       >
         <RequirementFormFields
