@@ -168,7 +168,7 @@ export default function GiaiDoan3({
   const B1 = (
     <div className="space-y-6">
       {/* Tác nhân */}
-      <Card tone="violet" title="Tác nhân">
+      <Card tone="plain" title="Tác nhân">
         {state.actors.length === 0 ? (
           <EmptyState
             icon="☺"
