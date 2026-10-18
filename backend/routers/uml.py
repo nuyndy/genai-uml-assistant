@@ -2481,6 +2481,7 @@ def restore_diagram_revision(
         raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
 
     _require_project(db, diagram.project_id)
+    _require_approved_specifications(db, diagram.project_id)
 
     revision = (
         db.query(DiagramRevision)
@@ -2541,6 +2542,8 @@ def delete_diagram(
         diagram = db.query(Diagram).filter(Diagram.id == diagram_id).first()
         if diagram is None:
             raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
+        _require_project(db, diagram.project_id)
+        _require_approved_specifications(db, diagram.project_id)
         db.delete(diagram)
         db.commit()
     except HTTPException:
