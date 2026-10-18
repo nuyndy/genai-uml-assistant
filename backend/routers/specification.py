@@ -435,9 +435,17 @@ def list_project_specifications(
     _require_project(db, project_id)
     try:
         rows = (
-            db.query(Specification, UserStory.feature)
+            db.query(
+                Specification,
+                UserStory.feature,
+                SpecificationApproval.status,
+            )
             .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
             .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .outerjoin(
+                SpecificationApproval,
+                SpecificationApproval.specification_id == Specification.id,
+            )
             .filter(or_(
                 RawRequirement.project_id == project_id,
                 Specification.project_id == project_id,
@@ -458,6 +466,7 @@ def list_project_specifications(
             type=specification.type,
             content=specification.content,
             version=specification.version,
+            approval_status=approval_status or "draft",
         )
-        for specification, feature in rows
+        for specification, feature, approval_status in rows
     ]
