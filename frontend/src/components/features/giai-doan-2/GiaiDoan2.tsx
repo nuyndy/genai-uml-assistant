@@ -492,9 +492,9 @@ export default function GiaiDoan2({
           const scenario = state.scenarios[useCaseId];
           if (!scenario) return;
           await updateUseCaseScenario(useCaseId, {
-            main_flow: scenario.mainFlow.map((line) => line.trim()).filter(Boolean),
-            alt_flow: scenario.altFlows.map((line) => line.trim()).filter(Boolean),
-            exception_flow: scenario.exceptions.map((line) => line.trim()).filter(Boolean),
+            mainFlow: scenario.mainFlow.map((line) => line.trim()).filter(Boolean),
+            altFlows: scenario.altFlows.map((line) => line.trim()).filter(Boolean),
+            exceptions: scenario.exceptions.map((line) => line.trim()).filter(Boolean),
           });
           await refreshSavedState();
         }, "Đang lưu kịch bản use case...")
@@ -514,7 +514,10 @@ export default function GiaiDoan2({
   const step4 = (
     <Step4InteractionDiagram
       scenarios={scenarios}
-      interactions={state.interactions}
+      interactions={state.interactions.map((diagram) => ({
+        ...diagram,
+        sourceCode: diagram.sourceCode ?? null,
+      }))}
       currentDiagramType={diagramType}
       setDiagramType={(nextType) => {
         setDiagramType(nextType);
