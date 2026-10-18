@@ -30,7 +30,7 @@ export default function Step1DongBoSRS({
         <div className="mt-4 space-y-2 text-sm">
           <p>
             Trạng thái đồng bộ:{" "}
-            <StatusBadge tone={srsSynced && srsLoaded ? "success" : "neutral"}>
+            <StatusBadge tone={srsSynced && srsLoaded ? "success" : "info"}>
               {srsSynced && srsLoaded ? "Đã đồng bộ" : "Chưa đồng bộ"}
             </StatusBadge>
           </p>
