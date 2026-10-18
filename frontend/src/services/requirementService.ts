@@ -258,6 +258,24 @@ export function generateProjectSpecificationsBatch(
   );
 }
 
+export interface SpecificationApprovalResult {
+  specification_id: number;
+  approval_status: "draft" | "approved";
+  approved_at: string | null;
+}
+
+export function getSpecificationApproval(
+  id: number,
+): Promise<SpecificationApprovalResult> {
+  return apiFetch(`/api/specifications/${id}/approval`);
+}
+
+export function approveSpecification(
+  id: number,
+): Promise<SpecificationApprovalResult> {
+  return apiFetch(`/api/specifications/${id}/approve`, { method: "POST" });
+}
+
 export function updateSpecification(
   id: number,
   content: string | FunctionalSpecification | NonFunctionalSpecification,
