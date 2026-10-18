@@ -37,7 +37,7 @@ export default function Buoc4DacTa(props) {
   // The implementation mirrors the original B4 JSX
   return (
     <div className="space-y-5">
-      <Card tone="violet" title="Đặc tả chức năng">
+      <Card tone="plain" title="Đặc tả chức năng">
         {stories.length === 0 ? (
           <EmptyState title="Chưa có user story" hint="Xác nhận yêu cầu ở Bước 3 trước." />
         ) : (
