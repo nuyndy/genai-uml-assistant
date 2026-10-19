@@ -547,23 +547,14 @@ export function Notice({
 /* ------------------------------------------------------------------ */
 
 /** Tiêu đề bước. Chữ tự xuống dòng, không tràn khung ở màn hình hẹp. */
-export function StepHeading({
-  title,
-}: {
+/** Tiêu đề bước đã được đưa vào nội dung từng màn; không render nhãn lặp ở đầu trang. */
+export function StepHeading(_props: {
   step: string;
   title: string;
   description?: string;
   icon?: string;
 }) {
-  return (
-    <div className="min-w-0">
-      <h2
-        className={`text-xl font-semibold tracking-tight text-slate-900 ${wrapClass}`}
-      >
-        {title}
-      </h2>
-    </div>
-  );
+  return null;
 }
 
 /** Bộ chuyển trạng thái dạng pill, các nút cùng chiều cao. */
