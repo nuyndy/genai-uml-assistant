@@ -49,10 +49,8 @@ export default function Step3UseCaseScenario({
   onGenerateSingle,
   onSaveScenario,
   confirmAll,
-  confirmed,
   busy,
   projectId,
-  onStepChange,
   wrapClass,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
