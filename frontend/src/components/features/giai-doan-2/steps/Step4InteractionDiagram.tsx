@@ -86,7 +86,7 @@ export default function Step4InteractionDiagram({
     );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Card
         tone="emerald"
         title="Sinh biểu đồ tương tác"
@@ -120,7 +120,7 @@ export default function Step4InteractionDiagram({
             hint="Sinh kịch bản cho use case ở Bước 3 trước."
           />
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-3">
             {scenarios.map((useCase) => {
               const diagram = interactions.find(
                 (item) => item.usecaseId === useCase.id && item.type === currentDiagramType,
@@ -129,7 +129,7 @@ export default function Step4InteractionDiagram({
               return (
                 <section
                   key={useCase.id}
-                  className="min-w-0 rounded-2xl bg-slate-50/70 p-4 sm:p-5"
+                  className="min-w-0 rounded-xl bg-slate-50/70 p-3 sm:p-4"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className={`min-w-0 break-words font-semibold text-slate-900 ${wrapClass}`}>
@@ -150,56 +150,55 @@ export default function Step4InteractionDiagram({
                     </div>
                   </div>
 
-                  <DiagramPreview
-                    imageUrl={diagram?.imageUrl ?? null}
-                    emptyTitle={
-                      diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"
-                    }
-                    emptyHint="Biểu đồ được lưu riêng cho từng use case."
-                    downloadName={`${currentDiagramType}-${useCase.id}.svg`}
-                  />
-
-                  {diagram?.sourceCode && diagram.id !== undefined && (
-                    <div className="mt-5 overflow-hidden rounded-2xl bg-[#102d24]">
-                      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 text-emerald-50">
-                        <span className="text-sm font-semibold text-emerald-100">
-                          Mã PlantUML đã lưu
-                        </span>
-                        {!editing && (
-                          <GhostButton
-                            disabled={busy}
-                            onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}
-                          >
-                            ✎ Sửa mã
-                          </GhostButton>
+                  <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
+                    <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
+                      <div className="max-h-[min(42vh,360px)] min-h-[220px] overflow-auto">
+                        <DiagramPreview
+                          imageUrl={diagram?.imageUrl ?? null}
+                          emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"}
+                          emptyHint="Biểu đồ được lưu riêng cho từng use case."
+                          downloadName={`${currentDiagramType}-${useCase.id}.svg`}
+                        />
+                      </div>
+                    </div>
+                    {diagram?.sourceCode && diagram.id !== undefined ? (
+                      <div className="min-w-0 overflow-hidden rounded-xl bg-[#102d24]">
+                        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
+                          <span className="text-xs font-semibold text-emerald-100">Mã PlantUML</span>
+                          {!editing && (
+                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}>
+                              ✎ Sửa mã
+                            </GhostButton>
+                          )}
+                        </div>
+                        {editing ? (
+                          <div className="space-y-3 border-t border-white/10 p-3">
+                            <textarea
+                              value={draft}
+                              onChange={(event) => setDraft(event.target.value)}
+                              rows={8}
+                              spellCheck={false}
+                              className={`${inputClass} min-h-40 resize-y border-white/10 bg-[#0b211a] font-mono text-xs leading-5 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
+                            />
+                            <div className="flex flex-wrap items-center justify-end gap-2">
+                              <GhostButton onClick={() => setEditingUseCaseId(null)}>Đóng</GhostButton>
+                              <PrimaryButton disabled={busy || !draft.trim()} onClick={() => void saveEditing(diagram.id as number)}>
+                                {busy ? "Đang lưu..." : "Lưu mã"}
+                              </PrimaryButton>
+                            </div>
+                          </div>
+                        ) : (
+                          <pre className="uml-code-panel max-h-[min(42vh,360px)] min-h-[220px] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
+                            {diagram.sourceCode}
+                          </pre>
                         )}
                       </div>
-                      {editing ? (
-                        <div className="space-y-3 border-t border-white/10 p-4">
-                          <textarea
-                            value={draft}
-                            onChange={(event) => setDraft(event.target.value)}
-                            rows={12}
-                            spellCheck={false}
-                            className={`${inputClass} min-h-56 resize-y border-white/10 bg-[#0b211a] font-mono text-sm leading-6 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
-                          />
-                          <div className="flex flex-wrap items-center justify-end gap-3">
-                            <GhostButton onClick={() => setEditingUseCaseId(null)}>Đóng</GhostButton>
-                            <PrimaryButton
-                              disabled={busy || !draft.trim()}
-                              onClick={() => void saveEditing(diagram.id as number)}
-                            >
-                              {busy ? "Đang lưu..." : "Lưu mã"}
-                            </PrimaryButton>
-                          </div>
-                        </div>
-                      ) : (
-                        <pre className="uml-code-panel max-h-[28rem] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-5 [overflow-wrap:anywhere]">
-                          {diagram.sourceCode}
-                        </pre>
-                      )}
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex min-h-[220px] items-center justify-center rounded-xl bg-white px-4 text-center text-sm text-slate-500">
+                        Mã PlantUML sẽ xuất hiện sau khi sinh biểu đồ.
+                      </div>
+                    )}
+                  </div>
                 </section>
               );
             })}
