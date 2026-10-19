@@ -53,7 +53,15 @@ function Harness({ initial, stage, step }: {
   stage: 1 | 2 | 3;
   step: number;
 }) {
-  const [state, setState] = useState<WorkflowState>(initial);
+  const [state, setState] = useState<WorkflowState>(() => {
+    if (stage === 2 && initial.specs.length === 0) {
+      return {
+        ...initial,
+        specs: [{ id: 1, feature: "Đặt hàng", type: "functional", content: "{}", approved: true }],
+      };
+    }
+    return initial;
+  });
   const noop = () => {};
   return (
     <>
@@ -62,7 +70,7 @@ function Harness({ initial, stage, step }: {
       {stage === 1 ? (
         <GiaiDoan1 state={state} setState={setState} step={step} onStepChange={noop} />
       ) : stage === 2 ? (
-        <GiaiDoan2 projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
+        <GiaiDoan2 state={state} setState={setState} step={step} onStepChange={noop} />
       ) : (
         <GiaiDoan3 projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
       )}
