@@ -77,21 +77,6 @@ export default function Step2PhanTichYeuCau({
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-5 sm:p-7">
-        <div aria-hidden="true" className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-emerald-100/80 blur-2xl" />
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Giai đoạn 1 · Phân tích và chốt yêu cầu</p>
-            <h2 className={`mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl ${inheritedWrapClass || wrapClass}`}>Phân tích yêu cầu</h2>
-            <p className={`mt-2 text-sm leading-6 text-slate-600 ${inheritedWrapClass || wrapClass}`}>
-              Rà soát từng yêu cầu để phát hiện thông tin còn thiếu trước khi xác nhận User Story và chuyển sang đặc tả.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">02</span>
-            <span><span className="block text-sm font-semibold text-slate-900">Phân tích yêu cầu</span><span className="block text-xs text-slate-500">Bước 2 / 5</span></span>
-          </div>
-        </div>
       </section>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
