@@ -607,7 +607,7 @@ def _check_sequence_methods_snapshot(snapshot: dict[str, Any]) -> list[dict[str,
             continue
         methods = set()
         for declaration in decode_members(item.get("methods")):
-            match = re.search(r"([A-Za-z_][\\w]*)\\s*\\(", declaration)
+            match = re.search(r"([A-Za-z_][\w]*)\s*\(", declaration)
             if match:
                 methods.add(match.group(1).casefold())
         methods_by_class[name.casefold()] = methods
@@ -623,8 +623,8 @@ def _check_sequence_methods_snapshot(snapshot: dict[str, Any]) -> list[dict[str,
         aliases: dict[str, str] = {}
         for line in source.splitlines():
             declaration = re.match(
-                r'\\s*(?:participant|actor|boundary|control|entity|database|collections)\\s+'
-                r'(?:"([^"]+)"|([\\w.]+))(?:\\s+as\\s+([\\w.]+))?',
+                r'\s*(?:participant|actor|boundary|control|entity|database|collections)\s+'
+                r'(?:"([^"]+)"|([\w.]+))(?:\s+as\s+([\w.]+))?',
                 line,
                 re.IGNORECASE,
             )
@@ -637,14 +637,14 @@ def _check_sequence_methods_snapshot(snapshot: dict[str, Any]) -> list[dict[str,
             if line.strip().startswith("'"):
                 continue
             message = re.match(
-                r"\\s*([\\w.]+)\\s*(?:[-.]+>>?|<<?[-.]+|->|<-|\\|o|o\\|)\\s*"
-                r"([\\w.]+)\\s*:\\s*(.+?)\\s*$",
+                r"\s*([\w.]+)\s*(?:[-.]+>>?|<<?[-.]+|->|<-|\|o|o\|)\s*"
+                r"([\w.]+)\s*:\s*(.+?)\s*$",
                 line,
             )
             if not message:
                 continue
             sender, receiver, label = message.groups()
-            call = re.search(r"\\b([A-Za-z_][\\w]*)\\s*\\(", label)
+            call = re.search(r"\b([A-Za-z_][\w]*)\s*\(", label)
             if not call:
                 continue
             method_name = call.group(1).casefold()
