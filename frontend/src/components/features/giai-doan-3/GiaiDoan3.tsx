@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { STAGES } from "../../../stages";
 import { attachDiagramToDoc, renderDiagram } from "../../../services/aiService";
 import {
   getSpecificationDocument,
