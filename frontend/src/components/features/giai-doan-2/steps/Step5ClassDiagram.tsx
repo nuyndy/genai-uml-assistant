@@ -82,7 +82,7 @@ export default function Step5ClassDiagram({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Card
         tone="emerald"
         title="Mô hình lớp suy luận"
@@ -170,26 +170,31 @@ export default function Step5ClassDiagram({
         )}
       </Card>
 
-      <Card title="Biểu đồ lớp" tone="emerald">
-        <DiagramPreview
-          imageUrl={classDiagramUrl}
-          emptyTitle="Chưa có ảnh biểu đồ lớp"
-          emptyHint="Sinh mô hình lớp ở trên để tạo biểu đồ."
-          downloadName="class-diagram.svg"
-        />
-        {classDiagramCode && (
-          <details className="mt-5 overflow-hidden rounded-2xl bg-[#102d24]">
-            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-emerald-100">
-              Mã PlantUML đã lưu
-            </summary>
-            <pre className="uml-code-panel max-h-[28rem] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-5 [overflow-wrap:anywhere]">
-              {classDiagramCode}
+      <Card title="Mô hình UML" subtitle="Kiểm tra biểu đồ lớp rồi xác nhận để sang bước tiếp theo" tone="emerald">
+        <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15rem,0.38fr)]">
+          <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
+            <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
+              <DiagramPreview
+                imageUrl={classDiagramUrl}
+                emptyTitle="Chưa có ảnh biểu đồ lớp"
+                emptyHint="Sinh mô hình lớp ở trên để tạo biểu đồ."
+                downloadName="class-diagram.svg"
+              />
+            </div>
+          </div>
+          <section className="flex min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-emerald-100">
+            <div className="flex items-center gap-2 border-b border-emerald-100 px-3 py-2">
+              <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-900">Mã</span>
+              <span className="rounded-md px-2.5 py-1 text-xs text-slate-500">PlantUML</span>
+            </div>
+            <pre className="uml-code-panel min-h-[250px] max-h-[min(54vh,460px)] flex-1 overflow-auto whitespace-pre-wrap break-words p-3 text-xs leading-5 [overflow-wrap:anywhere]">
+              {classDiagramCode || "Mã PlantUML sẽ xuất hiện tại đây sau khi sinh biểu đồ."}
             </pre>
-          </details>
-        )}
+          </section>
+        </div>
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-5 py-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.4)] sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.4)] sm:px-5">
         <p className="text-sm text-slate-700">Xác nhận mô hình lớp và biểu đồ lớp</p>
         <PrimaryButton
           disabled={busy || umlClasses.length === 0 || !classDiagramUrl}
