@@ -125,7 +125,7 @@ describe("Step 1 requirement coverage check", () => {
     const continueButton = screen.getByRole("button", { name: "Tiếp tục sang Bước 2" });
     expect(continueButton).toHaveProperty("disabled", true);
 
-    fireEvent.click(screen.getByRole("button", { name: "Kiểm tra chức năng" }));
+    fireEvent.click(screen.getByRole("button", { name: "Kiểm tra bằng AI" }));
     await screen.findByText("Còn thiếu chức năng quản trị tài khoản.");
 
     const accountSuggestion = screen.getByRole("checkbox", {
