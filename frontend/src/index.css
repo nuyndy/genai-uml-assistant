@@ -1,31 +1,26 @@
 @import "tailwindcss";
 
-/* Design tokens — bảng màu thống nhất của GenAI UML Assistant */
+/* Fresh pastel design system: white canvas, mint primary, airy blue and lavender accents. */
 :root {
-  /* Nền */
-  --bg: #F5F2E4;
-  --surface: #FBF9F0;
-  --surface-alt: #EADFC6;
-  --border: #D9C9A8;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #F3F8FC;
+  --border: #DCE8F1;
 
-  /* Chữ */
-  --text: #1A1D1B;
-  --text-muted: #6B5E4B;
-  --heading: #0A3323;
+  --text: #243746;
+  --text-muted: #64798A;
+  --heading: #245C55;
 
-  /* Thương hiệu */
-  --primary: #0A3323;
-  --primary-hover: #1B4D37;
-  --secondary: #2E6B4F;
+  --primary: #397F70;
+  --primary-hover: #2E6D60;
+  --secondary: #75B9A8;
 
-  /* Nhấn */
-  --accent: #A96A66;
-  --accent-text: #8F4A44;
+  --accent: #A6B8F0;
+  --accent-text: #536DB7;
 
-  /* Trạng thái */
-  --success: #4E8F6F;
-  --warning: #B8893B;
-  --danger: #8F4A44;
+  --success: #4D9B83;
+  --warning: #B77936;
+  --danger: #C35E78;
 
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
@@ -39,65 +34,64 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ánh xạ các utility màu đang dùng sang bảng màu thương hiệu.
-   Giữ nguyên class hiện tại để tránh phải viết lại toàn bộ component. */
 @theme {
-  --color-slate-50: #FBF9F0;
-  --color-slate-100: #F5F2E4;
-  --color-slate-200: #D9C9A8;
-  --color-slate-300: #C7B58F;
-  --color-slate-400: #9A8A70;
-  --color-slate-500: #6B5E4B;
-  --color-slate-600: #514638;
-  --color-slate-700: #39372F;
-  --color-slate-800: #1A1D1B;
-  --color-slate-900: #0A3323;
-  --color-slate-950: #06271A;
+  --color-slate-50: #F7FAFD;
+  --color-slate-100: #EEF4F8;
+  --color-slate-200: #DCE8F1;
+  --color-slate-300: #C5D6E3;
+  --color-slate-400: #8CA1B1;
+  --color-slate-500: #64798A;
+  --color-slate-600: #4B6273;
+  --color-slate-700: #344B5B;
+  --color-slate-800: #243746;
+  --color-slate-900: #1B303E;
+  --color-slate-950: #122530;
 
-  --color-violet-50: #F5F2E4;
-  --color-violet-100: #EADFC6;
-  --color-violet-200: #D9C9A8;
-  --color-violet-300: #B7C9B9;
-  --color-violet-400: #4E8F6F;
-  --color-violet-500: #2E6B4F;
-  --color-violet-600: #0A3323;
-  --color-violet-700: #1B4D37;
-  --color-violet-800: #0A3323;
-  --color-violet-900: #06271A;
-  --color-violet-950: #041D13;
+  --color-violet-50: #F5F5FF;
+  --color-violet-100: #E9EBFF;
+  --color-violet-200: #D7DCFF;
+  --color-violet-300: #BEC8FA;
+  --color-violet-400: #A6B8F0;
+  --color-violet-500: #879CE0;
+  --color-violet-600: #6C83CC;
+  --color-violet-700: #536DB7;
+  --color-violet-800: #405A9F;
+  --color-violet-900: #344B86;
+  --color-violet-950: #293B6B;
 
-  --color-emerald-50: #EDF4EC;
-  --color-emerald-100: #DCE9DB;
-  --color-emerald-200: #B7D0BD;
-  --color-emerald-300: #8FB69B;
-  --color-emerald-400: #4E8F6F;
-  --color-emerald-500: #4E8F6F;
-  --color-emerald-600: #2E6B4F;
-  --color-emerald-700: #0A3323;
-  --color-emerald-800: #0A3323;
-  --color-emerald-900: #06271A;
+  --color-emerald-50: #F0FAF7;
+  --color-emerald-100: #DDF3EC;
+  --color-emerald-200: #BFE6D9;
+  --color-emerald-300: #97D2BF;
+  --color-emerald-400: #75B9A8;
+  --color-emerald-500: #5AA590;
+  --color-emerald-600: #478F7C;
+  --color-emerald-700: #397F70;
+  --color-emerald-800: #316F63;
+  --color-emerald-900: #285C53;
 
-  --color-amber-50: #F8F0DF;
-  --color-amber-100: #EADFC6;
-  --color-amber-200: #D9C9A8;
-  --color-amber-300: #D0B477;
-  --color-amber-400: #B8893B;
-  --color-amber-500: #B8893B;
-  --color-amber-600: #946B2B;
-  --color-amber-700: #765323;
-  --color-amber-800: #5F431F;
-  --color-amber-900: #463218;
+  /* Replace old amber/cream utilities with a clean pastel sky-blue scale. */
+  --color-amber-50: #F2F8FF;
+  --color-amber-100: #E2F0FF;
+  --color-amber-200: #C8E2FA;
+  --color-amber-300: #A7D0F0;
+  --color-amber-400: #7EB5DE;
+  --color-amber-500: #5D9BCB;
+  --color-amber-600: #477FAE;
+  --color-amber-700: #37658F;
+  --color-amber-800: #2C5275;
+  --color-amber-900: #24425E;
 
-  --color-rose-50: #F7EDEA;
-  --color-rose-100: #EEDAD5;
-  --color-rose-200: #DDBBB4;
-  --color-rose-300: #C98F86;
-  --color-rose-400: #A96A66;
-  --color-rose-500: #A96A66;
-  --color-rose-600: #8F4A44;
-  --color-rose-700: #8F4A44;
-  --color-rose-800: #743B36;
-  --color-rose-900: #5C302C;
+  --color-rose-50: #FFF4F7;
+  --color-rose-100: #FFE4EB;
+  --color-rose-200: #F8C8D5;
+  --color-rose-300: #EFA5B9;
+  --color-rose-400: #E1849E;
+  --color-rose-500: #D66D8B;
+  --color-rose-600: #C35E78;
+  --color-rose-700: #A94A65;
+  --color-rose-800: #8D3D55;
+  --color-rose-900: #733448;
 }
 
 #root {
@@ -111,7 +105,7 @@ body {
   min-width: 320px;
   min-height: 100svh;
   color: var(--text);
-  background: var(--bg);
+  background: #FFFFFF;
 }
 
 code,
@@ -123,74 +117,45 @@ code,
 }
 
 @keyframes progress-indeterminate {
-  from {
-    transform: translateX(-110%);
-  }
-
-  to {
-    transform: translateX(270%);
-  }
+  from { transform: translateX(-110%); }
+  to { transform: translateX(270%); }
 }
 
 .progress-indeterminate {
   animation: progress-indeterminate 1.4s ease-in-out infinite alternate;
 }
 
-
-/* Persistent workflow chrome: stage navigation stays at the top and primary actions stay visible. */
 .workflow-action-bar {
   position: fixed !important;
   inset-inline: 0;
   bottom: 0;
   z-index: 50;
   border-radius: 0.9rem 0.9rem 0 0;
-  border-top: 1px solid rgb(183 208 189 / 75%);
+  border-top: 1px solid rgb(191 230 217 / 80%);
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
-main {
-  padding-bottom: 6.5rem;
-}
+
+main { padding-bottom: 6.5rem; }
+
 @media (max-width: 640px) {
-  main {
-    padding-bottom: 7.5rem;
-  }
-  .workflow-action-bar {
-    gap: 0.5rem;
-    padding-inline: 0.75rem;
-  }
-  .workflow-action-bar button {
-    max-width: 100%;
-    white-space: normal;
-  }
+  main { padding-bottom: 7.5rem; }
+  .workflow-action-bar { gap: 0.5rem; padding-inline: 0.75rem; }
+  .workflow-action-bar button { max-width: 100%; white-space: normal; }
 }
 
-/* Polished workspace: fewer outlines, clearer hierarchy and readable code panels. */
-::selection {
-  color: #f8faf9;
-  background: #2e6b4f;
-}
+::selection { color: #1B303E; background: #BFE6D9; }
 
-button,
-a,
-input,
-textarea,
-select {
-  -webkit-tap-highlight-color: transparent;
-}
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 3px solid rgb(78 143 111 / 35%);
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid rgb(117 185 168 / 45%);
   outline-offset: 2px;
 }
 
 .uml-code-panel {
-  color: #d5e8dc;
-  background: #102d24;
-  border-color: rgb(255 255 255 / 8%);
+  color: #D5E8E3;
+  background: #203D3A;
+  border-color: rgb(255 255 255 / 10%);
   border-radius: 0 0 1rem 1rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;
@@ -198,15 +163,10 @@ select:focus-visible {
   tab-size: 2;
 }
 
-.uml-code-panel::selection {
-  color: #fff;
-  background: #39785a;
-}
+.uml-code-panel::selection { color: #FFFFFF; background: #397F70; }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
