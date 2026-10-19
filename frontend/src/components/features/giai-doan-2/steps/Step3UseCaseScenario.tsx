@@ -162,10 +162,8 @@ export default function Step3UseCaseScenario({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(2)}>Quay lại Bước 2</GhostButton>
-        <PrimaryButton disabled={busy || !confirmed} onClick={() => onStepChange(4)}>
-          Tiếp tục sang Bước 4
-        </PrimaryButton>
+        
+        
       </div>
     </div>
   );
