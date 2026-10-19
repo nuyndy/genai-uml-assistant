@@ -153,6 +153,6 @@ describe("Step 1 requirement coverage check", () => {
     expect(continueButton).toHaveProperty("disabled", false);
 
     fireEvent.click(continueButton);
-    await screen.findByText("Phân tích và phát hiện thiếu sót");
+    await screen.findByRole("heading", { name: "Phân tích yêu cầu" });
   });
 });
