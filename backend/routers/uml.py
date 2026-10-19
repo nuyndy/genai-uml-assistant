@@ -16,6 +16,7 @@ from database.models import (
     Project,
     RawRequirement,
     Specification,
+    TraceLink,
     SpecificationApproval,
     UcActorRelation,
     UseCase,
@@ -1265,6 +1266,11 @@ def delete_actor(
         db.query(UcActorRelation).filter(
             UcActorRelation.actor_id == actor_id
         ).delete(synchronize_session=False)
+        db.query(TraceLink).filter(
+            TraceLink.project_id == actor.project_id,
+            ((TraceLink.source_type == "actor") & (TraceLink.source_id == actor_id))
+            | ((TraceLink.target_type == "actor") & (TraceLink.target_id == actor_id)),
+        ).delete(synchronize_session=False)
         db.delete(actor)
         db.commit()
     except HTTPException:
@@ -1376,9 +1382,24 @@ def delete_use_case(
         db.query(UcActorRelation).filter(
             UcActorRelation.use_case_id == use_case_id
         ).delete(synchronize_session=False)
+        diagram_ids = [
+            row[0]
+            for row in db.query(Diagram.id).filter(
+                Diagram.use_case_id == use_case_id
+            ).all()
+        ]
+        if diagram_ids:
+            db.query(DiagramRevision).filter(
+                DiagramRevision.diagram_id.in_(diagram_ids)
+            ).delete(synchronize_session=False)
         db.query(Diagram).filter(Diagram.use_case_id == use_case_id).delete(
             synchronize_session=False
         )
+        db.query(TraceLink).filter(
+            TraceLink.project_id == project_id,
+            ((TraceLink.source_type == "use_case") & (TraceLink.source_id == use_case_id))
+            | ((TraceLink.target_type == "use_case") & (TraceLink.target_id == use_case_id)),
+        ).delete(synchronize_session=False)
         db.delete(use_case)
         db.commit()
     except HTTPException:
@@ -2115,6 +2136,17 @@ def delete_class(
             (ClassRelation.class_a_id == class_id)
             | (ClassRelation.class_b_id == class_id)
         ).delete(synchronize_session=False)
+        db.query(TraceLink).filter(
+            TraceLink.project_id == entity.project_id,
+            (
+                (TraceLink.source_type.in_(["class", "class_entity"]))
+                & (TraceLink.source_id == class_id)
+            )
+            | (
+                (TraceLink.target_type.in_(["class", "class_entity"]))
+                & (TraceLink.target_id == class_id)
+            ),
+        ).delete(synchronize_session=False)
         db.delete(entity)
         db.commit()
     except HTTPException:
@@ -2559,6 +2591,14 @@ def delete_diagram(
             raise HTTPException(status_code=404, detail="Không tìm thấy biểu đồ.")
         _require_project(db, diagram.project_id)
         _require_approved_specifications(db, diagram.project_id)
+        db.query(TraceLink).filter(
+            TraceLink.project_id == diagram.project_id,
+            ((TraceLink.source_type == "diagram") & (TraceLink.source_id == diagram_id))
+            | ((TraceLink.target_type == "diagram") & (TraceLink.target_id == diagram_id)),
+        ).delete(synchronize_session=False)
+        db.query(DiagramRevision).filter(
+            DiagramRevision.diagram_id == diagram_id
+        ).delete(synchronize_session=False)
         db.delete(diagram)
         db.commit()
     except HTTPException:
