@@ -130,7 +130,7 @@ def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path)
     assert "Chuyển yêu cầu phần mềm sau thành bản nháp User Story" in result["prompt"]
     assert "Dựa duy nhất trên dữ liệu đầu vào" in result["prompt"]
     assert result["output_source"] == "saved_output"
-    assert report["generation_config"]["prompt_mode"] == "task_specific_production_and_generic_prompts"
+    assert report["generation_config"]["prompt_mode"] == "production_builders_and_generic_prompts"
     assert any("các tác vụ còn lại vẫn dùng prompt benchmark chung" in item for item in report["limitations"])
 
 
