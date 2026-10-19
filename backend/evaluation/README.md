@@ -29,3 +29,30 @@ Các kiểm tra này **không chứng minh chất lượng ngữ nghĩa của AI
 ## Định dạng bộ dữ liệu
 
 Mỗi ca có mã ổn định, loại tác vụ, đầu vào, đầu ra mẫu tối thiểu và tiêu chí kiểm tra. Khi mở rộng, giữ nguyên ID để có thể so sánh phiên bản model/prompt theo thời gian.
+
+
+## Chạy benchmark thực tế
+
+Từ thư mục `backend`, sau khi Ollama đang chạy và model đã được tải:
+
+```bash
+python -m evaluation.run_ai_quality --run-ollama
+```
+
+Báo cáo JSON mặc định được ghi vào `evaluation/latest_report.json`. Có thể chỉ định nơi lưu bằng `--report path/to/report.json`. Lệnh này gọi model thật và có thể mất thời gian tùy cấu hình máy.
+
+Để chấm lại đầu ra đã lưu mà không gọi AI, tạo một file JSON ánh xạ ID sang **chuỗi chứa JSON đầu ra** rồi chạy:
+
+```bash
+python -m evaluation.run_ai_quality --outputs evaluation/my_outputs.json
+```
+
+Ví dụ cấu trúc file đầu vào:
+
+```json
+{
+  "US-001": "{\"name\": \"Xem lịch học\", \"description\": \"Sinh viên xem lịch học\", \"acceptance_criteria\": [\"Sinh viên đã đăng nhập xem được lịch học\"]}"
+}
+```
+
+Chỉ số `pass_rate` hiện tại là tỷ lệ ca đạt các kiểm tra cấu trúc xác định trong số ca đã chấm. Nó **không phải** tỷ lệ câu trả lời đúng về ngữ nghĩa. Báo cáo sẽ nêu các ca bị bỏ qua nếu không có đầu ra tương ứng.
