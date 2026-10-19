@@ -97,3 +97,93 @@ def test_drift_endpoint_rejects_baseline_from_another_project(client, db_session
     )
 
     assert response.status_code == 404
+
+
+
+def test_review_status_reports_drift_and_unresolved_issues(client, db_session):
+    project, headers = _project_and_headers(db_session, "baseline-review-status@example.com")
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Baseline cần rà soát",
+        status="approved",
+        snapshot={"project_id": project.id, "entities": {
+            "raw_requirement": [],
+            "actor": [],
+            "class_entity": [],
+            "diagram": [],
+            "glossary_term": [],
+            "srs_document": [],
+            "entity_revision": [],
+            "trace_link": [],
+            "specification": [],
+            "use_case": [],
+            "uc_actor_relation": [],
+            "user_story": [],
+            "class_relation": [],
+            "diagram_revision": [],
+        }},
+        open_issues=[
+            {"id": "issue-1", "status": "open", "description": "Cần rà soát luồng ngoại lệ"},
+            {"id": "issue-2", "status": "accepted", "acceptance_reason": "Được chấp nhận trong phạm vi phiên bản"},
+        ],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+    db_session.add(RawRequirement(
+        project_id=project.id,
+        content="Người dùng có thể đăng nhập",
+        status="confirmed",
+    ))
+    db_session.commit()
+
+    response = client.get(
+        f"/api/projects/{project.id}/baselines/{baseline.id}/review-status",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["review_required"] is True
+    assert body["data_drift"] is True
+    assert body["unresolved_issue_count"] == 1
+    assert body["accepted_issue_count"] == 1
+    assert body["unresolved_issues"][0]["id"] == "issue-1"
+
+
+def test_review_status_marks_draft_baseline_as_requiring_review(client, db_session):
+    project, headers = _project_and_headers(db_session, "baseline-review-draft@example.com")
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Bản nháp",
+        status="draft",
+        snapshot={"project_id": project.id, "entities": {
+            "raw_requirement": [],
+            "actor": [],
+            "class_entity": [],
+            "diagram": [],
+            "glossary_term": [],
+            "srs_document": [],
+            "entity_revision": [],
+            "trace_link": [],
+            "specification": [],
+            "use_case": [],
+            "uc_actor_relation": [],
+            "user_story": [],
+            "class_relation": [],
+            "diagram_revision": [],
+        }},
+        open_issues=[],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+
+    response = client.get(
+        f"/api/projects/{project.id}/baselines/{baseline.id}/review-status",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["review_required"] is True
+    assert response.json()["baseline_status"] == "draft"
