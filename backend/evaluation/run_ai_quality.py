@@ -57,9 +57,13 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
 
     if "minimum_acceptance_criteria" in expected:
         value = payload.get("acceptance_criteria")
+        if expected.get("acceptance_criteria_type") == "string":
+            criterion_count = 1 if isinstance(value, str) and value.strip() else 0
+        else:
+            criterion_count = len(value) if isinstance(value, list) else 0
         record("acceptance_criteria_nonempty",
-               isinstance(value, list) and len(value) >= expected["minimum_acceptance_criteria"],
-               f'acceptance_criteria phải là danh sách có ít nhất {expected["minimum_acceptance_criteria"]} phần tử.')
+               criterion_count >= expected["minimum_acceptance_criteria"],
+               f'acceptance_criteria phải có ít nhất {expected["minimum_acceptance_criteria"]} tiêu chí không rỗng.')
     if "minimum_main_flow_steps" in expected:
         value = payload.get("main_flow")
         record("main_flow_nonempty",
@@ -108,7 +112,14 @@ def build_prompt(case: dict[str, Any]) -> str:
         "acceptance_criteria", "main_flow", "alt_flow", "exception_flow",
         "classes", "relationships", "lifelines", "messages", "issues",
     }
-    schema = {field: [] if field in array_fields else "string" for field in fields}
+    schema = {
+        field: (
+            "string" if field == "acceptance_criteria"
+            and case["expected"].get("acceptance_criteria_type") == "string"
+            else [] if field in array_fields else "string"
+        )
+        for field in fields
+    }
     return (
         "Bạn hỗ trợ phân tích và mô hình hóa phần mềm. Chỉ sử dụng dữ liệu đầu vào; "
         "không tự thêm yêu cầu, lớp, quan hệ hoặc kết luận chưa có căn cứ. "
