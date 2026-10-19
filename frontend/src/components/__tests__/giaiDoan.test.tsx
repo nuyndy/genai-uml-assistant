@@ -124,14 +124,14 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
 
   it("Bước 2 cho phép sang bước tiếp theo dù có yêu cầu thiếu", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={2} />);
-    expect(screen.getByText("Phân tích và phát hiện thiếu sót")).toBeTruthy();
+    expect(screen.getByText("Phân tích yêu cầu")).toBeTruthy();
     expect(screen.getByText("Tiếp tục sang Bước 3")).toBeTruthy();
   });
 
   it("Bước 3 cho người dùng kiểm duyệt User Story do AI tạo", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={3} />);
     expect(screen.getByText("Chưa có yêu cầu để rà soát")).toBeTruthy();
-    expect(screen.getByText("Xác nhận yêu cầu & sang Bước 4")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Xác nhận yêu cầu & User Story/ })).toBeTruthy();
   });
 
   it("Bước 5 cho sửa trực tiếp trên trang Word và tải xuống docx", () => {
@@ -142,7 +142,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
       { id: 3, feature: "Chưa duyệt", type: "functional", content: "C", approved: false },
     ];
     render(<Harness initial={initial} stage={1} step={5} />);
-    expect(screen.getByText("Tài liệu SRS")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Rà soát và đồng bộ tài liệu SRS/ })).toBeTruthy();
     expect(screen.getByText("Tải xuống file Word (.docx)")).toBeTruthy();
     // Sửa được trực tiếp trên tài liệu, không phải quay lại Bước 4.
     expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
@@ -218,7 +218,7 @@ describe("Giai đoạn 3", () => {
       { id: 1, name: "Order", attributes: ["id: int"], methods: ["create()"] },
     ];
     initial.relations = [{ id: 1, from: "Khách hàng", to: "Order", type: "association" }];
-    render(<Harness initial={initial} stage={3} step={1} />);
+    render(<Harness initial={initial} stage={3} step={2} />);
     // "Khách hàng" xuất hiện ở cả ô tác nhân và ô quan hệ "Từ".
     expect(screen.getAllByDisplayValue("Khách hàng").length).toBeGreaterThan(0);
     // "Order" xuất hiện ở cả ô tên lớp và ô quan hệ "Đến".
@@ -226,10 +226,10 @@ describe("Giai đoạn 3", () => {
     expect(screen.getByDisplayValue("id: int")).toBeTruthy();
   });
 
-  it("Bước 3 có 2 nút quay lại khi chưa ưng ý", () => {
+  it("Bước 3 có nút quay lại chỉnh sửa khi phát hiện sai lệch", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
-    expect(screen.getByText("← Quay lại sửa thành phần")).toBeTruthy();
-    expect(screen.getByText("← Quay lại sửa mã")).toBeTruthy();
+    expect(screen.getByText("← Quay lại chỉnh sửa")).toBeTruthy();
+    expect(screen.getByText("Kiểm tra UML")).toBeTruthy();
   });
 
   it("Bước 4 chọn được định dạng PNG/SVG", () => {
