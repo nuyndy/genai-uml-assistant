@@ -1,6 +1,7 @@
 [
   {
     "id": "REQ-001",
+    "phase": 1,
     "task": "requirement_analysis",
     "input": "Sinh viên đăng nhập bằng email và mật khẩu để xem lịch học của mình.",
     "expected": {
@@ -18,7 +19,27 @@
     ]
   },
   {
+    "id": "REQ-002",
+    "phase": 1,
+    "task": "requirement_analysis",
+    "input": "Giảng viên muốn cập nhật điểm của sinh viên trong lớp mình phụ trách.",
+    "expected": {
+      "required_fields": [
+        "actor",
+        "action",
+        "target_object",
+        "purpose"
+      ],
+      "must_not_invent": true
+    },
+    "checks": [
+      "schema_fields_present",
+      "actor_action_specific"
+    ]
+  },
+  {
     "id": "US-001",
+    "phase": 1,
     "task": "user_story",
     "input": "Sinh viên muốn xem lịch học của mình sau khi đăng nhập.",
     "expected": {
@@ -36,6 +57,7 @@
   },
   {
     "id": "UC-001",
+    "phase": 1,
     "task": "use_case_scenario",
     "input": "Sinh viên xem lịch học; cần có luồng chính và luồng ngoại lệ khi chưa đăng nhập.",
     "expected": {
@@ -50,6 +72,85 @@
     "checks": [
       "schema_fields_present",
       "main_flow_nonempty"
+    ]
+  },
+  {
+    "id": "UML-001",
+    "phase": 2,
+    "task": "uml_class_model",
+    "input": "Hệ thống quản lý lịch học có SinhVien xem LichHoc. Mỗi SinhVien có mã sinh viên và họ tên; LichHoc có mã lịch và ngày học.",
+    "expected": {
+      "required_fields": [
+        "classes",
+        "relationships"
+      ],
+      "minimum_classes": 2,
+      "must_include_classes": [
+        "SinhVien",
+        "LichHoc"
+      ]
+    },
+    "checks": [
+      "schema_fields_present",
+      "minimum_classes",
+      "required_class_names"
+    ]
+  },
+  {
+    "id": "UML-002",
+    "phase": 2,
+    "task": "uml_sequence_model",
+    "input": "Kịch bản: Sinh viên yêu cầu xem lịch học; giao diện gửi yêu cầu đến dịch vụ lịch học; dịch vụ lấy dữ liệu từ kho dữ liệu và trả lịch học cho giao diện.",
+    "expected": {
+      "required_fields": [
+        "lifelines",
+        "messages"
+      ],
+      "minimum_messages": 3
+    },
+    "checks": [
+      "schema_fields_present",
+      "minimum_messages"
+    ]
+  },
+  {
+    "id": "SRS-001",
+    "phase": 3,
+    "task": "srs_traceability",
+    "input": "Yêu cầu FR-01: Sinh viên xem lịch học. User Story US-01: Sinh viên xem lịch học của mình. Use Case UC-01: Xem lịch học.",
+    "expected": {
+      "required_fields": [
+        "requirement_id",
+        "user_story_id",
+        "use_case_id",
+        "traceability_status"
+      ],
+      "expected_ids": [
+        "FR-01",
+        "US-01",
+        "UC-01"
+      ]
+    },
+    "checks": [
+      "schema_fields_present",
+      "traceability_ids_present"
+    ]
+  },
+  {
+    "id": "SRS-002",
+    "phase": 3,
+    "task": "srs_consistency_review",
+    "input": "FR-02 yêu cầu giảng viên cập nhật điểm. Trong SRS, Use Case UC-02 lại mô tả sinh viên xem lịch học. Hãy phát hiện sự không khớp và không tự sửa dữ liệu.",
+    "expected": {
+      "required_fields": [
+        "issues",
+        "recommendation"
+      ],
+      "minimum_issues": 1
+    },
+    "checks": [
+      "schema_fields_present",
+      "consistency_issue_detected"
     ]
   }
 ]
