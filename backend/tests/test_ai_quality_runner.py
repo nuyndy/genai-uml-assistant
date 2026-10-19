@@ -68,3 +68,42 @@ def test_score_output_rejects_empty_main_flow():
 
     assert result["passed"] is False
     assert "main_flow" in " ".join(result["errors"])
+
+
+
+def test_score_output_checks_class_names_for_uml_case():
+    case = _case("UML-001")
+    output = json.dumps({
+        "classes": [{"name": "SinhVien"}, {"name": "LichHoc"}],
+        "relationships": [],
+    })
+
+    result = score_output(case, output)
+
+    assert result["passed"] is True
+
+
+def test_score_output_rejects_missing_traceability_ids():
+    case = _case("SRS-001")
+    output = json.dumps({
+        "requirement_id": "FR-01",
+        "user_story_id": "US-01",
+        "use_case_id": "UC-OTHER",
+        "traceability_status": "linked",
+    })
+
+    result = score_output(case, output)
+
+    assert result["passed"] is False
+    assert "ID" in " ".join(result["errors"])
+
+
+def test_evaluation_dataset_covers_three_project_phases():
+    cases = json.loads(
+        (BACKEND_ROOT / "evaluation" / "ai_quality_cases.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert {case["phase"] for case in cases} == {1, 2, 3}
+    assert len(cases) >= 6
