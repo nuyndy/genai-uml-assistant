@@ -5,6 +5,7 @@ import type { UserStoryDraft } from "../../../../services/requirementService";
 interface Props {
   projectId?: number;
   draftRequirements: any[];
+  confirmedRequirementsCount: number;
   requirementValues: Record<number, RawRequirement>;
   storyDrafts: Record<number, UserStoryDraft>;
   loadingStoryDrafts: boolean;
@@ -24,6 +25,7 @@ interface Props {
 
 export default function Step3UserStory({
   draftRequirements,
+  confirmedRequirementsCount,
   requirementValues,
   storyDrafts,
   loadingStoryDrafts,
@@ -38,6 +40,7 @@ export default function Step3UserStory({
   inputClass,
 }: Props) {
   const total = draftRequirements.length;
+  const generatedCount = draftRequirements.filter((item) => Boolean(storyDrafts[item.id])).length;
   const readyCount = draftRequirements.filter((item) => {
     const story = storyDrafts[item.id];
     return Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
@@ -47,10 +50,23 @@ export default function Step3UserStory({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-sm text-slate-600">Yêu cầu cần duyệt</p><p className="mt-1 text-2xl font-semibold text-slate-900">{total}</p><p className="mt-1 text-xs text-slate-500">Yêu cầu đang ở trạng thái bản nháp</p></div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm text-emerald-800">User Story đã đủ trường</p><p className="mt-1 text-2xl font-semibold text-emerald-900">{allRequirementsConfirmed ? total : readyCount}</p><p className="mt-1 text-xs text-emerald-800">Vai trò, chức năng, lợi ích và tiêu chí</p></div>
-        <div className="col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4 lg:col-span-1"><p className="text-sm text-amber-900">Trạng thái kiểm duyệt</p><div className="mt-2"><StatusBadge tone={allRequirementsConfirmed ? "success" : allStoryDraftsReady ? "success" : "warn"}>{allRequirementsConfirmed ? "Đã xác nhận" : allStoryDraftsReady ? "Sẵn sàng xác nhận" : "Cần hoàn thiện"}</StatusBadge></div><p className="mt-2 text-xs text-amber-900">{allRequirementsConfirmed ? "Các yêu cầu đã được lưu và xác nhận." : "Kiểm tra nội dung trước khi chốt."}</p></div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{total}</p></div>
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Yêu cầu cần duyệt</p><p className="mt-1 text-xs leading-tight opacity-75">Yêu cầu còn bản nháp</p></div>
+        </div>
+        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sky-900">
+          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{generatedCount}</p></div>
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">AI đã sinh</p><p className="mt-1 text-xs leading-tight opacity-75">Có bản nháp User Story</p></div>
+        </div>
+        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
+          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{readyCount}</p></div>
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Đủ trường</p><p className="mt-1 text-xs leading-tight opacity-75">Đủ 4 trường bắt buộc</p></div>
+        </div>
+        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-violet-900">
+          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{confirmedRequirementsCount}</p></div>
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Đã duyệt</p><p className="mt-1 text-xs leading-tight opacity-75">Yêu cầu đã xác nhận</p></div>
+        </div>
       </div>
 
       {allRequirementsConfirmed ? (
@@ -77,14 +93,14 @@ export default function Step3UserStory({
               <p className="mt-1 text-sm text-emerald-800">Đang chuẩn bị bản nháp cho {total} yêu cầu. Vui lòng chờ kết quả.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {draftRequirements.map((item, index) => {
+            <div className="space-y-3">
+              {[...draftRequirements].reverse().map((item, index) => {
                 const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
                 const story = storyDrafts[item.id];
                 const storyReady = Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
                 return (
-                  <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                    <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/70 p-4 sm:p-5">
+                  <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-start justify-between gap-2"><h3 className={`break-words text-sm font-semibold leading-6 text-slate-900 ${textWrap}`}>{requirementTitle(rawValue)}</h3><StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường bắt buộc" : story ? "Cần hoàn thiện" : "Chưa có bản nháp"}</StatusBadge></div>
@@ -95,7 +111,7 @@ export default function Step3UserStory({
                     {!story ? (
                       <div className="p-4 sm:p-5"><p className="text-sm text-amber-800">Chưa có bản nháp cho yêu cầu này. Hãy tạo lại bản nháp bằng AI.</p></div>
                     ) : (
-                      <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+                      <div className="grid gap-3 p-4 sm:grid-cols-2">
                         <label className="block text-sm font-medium text-slate-700">Vai trò <span className="text-rose-600">*</span>
                           <input aria-label={`Vai trò User Story ${item.id}`} value={story.role ?? ""} onChange={(event) => changeStoryDraft(item.id, "role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} placeholder="Ví dụ: Khách hàng" />
                         </label>
@@ -116,7 +132,7 @@ export default function Step3UserStory({
               })}
             </div>
           )}
-          <div className="mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
             <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>AI chỉ tạo bản nháp; bạn chịu trách nhiệm rà soát nội dung trước khi lưu xác nhận.</p>
             <PrimaryButton disabled={!canConfirm} onClick={() => void confirmAll()}>{busy ? "Đang xác nhận..." : "Xác nhận yêu cầu & User Story"} <span aria-hidden="true">→</span></PrimaryButton>
           </div>
