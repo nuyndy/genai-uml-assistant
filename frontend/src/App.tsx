@@ -86,34 +86,6 @@ function App() {
    *  - GĐ2: tới Bước 2 khi đã xác nhận danh sách; các bước sau mở theo dữ liệu.
    *  - GĐ3: mở dần sau mỗi bước đã hoàn thành.
    */
-  const maxUnlockedStep = (): number => {
-    const total = STAGES[stage].steps.length;
-    if (stage === 1) {
-      if (workflow.specs.length > 0) return total;
-      if (workflow.userStoryId) return 4;
-      if (workflow.analysis) return 3;
-      if (workflow.requirementId) return 2;
-      return 1;
-    }
-    if (stage === 2) {
-      // Chỉ mở bước kế tiếp sau khi người dùng xác nhận bước hiện tại.
-      // Có dữ liệu hoặc có ảnh biểu đồ không đồng nghĩa với đã duyệt.
-      if (workflow.classDiagramConfirmed && workflow.classDiagramUrl) return total;
-      if (workflow.interactionsConfirmed) return 5;
-      if (workflow.scenariosConfirmed) return 4;
-      if (workflow.useCaseDiagramConfirmed) return 3;
-      if (workflow.actorsUseCasesConfirmed) return 2;
-      return 1;
-    }
-    if (workflow.previewImageUrl) return 4;
-    if (
-      workflow.diagramCode.trim() &&
-      workflow.diagramCode !== "@startuml\n@enduml"
-    )
-      return 3;
-    return 2;
-  };
-
   /**
    * Giai đoạn 1 hoàn thành khi mọi yêu cầu đã được xác nhận VÀ đã sinh được
    * ít nhất một đặc tả. Giai đoạn 2 hoàn thành khi đã có mô hình lớp (bước
