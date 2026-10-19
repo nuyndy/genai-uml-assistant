@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
-import type { UserStory, UserStoryDraft } from "../../../../services/requirementService";
+import { improveUserStory, saveRequirementUserStory, updateUserStory, type UserStory, type UserStoryDraft } from "../../../../services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -44,6 +44,16 @@ export default function Step3UserStory({
 }: Props) {
   const [activeDraftIndex, setActiveDraftIndex] = useState(0);
   const orderedDrafts = [...draftRequirements].reverse();
+  const [activeDraftIndex, setActiveDraftIndex] = useState(0);
+  const [activeSavedIndex, setActiveSavedIndex] = useState(0);
+  const [savedEdits, setSavedEdits] = useState<Record<number, UserStory>>({});
+  const [saving, setSaving] = useState(false);
+  const [improving, setImproving] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
+  const orderedDrafts = [...draftRequirements].reverse();
+  const orderedSavedStories = [...savedStories].sort((a, b) => b.id - a.id);
+  const activeSavedStoryBase = orderedSavedStories[activeSavedIndex];
+  const activeSavedStory = activeSavedStoryBase ? (savedEdits[activeSavedStoryBase.id] ?? activeSavedStoryBase) : undefined;
   const total = draftRequirements.length;
   const generatedCount = draftRequirements.filter((item) => Boolean(storyDrafts[item.id])).length;
   const readyCount = draftRequirements.filter((item) => {
@@ -74,29 +84,34 @@ export default function Step3UserStory({
         </div>
       </div>
 
-      {savedStories.length > 0 && (
-        <Card title="User Story đã lưu" subtitle="US mới nhất hiển thị trước.">
-          <div className="space-y-3">
-            {[...savedStories].sort((a, b) => b.id - a.id).map((story, index) => (
-              <article key={story.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 bg-slate-50/60 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">USER STORY · US-{String(story.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(story.requirement_id ?? 0).padStart(3, "0")}</p>
-                  <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>{story.feature}</h3>
-                  <div className="mt-2 flex flex-wrap items-center gap-2"><StatusBadge tone="success">AI đã sinh</StatusBadge><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
-                </div>
-                <div className="space-y-3 p-4">
-                  <p className={`text-sm leading-6 text-slate-700 ${textWrap}`}>Với vai trò là <strong>{story.role || "Chưa xác định vai trò"}</strong>, tôi muốn <strong>{story.feature}</strong> để <strong>{story.benefit || "đạt được lợi ích chưa mô tả"}</strong>.</p>
-                  <div><p className="text-sm font-semibold text-slate-800">Tiêu chí chấp nhận</p><p className="mt-1 text-xs text-slate-500">Điều kiện xác định chức năng đáp ứng yêu cầu.</p>
-                    <ol className="mt-2 space-y-2">{(story.acceptance_criteria || "").split(/\r?\n/).filter((line) => line.trim()).map((criterion, criterionIndex) => <li key={criterionIndex} className="flex items-start gap-2 text-sm text-slate-700"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">{String(criterionIndex + 1).padStart(2, "0")}</span><span className={`min-w-0 flex-1 ${textWrap}`}>{criterion}</span></li>)}</ol>
-                  </div>
-                  <p className="text-sm text-slate-600"><span className="font-semibold text-slate-800">Ghi chú kỹ thuật:</span> Chưa có ghi chú kỹ thuật.</p>
-                </div>
-              </article>
-            ))}
-          </div>
+      {orderedSavedStories.length > 0 && activeSavedStory && (
+        <Card title={"User Story đã lưu · " + (activeSavedIndex + 1) + "/" + orderedSavedStories.length} subtitle="Hiển thị từng thẻ riêng; US mới nhất được mở trước.">
+          <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">USER STORY · US-{String(activeSavedStory.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
+                <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
+                <div className="mt-2"><StatusBadge tone="success">Đã lưu</StatusBadge></div>
+              </div>
+              <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Yêu cầu AI hoàn thiện US"}</SoftButton>
+            </div>
+            <div className="grid gap-3 p-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-slate-700">Vai trò *<input value={activeSavedStory.role ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, role: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
+              <label className="block text-sm font-medium text-slate-700">Chức năng *<input value={activeSavedStory.feature} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, feature: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
+              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *<textarea rows={3} value={activeSavedStory.benefit ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, benefit: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 resize-y bg-white " + textWrap} /></label>
+              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *<textarea rows={5} value={activeSavedStory.acceptance_criteria ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, acceptance_criteria: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 resize-y bg-white " + textWrap} placeholder="Mỗi tiêu chí trên một dòng" /></label>
+            </div>
+            <div className="flex flex-col gap-3 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <SoftButton disabled={activeSavedIndex === 0 || saving} onClick={() => { setActiveSavedIndex((i) => Math.max(0, i - 1)); setActionMessage(""); }}>← Trước</SoftButton>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <PrimaryButton disabled={saving || improving} onClick={() => void (async () => { setSaving(true); setActionMessage(""); try { const result = await updateUserStory(activeSavedStory.id, { role: activeSavedStory.role, feature: activeSavedStory.feature, benefit: activeSavedStory.benefit, acceptance_criteria: activeSavedStory.acceptance_criteria }); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("Đã lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
+                <SoftButton disabled={activeSavedIndex >= orderedSavedStories.length - 1 || saving} onClick={() => { setActiveSavedIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1)); setActionMessage(""); }}>Sau →</SoftButton>
+              </div>
+            </div>
+            {actionMessage && <p role="status" className="px-4 pb-4 text-sm text-slate-600">{actionMessage}</p>}
+          </article>
         </Card>
       )}
-
       {allRequirementsConfirmed ? (
         <Card tone="emerald" title="Yêu cầu đã được xác nhận" subtitle="Các User Story đã lưu thành công.">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
