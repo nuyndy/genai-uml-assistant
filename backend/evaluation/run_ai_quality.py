@@ -107,6 +107,12 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
 
 
 def build_prompt(case: dict[str, Any]) -> str:
+    # User Story dùng chung prompt nghiệp vụ với endpoint sản phẩm để benchmark
+    # không vô tình đánh giá một prompt giả lập khác với prompt đang chạy.
+    if case["task"] == "user_story":
+        from services.requirement_prompts import build_user_story_prompt
+        return build_user_story_prompt(case["input"])
+
     fields = case["expected"]["required_fields"]
     array_fields = {
         "acceptance_criteria", "main_flow", "alt_flow", "exception_flow",

@@ -41,7 +41,16 @@
     "id": "US-001",
     "phase": 1,
     "task": "user_story",
-    "input": "Sinh viên muốn xem lịch học của mình sau khi đăng nhập.",
+    "input": {
+      "actor": "Sinh viên",
+      "action": "xem",
+      "target_object": "lịch học của mình",
+      "purpose": "biết lịch học sau khi đăng nhập",
+      "pre_conditions": [
+        "Sinh viên đã đăng nhập"
+      ],
+      "business_rules": []
+    },
     "expected": {
       "required_fields": [
         "role",

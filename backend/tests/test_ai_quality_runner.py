@@ -6,7 +6,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from evaluation.run_ai_quality import run_benchmark, score_output
+from evaluation.run_ai_quality import run_benchmark, score_output, build_prompt
 
 
 def _case(case_id):
@@ -127,7 +127,8 @@ def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path)
     result = next(item for item in report["results"] if item["id"] == "US-001")
 
     assert result["raw_output"] == output
-    assert "Cấu trúc tối thiểu mong đợi" in result["prompt"]
+    assert "Chuyển yêu cầu phần mềm sau thành bản nháp User Story" in result["prompt"]
+    assert "Dựa duy nhất trên dữ liệu đầu vào" in result["prompt"]
     assert result["output_source"] == "saved_output"
     assert report["generation_config"]["prompt_mode"] == "generic_benchmark_prompt"
     assert any("chưa gọi trực tiếp prompt/pipeline" in item for item in report["limitations"])
@@ -150,3 +151,11 @@ def test_user_story_benchmark_matches_production_schema():
     result = score_output(case, output)
 
     assert result["passed"] is True
+
+
+def test_user_story_benchmark_uses_production_prompt_builder():
+    from services.requirement_prompts import build_user_story_prompt
+    case = _case("US-001")
+
+    assert case["input"]["actor"] == "Sinh viên"
+    assert build_prompt(case) == build_user_story_prompt(case["input"])

@@ -28,6 +28,7 @@ from schemas.requirement import (
     UserStoryUpdate,
 )
 from services.ollama import AIServiceError, generate_json
+from services.requirement_prompts import build_user_story_prompt
 
 router = APIRouter(
     tags=["requirements"],
@@ -129,23 +130,13 @@ def _analyze_content(content: dict) -> RequirementAnalysis:
 
 
 def _generate_user_story(content: dict, requirement_id: int) -> UserStoryDraft:
-    prompt = (
-        "Chuyển yêu cầu phần mềm sau thành bản nháp User Story có thể kiểm duyệt. "
-        "Phân tích và điền đủ role, feature, benefit, acceptance_criteria; "
-        "Dựa duy nhất trên dữ liệu đầu vào; không tự tạo vai trò, quy tắc nghiệp vụ, "
-        "điều kiện hay hành vi không được nêu. Có thể diễn đạt lại cho rõ ràng. "
-        "Nếu trường nào chưa có đủ căn cứ, ghi rõ '[Cần xác nhận: ...]' thay vì "
-        "tự bịa dữ kiện. Trả về JSON hợp lệ với đủ các khóa role, feature, benefit, "
-        "acceptance_criteria; tất cả đều là chuỗi không rỗng.\n\n"
-        f"Yêu cầu: {json.dumps(content, ensure_ascii=False)}"
-    )
+    prompt = build_user_story_prompt(content)
     try:
         draft = generate_json(prompt, UserStoryDraftContent)
     except AIServiceError as exc:
         logger.exception("AI returned invalid user story draft")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return UserStoryDraft(requirement_id=requirement_id, **draft.model_dump())
-
 
 @router.post("/api/projects/{project_id}/requirements", status_code=201)
 def create_requirement(
