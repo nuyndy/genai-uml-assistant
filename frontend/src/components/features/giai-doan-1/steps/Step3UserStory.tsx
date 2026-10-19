@@ -82,7 +82,7 @@ export default function Step3UserStory({
       </div>
 
       {orderedSavedStories.length > 0 && activeSavedStory && (
-        <Card title={<div className="flex flex-wrap items-center gap-2"><span>User Story đã lưu</span><StatusBadge tone="neutral">{activeSavedIndex + 1}/{orderedSavedStories.length}</StatusBadge></div>}>
+        <Card title={<div className="flex flex-wrap items-center gap-2"><span>User Story đã lưu</span></div>}>
           <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
@@ -90,6 +90,7 @@ export default function Step3UserStory({
                 <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
               </div>
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                <StatusBadge tone="neutral">{activeSavedIndex + 1}/{orderedSavedStories.length}</StatusBadge>
                 <StatusBadge tone={activeSavedStoryDirty ? "warn" : "success"}>{activeSavedStoryDirty ? "Chưa lưu thay đổi" : "Đã lưu"}</StatusBadge>
                 <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Tạo lại bản nháp bằng AI"}</SoftButton>
               </div>
@@ -98,7 +99,7 @@ export default function Step3UserStory({
               <label className="block text-sm font-medium text-slate-700">Vai trò *<input value={activeSavedStory.role ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, role: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
               <label className="block text-sm font-medium text-slate-700">Chức năng *<input value={activeSavedStory.feature} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, feature: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
               <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *<textarea rows={3} value={activeSavedStory.benefit ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, benefit: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 resize-y bg-white " + textWrap} /></label>
-              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *<textarea rows={5} value={activeSavedStory.acceptance_criteria ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, acceptance_criteria: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 resize-y bg-white " + textWrap} placeholder="Mỗi tiêu chí trên một dòng" /></label>
+              <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *<textarea rows={3} value={activeSavedStory.acceptance_criteria ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, acceptance_criteria: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 resize-y bg-white " + textWrap} placeholder="Mỗi tiêu chí trên một dòng" /></label>
             </div>
             <div className="flex flex-col gap-3 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
               <SoftButton disabled={activeSavedIndex === 0 || saving} onClick={() => { setActiveSavedIndex((i) => Math.max(0, i - 1)); setActionMessage(""); }}>← Trước</SoftButton>
