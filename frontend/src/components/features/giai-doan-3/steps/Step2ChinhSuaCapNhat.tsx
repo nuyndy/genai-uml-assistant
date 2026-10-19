@@ -389,12 +389,8 @@ export default function Step2ChinhSuaCapNhat({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(1)}>
-          ← Quay lại sửa thành phần
-        </GhostButton>
-        <PrimaryButton onClick={() => onStepChange(3)}>
-          Tiếp tục xem trước →
-        </PrimaryButton>
+        
+        
       </div>
     </div>
   );
