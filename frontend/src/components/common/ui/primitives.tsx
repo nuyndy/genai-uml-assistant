@@ -73,7 +73,7 @@ export function Card({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md ${accent}`}
+      className={`relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.35)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-24px_rgba(10,51,35,0.45)] ${accent}`}
     >
       {(title || actions) && (
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -296,7 +296,7 @@ export function EmptyState({
   hint?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border-dashed border-slate-300 bg-slate-50/80 px-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-slate-50/80 px-6 py-14 text-center">
       <span
         aria-hidden="true"
         className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl text-slate-300 shadow-sm"
@@ -463,8 +463,8 @@ export function DiagramPreview({
   downloadName?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_-28px_rgba(10,51,35,0.45)]">
+      <div className="flex items-center justify-between gap-3 px-5 py-4">
         <p className="text-sm font-medium text-slate-700">Xem trước</p>
         {imageUrl && downloadName && (
           <a
@@ -476,12 +476,12 @@ export function DiagramPreview({
           </a>
         )}
       </div>
-      <div className="flex min-h-[240px] items-center justify-center bg-slate-50/70 p-4">
+      <div className="flex min-h-[360px] items-center justify-center rounded-b-2xl bg-[radial-gradient(#cbd5d1_0.8px,transparent_0.8px)] bg-[length:18px_18px] p-6 sm:min-h-[440px] sm:p-8">
         {imageUrl ? (
           <img
             src={imageUrl}
             alt="Biểu đồ"
-            className="max-w-full rounded-lg shadow-sm"
+            className="max-h-[72vh] max-w-full rounded-xl object-contain drop-shadow-sm"
           />
         ) : (
           <EmptyState icon="▣" title={emptyTitle} hint={emptyHint} />
@@ -600,14 +600,14 @@ export function SegmentedControl<T extends string>({
   onChange: (next: T) => void;
 }) {
   return (
-    <div className="inline-flex flex-wrap gap-1 rounded-xl border-slate-200 bg-white p-1 shadow-sm">
+    <div className="inline-flex flex-wrap gap-1 rounded-full bg-slate-100 p-1.5">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
-          className={`inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-medium transition ${
+          className={`inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm font-medium transition ${
             value === o.value
               ? "bg-emerald-600 text-white shadow-sm"
               : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
