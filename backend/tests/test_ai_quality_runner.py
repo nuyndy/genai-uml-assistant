@@ -271,3 +271,44 @@ def test_nonfunctional_specification_scorer_checks_fixed_groups_and_content():
     assert result["passed"] is False
     assert any("thứ tự" in error for error in result["errors"])
     assert any("không rỗng" in error for error in result["errors"])
+
+
+
+def test_specification_approval_status_reads_saved_approval_instead_of_default_draft():
+    from routers.specification import _approval_status
+
+    class FakeQuery:
+        def __init__(self, result):
+            self.result = result
+
+        def filter(self, *_args, **_kwargs):
+            return self
+
+        def first(self):
+            return self.result
+
+    class FakeApproval:
+        status = "approved"
+
+    class FakeDatabase:
+        def query(self, _model):
+            return FakeQuery(FakeApproval())
+
+    assert _approval_status(FakeDatabase(), 17) == "approved"
+
+
+def test_specification_approval_status_defaults_to_draft_only_without_saved_approval():
+    from routers.specification import _approval_status
+
+    class FakeQuery:
+        def filter(self, *_args, **_kwargs):
+            return self
+
+        def first(self):
+            return None
+
+    class FakeDatabase:
+        def query(self, _model):
+            return FakeQuery()
+
+    assert _approval_status(FakeDatabase(), 17) == "draft"
