@@ -252,7 +252,7 @@ function App() {
       </div>
 
       <div className="relative z-10">
-      <div className="sticky top-0 z-40 max-h-[48svh] overflow-y-auto border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">\n      <div className="border-b border-emerald-200 bg-white/95 backdrop-blur">
+      <div className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">\n      <div className="border-b border-emerald-200 bg-white/95 backdrop-blur">
         <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-3">
           <button
             type="button"
