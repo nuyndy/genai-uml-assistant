@@ -282,7 +282,7 @@ export default function Step2ChinhSuaCapNhat({
           <div className="py-8 text-center text-sm text-slate-500">Chưa có quan hệ nào</div>
         ) : (
           <div className="space-y-2">
-            {state.relations.map((rel, index) => (
+            {state.relations.map((rel) => (
               <div key={rel.id} className="flex flex-wrap items-center gap-2">
                 <input
                   value={rel.from}
