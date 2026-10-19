@@ -65,7 +65,6 @@ export function Demo() {
     if (stage === 1) {
       return (
         <GiaiDoan1
-          projectId={projectId ?? 1}
           projectId={projectId}
           state={wf}
           setState={setWf}
@@ -75,9 +74,9 @@ export function Demo() {
       );
     }
     if (stage === 2) {
-      return <GiaiDoan2 state={wf} setState={setWf} step={step} onStepChange={() => {}} />;
+      return <GiaiDoan2 projectId={projectId} state={wf} setState={setWf} step={step} onStepChange={() => {}} />;
     }
-    return <GiaiDoan3 state={wf} setState={setWf} step={step} onStepChange={() => {}} />;
+    return <GiaiDoan3 projectId={projectId ?? 1} state={wf} setState={setWf} step={step} onStepChange={() => {}} />;
   };
   return (
     <div className="relative min-h-screen bg-slate-50">
