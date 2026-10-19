@@ -32,17 +32,17 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 via-white to-amber-50/50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-white to-sky-50/60" />
       <div
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(16,185,129,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.07) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(117,185,168,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(166,184,240,0.08) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-emerald-200/25 blur-3xl" />
-      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-emerald-100/25 blur-3xl" />
+      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-emerald-200/30 blur-3xl" />
+      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-sky-100/40 blur-3xl" />
     </div>
   );
 }
