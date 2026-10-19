@@ -21,9 +21,10 @@ def _case(case_id):
 def test_score_output_accepts_valid_user_story_shape():
     case = _case("US-001")
     output = json.dumps({
-        "name": "Xem lịch học",
-        "description": "Sinh viên xem lịch học sau khi đăng nhập.",
-        "acceptance_criteria": ["Sinh viên đã đăng nhập có thể xem lịch học."],
+        "role": "Sinh viên",
+        "feature": "xem lịch học của mình sau khi đăng nhập",
+        "benefit": "biết được lịch học",
+        "acceptance_criteria": "Sinh viên đã đăng nhập có thể xem lịch học của mình.",
     })
 
     result = score_output(case, output)
@@ -36,9 +37,10 @@ def test_score_output_accepts_valid_user_story_shape():
 def test_score_output_rejects_missing_acceptance_criteria():
     case = _case("US-001")
     output = json.dumps({
-        "name": "Xem lịch học",
-        "description": "Mô tả",
-        "acceptance_criteria": [],
+        "role": "Sinh viên",
+        "feature": "xem lịch học",
+        "benefit": "biết lịch học",
+        "acceptance_criteria": "",
     })
 
     result = score_output(case, output)
@@ -113,9 +115,10 @@ def test_evaluation_dataset_covers_three_project_phases():
 def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path):
     case = _case("US-001")
     output = json.dumps({
-        "name": "Xem lịch học",
-        "description": "Sinh viên xem lịch học sau khi đăng nhập.",
-        "acceptance_criteria": ["Sinh viên đã đăng nhập có thể xem lịch học."],
+        "role": "Sinh viên",
+        "feature": "xem lịch học",
+        "benefit": "biết lịch học",
+        "acceptance_criteria": "Sinh viên đã đăng nhập có thể xem lịch học.",
     })
     outputs_path = tmp_path / "outputs.json"
     outputs_path.write_text(json.dumps({"US-001": output}), encoding="utf-8")
@@ -128,3 +131,22 @@ def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path)
     assert result["output_source"] == "saved_output"
     assert report["generation_config"]["prompt_mode"] == "generic_benchmark_prompt"
     assert any("chưa gọi trực tiếp prompt/pipeline" in item for item in report["limitations"])
+
+
+
+def test_user_story_benchmark_matches_production_schema():
+    case = _case("US-001")
+    assert case["expected"]["required_fields"] == [
+        "role", "feature", "benefit", "acceptance_criteria"
+    ]
+    assert case["expected"]["acceptance_criteria_type"] == "string"
+
+    output = json.dumps({
+        "role": "Sinh viên",
+        "feature": "xem lịch học",
+        "benefit": "biết lịch học",
+        "acceptance_criteria": "Sinh viên đã đăng nhập có thể xem lịch học.",
+    })
+    result = score_output(case, output)
+
+    assert result["passed"] is True
