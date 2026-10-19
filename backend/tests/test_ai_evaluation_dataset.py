@@ -20,7 +20,9 @@ def test_ai_evaluation_dataset_has_unique_stable_ids():
 def test_ai_evaluation_cases_have_inputs_and_measurable_checks():
     for case in _load_cases():
         assert case["task"]
-        assert case["input"].strip()
+        input_value = case["input"]
+        assert (input_value.strip() if isinstance(input_value, str) else input_value)
+        assert isinstance(input_value, (str, dict))
         assert case["expected"]["required_fields"]
         assert case["checks"]
 
