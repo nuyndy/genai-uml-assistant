@@ -109,7 +109,6 @@ export default function Step4DacTa({
 
   return (
     <div className="w-full min-w-0 space-y-5">
-      </section>
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
       <Card tone="emerald" title="Đặc tả chức năng">
         {stories.length === 0 ? (
