@@ -40,6 +40,7 @@ vi.mock("../../services/umlService", () => ({
   generateProjectInteractionDiagramsBatch: vi.fn(),
   generateClasses: vi.fn(),
   generateClassDiagram: vi.fn(),
+  listProjectDiagrams: vi.fn().mockResolvedValue([]),
 }));
 
 /**
@@ -124,7 +125,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
 
   it("Bước 2 cho phép sang bước tiếp theo dù có yêu cầu thiếu", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={2} />);
-    expect(screen.getByText("Phân tích yêu cầu")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Phân tích yêu cầu" })).toBeTruthy();
     expect(screen.getByText("Tiếp tục sang Bước 3")).toBeTruthy();
   });
 
