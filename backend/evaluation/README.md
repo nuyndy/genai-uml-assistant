@@ -28,7 +28,7 @@ Các kiểm tra này **không chứng minh chất lượng ngữ nghĩa của AI
 
 ## Định dạng bộ dữ liệu
 
-Mỗi ca có mã ổn định, loại tác vụ, đầu vào, đầu ra mẫu tối thiểu và tiêu chí kiểm tra. Khi mở rộng, giữ nguyên ID để có thể so sánh phiên bản model/prompt theo thời gian.
+Mỗi ca có mã ổn định, giai đoạn, loại tác vụ, đầu vào, trường bắt buộc và tiêu chí kiểm tra. Bộ dữ liệu hiện có 8 ca thuộc ba giai đoạn: phân tích yêu cầu (giai đoạn 1), mô hình UML (giai đoạn 2), và truy vết/kiểm tra nhất quán SRS (giai đoạn 3). Khi mở rộng, giữ nguyên ID để so sánh phiên bản model/prompt theo thời gian. Bộ ca hiện tại là bộ thử nghiệm khởi đầu, chưa đại diện đầy đủ cho mọi nghiệp vụ của hệ thống.
 
 
 ## Chạy benchmark thực tế
@@ -56,3 +56,6 @@ Ví dụ cấu trúc file đầu vào:
 ```
 
 Chỉ số `pass_rate` hiện tại là tỷ lệ ca đạt các kiểm tra cấu trúc xác định trong số ca đã chấm. Nó **không phải** tỷ lệ câu trả lời đúng về ngữ nghĩa. Báo cáo sẽ nêu các ca bị bỏ qua nếu không có đầu ra tương ứng.
+
+
+Báo cáo có thống kê tổng thể và theo từng giai đoạn. Các kiểm tra UML/SRS hiện chỉ xác nhận cấu trúc, sự hiện diện của tên lớp hoặc ID và số lượng phần tử; chúng không chứng minh sơ đồ UML hợp lệ hay truy vết có ý nghĩa nghiệp vụ. Cần đánh giá thủ công bổ sung trước khi dùng kết quả làm kết luận khóa luận.
