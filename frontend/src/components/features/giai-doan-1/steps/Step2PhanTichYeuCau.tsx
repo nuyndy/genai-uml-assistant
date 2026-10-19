@@ -10,6 +10,7 @@ interface Props {
   coverageAnalysis: RequirementCoverageAnalysis | null;
   loadingCoverage: boolean;
   addedCoverageSuggestions: number[];
+  coverageAddedCount: number;
   selectedCoverageSuggestions: Record<number, boolean>;
   selectedCoverageIndexes: number[];
   onCheckCoverage: () => void;
@@ -65,6 +66,7 @@ export default function Step2PhanTichYeuCau({
   coverageAnalysis,
   loadingCoverage,
   addedCoverageSuggestions,
+  coverageAddedCount,
   selectedCoverageSuggestions,
   selectedCoverageIndexes,
   onCheckCoverage,
@@ -76,7 +78,7 @@ export default function Step2PhanTichYeuCau({
 }: Props) {
   const draftRequirements = requirements.filter((item) => item.status === "draft");
   const confirmedCount = requirements.filter((item) => item.status === "confirmed").length;
-  const addedCount = addedCoverageSuggestions.length;
+  const addedCount = coverageAddedCount;
   const analyzedCount = requirements.length;
 
   return (
