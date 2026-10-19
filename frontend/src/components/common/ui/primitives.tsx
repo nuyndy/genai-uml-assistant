@@ -33,14 +33,7 @@ export function StageBackdrop() {
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
       <div className="absolute inset-0 bg-[#2F7D32]" />
-      <div
-        className="absolute inset-0 opacity-90"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(220,245,205,0.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(220,245,205,0.62) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
+
       <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#A8D94F]/28 blur-3xl" />
       <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-[#43A047]/28 blur-3xl" />
     </div>
