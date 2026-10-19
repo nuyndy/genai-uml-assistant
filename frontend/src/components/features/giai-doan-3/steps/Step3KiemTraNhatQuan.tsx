@@ -74,10 +74,8 @@ export default function Step3KiemTraNhatQuan({
         </div>
       </Card>
       <div className="flex justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(2)}>← Quay lại chỉnh sửa</GhostButton>
-        <PrimaryButton disabled={!consistencyResult?.consistent} onClick={() => onStepChange(4)}>
-          Tiếp tục duyệt baseline →
-        </PrimaryButton>
+        
+        
       </div>
     </div>
   );
