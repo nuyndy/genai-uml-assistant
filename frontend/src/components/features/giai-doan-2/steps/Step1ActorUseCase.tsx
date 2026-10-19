@@ -164,12 +164,7 @@ export default function Step1ActorUseCase({
             >
               {confirmed ? "Đã xác nhận danh sách" : "Xác nhận Actor và Use Case"}
             </SoftButton>
-            <PrimaryButton
-              disabled={busy || loadingAnalysis || !confirmed}
-              onClick={() => onStepChange(2)}
-            >
-              Tiếp tục sang Bước 2
-            </PrimaryButton>
+            
           </div>
         </div>
       </Card>
