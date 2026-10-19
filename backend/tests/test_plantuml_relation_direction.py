@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_actor_glossary_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_sequence_methods_snapshot, _check_trace_links_snapshot, _check_use_case_diagram_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_actor_glossary_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_sequence_methods_snapshot, _check_trace_links_snapshot, _check_use_case_diagram_snapshot, _check_use_case_scenarios_snapshot, _compare_snapshots, _partition_baseline_issues
 from services.plantuml_parser import parse_plantuml
 
 
@@ -457,3 +457,23 @@ A1 --> UC1
     }
 
     assert _check_use_case_diagram_snapshot(snapshot) == []
+
+
+
+def test_baseline_drift_comparison_reports_added_removed_and_updated_entities():
+    baseline = {"project_id": 1, "entities": {"raw_requirement": [{"id": 1, "content": "Yêu cầu cũ"}, {"id": 2, "content": "Yêu cầu sẽ bị xóa"}], "actor": [{"id": 3, "name": "Khách hàng"}]}}
+    current = {"project_id": 1, "entities": {"raw_requirement": [{"id": 1, "content": "Yêu cầu đã sửa"}, {"id": 4, "content": "Yêu cầu mới"}], "actor": [{"id": 3, "name": "Khách hàng"}]}}
+
+    result = _compare_snapshots(baseline, current)
+
+    assert result["has_drift"] is True
+    assert result["changed_entity_types"] == ["raw_requirement"]
+    assert result["changes"] == [{"entity_type": "raw_requirement", "added_ids": ["4"], "removed_ids": ["2"], "updated_ids": ["1"]}]
+
+
+def test_baseline_drift_comparison_reports_no_drift_for_equal_snapshots():
+    snapshot = {"project_id": 1, "entities": {"raw_requirement": [{"id": 1, "content": "Giữ nguyên"}], "actor": []}}
+
+    result = _compare_snapshots(snapshot, snapshot)
+
+    assert result == {"has_drift": False, "changed_entity_types": [], "changes": [], "invalid_snapshot": False}
