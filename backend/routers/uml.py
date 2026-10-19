@@ -2314,16 +2314,9 @@ def generate_classes(
         _format_specification(item, index=index)
         for index, item in enumerate(specifications, start=1)
     )
-    prompt = (
-        "Suy luận mô hình lớp UML bằng tiếng Việt từ các use case và đặc tả dưới đây. "
-        "Chỉ đề xuất lớp, thuộc tính, phương thức có căn cứ trong nghiệp vụ; không "
-        "tạo lớp framework chung chung. Trả JSON đúng schema: "
-        "{\"classes\":[{\"name\":\"...\",\"attributes\":[\"...\"],"
-        "\"methods\":[\"...\"]}],\"relations\":[{\"class_a\":\"...\","
-        "\"class_b\":\"...\",\"relation_type\":\"association|inheritance|"
-        "composition|aggregation|dependency\"}]}. Nếu không có quan hệ, dùng [].\n\n"
-        f"USE CASE:\n{case_context}\n\nĐẶC TẢ:\n{spec_context}"
-    )
+    from services.uml_prompts import build_class_diagram_prompt
+
+    prompt = build_class_diagram_prompt(case_context, spec_context)
     result = _ai_json(prompt, ClassDiagramSuggestion)
     if not result.classes:
         raise HTTPException(status_code=502, detail="AI không đề xuất được lớp nào.")

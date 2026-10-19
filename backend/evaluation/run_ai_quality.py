@@ -119,10 +119,17 @@ def build_prompt(case: dict[str, Any]) -> str:
             case["input"]["specification_context"],
         )
 
+    if case["task"] == "uml_class_model":
+        from services.uml_prompts import build_class_diagram_prompt
+        return build_class_diagram_prompt(
+            case["input"]["use_case_context"],
+            case["input"]["specification_context"],
+        )
+
     fields = case["expected"]["required_fields"]
     array_fields = {
         "acceptance_criteria", "main_flow", "alt_flow", "exception_flow",
-        "classes", "relationships", "lifelines", "messages", "issues",
+        "classes", "relations", "relationships", "lifelines", "messages", "issues",
     }
     schema = {
         field: (
@@ -173,7 +180,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         scored["output_source"] = output_source
         scored["prompt_source"] = (
             "production_prompt_builder"
-            if case["task"] in {"user_story", "use_case_scenario"}
+            if case["task"] in {"user_story", "use_case_scenario", "uml_class_model"}
             else "generic_benchmark_prompt"
         )
         scored["prompt"] = prompt
@@ -210,7 +217,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
-            "User Story và kịch bản Use Case dùng chung prompt builder với endpoint sản phẩm; các tác vụ còn lại vẫn dùng prompt benchmark chung và chưa gọi trực tiếp pipeline của endpoint.",
+            "User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint sản phẩm; các tác vụ còn lại vẫn dùng prompt benchmark chung và chưa gọi trực tiếp pipeline của endpoint.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
             "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],

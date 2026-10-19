@@ -93,17 +93,21 @@
     "id": "UML-001",
     "phase": 2,
     "task": "uml_class_model",
-    "input": "Hệ thống quản lý lịch học có SinhVien xem LichHoc. Mỗi SinhVien có mã sinh viên và họ tên; LichHoc có mã lịch và ngày học.",
+    "input": {
+      "use_case_context": "Use case: Xem lịch học\nLuồng chính: Sinh viên mở chức năng xem lịch học\nLuồng phụ: Không có\nNgoại lệ: Sinh viên chưa đăng nhập",
+      "specification_context": "SPECIFICATION_ID: 1\nMã chức năng: FR-01\nTên chức năng: Xem lịch học\nMô tả: Hệ thống cho sinh viên xem lịch học\nTác nhân: Sinh viên\nDữ liệu đã xác định: SinhVien(ma_sinh_vien, ho_ten); LichHoc(ma_lich, ngay_hoc)"
+    },
     "expected": {
       "required_fields": [
         "classes",
-        "relationships"
+        "relations"
       ],
       "minimum_classes": 2,
       "must_include_classes": [
         "SinhVien",
         "LichHoc"
-      ]
+      ],
+      "production_schema": "ClassDiagramSuggestion"
     },
     "checks": [
       "schema_fields_present",

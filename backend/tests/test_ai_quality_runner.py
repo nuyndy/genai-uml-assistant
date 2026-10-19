@@ -174,3 +174,16 @@ def test_use_case_benchmark_uses_production_prompt_builder():
         case["input"]["use_case_name"], case["input"]["specification_context"]
     )
     assert "USE CASE: Xem lịch học" in build_prompt(case)
+
+
+def test_class_uml_benchmark_uses_production_prompt_builder():
+    from services.uml_prompts import build_class_diagram_prompt
+    case = _case("UML-001")
+
+    assert case["expected"]["required_fields"] == ["classes", "relations"]
+    assert case["expected"]["production_schema"] == "ClassDiagramSuggestion"
+    assert build_prompt(case) == build_class_diagram_prompt(
+        case["input"]["use_case_context"],
+        case["input"]["specification_context"],
+    )
+    assert '"relations":[' in build_prompt(case)
