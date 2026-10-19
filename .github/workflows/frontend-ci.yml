@@ -32,4 +32,6 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
+        env:
+          VITE_GOOGLE_CLIENT_ID: test-client-id
         run: npm test
