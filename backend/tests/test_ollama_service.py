@@ -163,6 +163,30 @@ def test_generate_json_retries_when_model_returns_schema_instead_of_data():
     assert "properties" in retry_prompt
 
 
+def test_generate_json_repairs_user_story_feature_alias_and_acceptance_list():
+    """Chuẩn hóa name thành feature và gộp tiêu chí dạng list thành chuỗi."""
+    payload = {
+        "role": "Sinh viên",
+        "name": "quản lý tài khoản",
+        "benefit": "có thể tự quản lý thông tin",
+        "acceptance_criteria": [
+            "Sinh viên xem được thông tin tài khoản",
+            "Sinh viên không có quyền chỉnh sửa",
+        ],
+    }
+    with patch(
+        "services.ollama.urlopen",
+        return_value=_ollama_response(json.dumps(payload, ensure_ascii=False)),
+    ):
+        result = generate_json("Tạo User Story", UserStoryDraftContent)
+
+    assert result.feature == "quản lý tài khoản"
+    assert result.acceptance_criteria == (
+        "Sinh viên xem được thông tin tài khoản\\n"
+        "Sinh viên không có quyền chỉnh sửa"
+    )
+
+
 def test_generate_json_strips_markdown_fence():
     payload = {"suggested_actors": [{"name": "Khách"}], "suggested_use_cases": []}
     text = f"```json\n{json.dumps(payload)}\n```"
