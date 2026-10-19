@@ -199,7 +199,7 @@ describe("one-time specification generation and manual editing", () => {
     );
     expect(screen.getAllByRole("textbox").length).toBeGreaterThan(0);
     expect(
-      screen.getByRole("region", { name: "Trang soạn thảo tài liệu SRS" }),
+      screen.getByLabelText("Trang soạn thảo tài liệu SRS"),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Lưu đặc tả" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Thử sinh bằng AI" })).toBeNull();
