@@ -243,6 +243,7 @@ export default function GiaiDoan2({
   onReturnStage1,
 }: Props) {
   const [loadedProjectId, setLoadedProjectId] = useState<number | undefined>();
+  const [umlLoadSucceeded, setUmlLoadSucceeded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [aiTaskLabel, setAiTaskLabel] = useState("");
   const [error, setError] = useState("");
@@ -275,6 +276,7 @@ export default function GiaiDoan2({
     let cancelled = false;
     if (!projectId) return () => { cancelled = true; };
     setLoadedProjectId(undefined);
+    setUmlLoadSucceeded(false);
     setError("");
     const guard = setTimeout(() => {
       if (!cancelled) {
@@ -297,6 +299,7 @@ export default function GiaiDoan2({
           setDiagramType(
             lastInteractionDiagram?.type === "collaboration" ? "collaboration" : "sequence",
           );
+          setUmlLoadSucceeded(true);
         }
       } catch (reason: unknown) {
         if (!cancelled) {
@@ -314,7 +317,7 @@ export default function GiaiDoan2({
   // Lưu riêng các xác nhận UI theo dự án để không mất khi chuyển bước/tải lại.
   // Không ghi khi dữ liệu UML chưa tải xong, tránh ghi đè xác nhận cũ bằng false mặc định.
   useEffect(() => {
-    if (!projectId || loadedProjectId !== projectId) return;
+    if (!projectId || loadedProjectId !== projectId || !umlLoadSucceeded) return;
     const confirmations: UmlConfirmationState = {
       actorsUseCasesConfirmed: state.actorsUseCasesConfirmed,
       useCaseDiagramConfirmed: state.useCaseDiagramConfirmed,
@@ -333,6 +336,7 @@ export default function GiaiDoan2({
   }, [
     projectId,
     loadedProjectId,
+    umlLoadSucceeded,
     state.actorsUseCasesConfirmed,
     state.useCaseDiagramConfirmed,
     state.scenariosConfirmed,
