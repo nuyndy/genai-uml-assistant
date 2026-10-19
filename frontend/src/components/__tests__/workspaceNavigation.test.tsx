@@ -129,7 +129,7 @@ describe("Chuyển giai đoạn lớn trong workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /Mô hình UML/ }));
 
     // Lỗi tải dữ liệu không được làm trắng màn hình.
-    expect(await screen.findByText("Trích xuất tác nhân và use case")).toBeTruthy();
+    expect(await screen.findByText("Tác nhân và use case")).toBeTruthy();
     expect(screen.getByText(/Không kết nối được server/)).toBeTruthy();
   });
 });
