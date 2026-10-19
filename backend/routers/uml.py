@@ -70,8 +70,8 @@ def _require_approved_specifications(db: Session, project_id: int) -> None:
     """Chặn bắt đầu/chỉnh sửa mô hình UML nếu FR/NFR chưa được duyệt."""
     rows = (
         db.query(Specification.id, Specification.type, SpecificationApproval.status)
-        .join(UserStory, Specification.user_story_id == UserStory.id)
-        .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+        .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+        .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
         .outerjoin(
             SpecificationApproval,
             SpecificationApproval.specification_id == Specification.id,
