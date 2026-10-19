@@ -82,7 +82,7 @@ export default function Step3UserStory({
       </div>
 
       {orderedSavedStories.length > 0 && activeSavedStory && (
-        <Card title={"User Story đã lưu · " + (activeSavedIndex + 1) + "/" + orderedSavedStories.length} subtitle="Hiển thị từng thẻ riêng; US mới nhất được mở trước.">
+        <Card title={<div className="flex flex-wrap items-center gap-2"><span>User Story đã lưu</span><StatusBadge tone="neutral">{activeSavedIndex + 1}/{orderedSavedStories.length}</StatusBadge></div>}>
           <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
