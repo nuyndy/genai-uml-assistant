@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-emerald-100.
  */
 export const inputClass =
-  "w-full min-w-0 rounded-lg border border-[#C8DDD7] bg-[#F5FAF7] px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#2C8578] focus:bg-white focus:ring-4 focus:ring-[#C8DDD7]";
+  "w-full min-w-0 rounded-lg border border-[#C7E2B6] bg-[#F4FAF0] px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#43A047] focus:bg-white focus:ring-4 focus:ring-[#C7E2B6]";
 
 /** Ô nhập 1 dòng: chiều cao cố định để các ô cùng hàng thẳng nhau. */
 export const singleLineClass = `${inputClass} h-10`;
@@ -32,17 +32,17 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[#184F47]" />
+      <div className="absolute inset-0 bg-[#2F7D32]" />
       <div
         className="absolute inset-0 opacity-90"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(200,221,215,0.48) 1px, transparent 1px), linear-gradient(to bottom, rgba(200,221,215,0.42) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(220,245,205,0.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(220,245,205,0.62) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#B6CF66]/18 blur-3xl" />
-      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-[#2C8578]/22 blur-3xl" />
+      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#A8D94F]/28 blur-3xl" />
+      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-[#43A047]/28 blur-3xl" />
     </div>
   );
 }
@@ -123,7 +123,7 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#184F47] px-5 text-sm font-semibold text-[#F5FAF7] shadow-sm transition hover:bg-[#2C8578] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#C8DDD7] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#2F7D32] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#43A047] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#C8DDD7] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
@@ -148,7 +148,7 @@ export function SoftButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#C8DDD7] bg-[#EAF3EF] px-4 text-sm font-medium text-[#184F47] transition hover:bg-[#C8DDD7] hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#C8DDD7] bg-[#E4F4D8] px-4 text-sm font-medium text-[#245B24] transition hover:bg-[#C8DDD7] hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
