@@ -1,4 +1,4 @@
-from routers.baseline import _check_class_diagram_snapshot, _check_trace_links_snapshot
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_trace_links_snapshot
 from services.plantuml_parser import parse_plantuml
 
 
@@ -115,3 +115,46 @@ def test_baseline_consistency_accepts_trace_link_type_aliases():
     }
 
     assert _check_trace_links_snapshot(snapshot) == []
+
+
+
+def test_baseline_consistency_detects_missing_user_story_acceptance_criteria():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "user_story": [{"id": 10, "acceptance_criteria": ""}],
+            "specification": [{
+                "id": 20,
+                "type": "functional",
+                "user_story_id": 10,
+                "content": "Đặc tả chức năng",
+            }],
+        },
+    }
+
+    issues = _check_acceptance_criteria_snapshot(snapshot)
+
+    assert [issue["entity_type"] for issue in issues] == [
+        "user_story",
+        "functional_specification",
+    ]
+
+
+def test_baseline_consistency_accepts_story_acceptance_criteria():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "user_story": [{
+                "id": 10,
+                "acceptance_criteria": "Khi đặt hàng thành công, hiển thị mã đơn.",
+            }],
+            "specification": [{
+                "id": 20,
+                "type": "functional",
+                "user_story_id": 10,
+                "content": "Đặc tả chức năng",
+            }],
+        },
+    }
+
+    assert _check_acceptance_criteria_snapshot(snapshot) == []
