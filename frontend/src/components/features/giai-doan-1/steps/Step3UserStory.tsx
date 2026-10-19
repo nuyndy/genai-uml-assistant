@@ -48,8 +48,6 @@ export default function Step3UserStory({
 
   return (
     <div className="space-y-6">
-      </section>
-
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-sm text-slate-600">Yêu cầu cần duyệt</p><p className="mt-1 text-2xl font-semibold text-slate-900">{total}</p><p className="mt-1 text-xs text-slate-500">Yêu cầu đang ở trạng thái bản nháp</p></div>
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm text-emerald-800">User Story đã đủ trường</p><p className="mt-1 text-2xl font-semibold text-emerald-900">{allRequirementsConfirmed ? total : readyCount}</p><p className="mt-1 text-xs text-emerald-800">Vai trò, chức năng, lợi ích và tiêu chí</p></div>
