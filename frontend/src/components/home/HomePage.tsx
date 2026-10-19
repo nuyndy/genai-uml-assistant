@@ -15,7 +15,7 @@ interface Props {
 const inputClass =
   "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100";
 const primaryButtonClass =
-  "inline-flex min-h-11 whitespace-nowrap items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-violet-800 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
+  "inline-flex min-h-11 whitespace-nowrap items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-violet-600 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
 
 /** Trang chủ: chọn một dự án có sẵn hoặc tạo dự án mới trước khi vào workspace. */
 export default function HomePage({
@@ -78,11 +78,11 @@ export default function HomePage({
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-left">
+    <div className="min-h-screen w-full bg-white text-left">
       <nav className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-white">
               U
             </div>
             <span className="truncate text-sm font-semibold tracking-tight text-slate-900">
@@ -157,7 +157,7 @@ export default function HomePage({
         <section aria-label="Danh sách dự án" className="space-y-5">
           {mode === "create" ? (
             <form
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+              className="rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_30px_-24px_rgba(83,109,183,0.28)] sm:p-6"
               onSubmit={(event) => {
                 event.preventDefault();
                 void handleCreate();
@@ -259,7 +259,7 @@ export default function HomePage({
             </div>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="hidden grid-cols-[minmax(0,1fr)_13rem] items-center border-b border-slate-200 bg-slate-50 px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:grid">
+              <div className="hidden grid-cols-[minmax(0,1fr)_13rem] items-center border-b border-slate-200 bg-sky-50/70 px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:grid">
                 <span>Dự án / Mã định danh</span>
                 <span className="text-right">Thao tác</span>
               </div>
