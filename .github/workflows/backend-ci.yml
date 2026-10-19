@@ -34,6 +34,7 @@ jobs:
           python -m pip install pytest httpx
       - name: Run backend tests
         env:
+          DATABASE_URL: sqlite:///./ci-test.db
           SECRET_KEY: test-secret-key
           GOOGLE_CLIENT_ID: test-client-id.apps.googleusercontent.com
         run: python -m pytest
