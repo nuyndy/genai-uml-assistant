@@ -188,7 +188,7 @@ describe("one-time specification generation and manual editing", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" }));
-    await screen.findByText(/tài liệu SRS/i);
+    expect((await screen.findAllByText(/tài liệu SRS/i)).length).toBeGreaterThan(0);
     // Tên chức năng đã sửa ở Bước 4 được phản ánh trên tiêu đề đặc tả trong trang Word.
     await waitFor(() => {
       expect(screen.getAllByText(/Đặt hàng đã sửa thủ công/).length).toBeGreaterThan(0);
