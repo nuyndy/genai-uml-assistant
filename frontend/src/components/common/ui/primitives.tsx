@@ -560,31 +560,11 @@ export function StepHeading({
 }) {
   return (
     <div className="min-w-0">
-      <div className="flex items-center gap-2">
-        {icon && (
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-base text-emerald-700 shadow-sm"
-          >
-            {icon}
-          </span>
-        )}
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">
-          {step}
-        </p>
-      </div>
       <h2
-        className={`mt-1.5 text-xl font-semibold tracking-tight text-slate-900 ${wrapClass}`}
+        className={`text-xl font-semibold tracking-tight text-slate-900 ${wrapClass}`}
       >
         {title}
       </h2>
-      {description && (
-        <p
-          className={`mt-1.5 max-w-2xl leading-relaxed text-slate-500 ${wrapClass}`}
-        >
-          {description}
-        </p>
-      )}
     </div>
   );
 }
