@@ -1,7 +1,6 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   Card,
-  GhostButton,
   PrimaryButton,
   EmptyState,
   SoftButton,
@@ -91,7 +90,6 @@ export default function Step4DacTa({
   saveSpecification,
   approveSpecification,
   createNonFunctionalSpecification,
-  onStepChange,
   wrapClass,
 }: Props) {
   const nonFunctionalSpecification = specifications.find(
