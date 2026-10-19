@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_actor_glossary_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_sequence_methods_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_actor_glossary_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_sequence_methods_snapshot, _check_trace_links_snapshot, _check_use_case_diagram_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
 from services.plantuml_parser import parse_plantuml
 
 
@@ -405,3 +405,55 @@ def test_baseline_consistency_accepts_actor_using_canonical_glossary_term():
     }
 
     assert _check_actor_glossary_snapshot(snapshot) == []
+
+
+
+def test_baseline_consistency_detects_use_case_diagram_drift():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "actor": [{"id": 1, "name": "Khách hàng"}],
+            "use_case": [{"id": 2, "name": "Đặt hàng"}],
+            "diagram": [{
+                "id": 8,
+                "type": "use_case",
+                "source_code": """@startuml
+actor "Khách hàng" as A1
+usecase "Đăng nhập" as UC1
+A1 --> UC1
+@enduml""",
+            }],
+        },
+    }
+
+    issues = _check_use_case_diagram_snapshot(snapshot)
+
+    assert issues == [{
+        "type": "use_case_diagram_mismatch",
+        "diagram_id": 8,
+        "missing_in_snapshot_actors": [],
+        "missing_in_diagram_actors": [],
+        "missing_in_snapshot_use_cases": ["đăng nhập"],
+        "missing_in_diagram_use_cases": ["đặt hàng"],
+    }]
+
+
+def test_baseline_consistency_accepts_matching_use_case_diagram():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "actor": [{"id": 1, "name": "Khách hàng"}],
+            "use_case": [{"id": 2, "name": "Đặt hàng"}],
+            "diagram": [{
+                "id": 8,
+                "type": "use_case",
+                "source_code": """@startuml
+actor "Khách hàng" as A1
+usecase "Đặt hàng" as UC1
+A1 --> UC1
+@enduml""",
+            }],
+        },
+    }
+
+    assert _check_use_case_diagram_snapshot(snapshot) == []
