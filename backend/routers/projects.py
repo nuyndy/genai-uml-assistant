@@ -10,10 +10,16 @@ from database.models import (
     ClassEntity,
     ClassRelation,
     Diagram,
+    DiagramRevision,
+    EntityRevision,
+    GlossaryTerm,
     Project,
+    ProjectBaseline,
     RawRequirement,
     Specification,
+    SpecificationApproval,
     SrsDocument,
+    TraceLink,
     UcActorRelation,
     UseCase,
     User,
@@ -91,12 +97,18 @@ def delete_project(
             .filter(UserStory.requirement_id.in_(requirement_ids))
             .all()
         ] if requirement_ids else []
-        specification_ids = [
-            row[0]
-            for row in db.query(Specification.id)
-            .filter(Specification.user_story_id.in_(story_ids))
-            .all()
-        ] if story_ids else []
+        # Bao gồm cả đặc tả gắn trực tiếp với project (NFR) và đặc tả
+        # gắn với User Story để xóa approval/use case đúng thứ tự.
+        specification_query = db.query(Specification.id).filter(
+            Specification.project_id == project_id
+        )
+        if story_ids:
+            specification_query = specification_query.union(
+                db.query(Specification.id).filter(
+                    Specification.user_story_id.in_(story_ids)
+                )
+            )
+        specification_ids = [row[0] for row in specification_query.all()]
         use_case_ids = [
             row[0]
             for row in db.query(UseCase.id)
@@ -110,13 +122,33 @@ def delete_project(
             .all()
         ]
 
+        # Xóa các bảng phụ thuộc trước bản ghi cha để không phụ thuộc vào
+        # việc DB có bật thực thi ON DELETE CASCADE hay không.
+        db.query(DiagramRevision).filter(
+            DiagramRevision.diagram_id.in_(
+                db.query(Diagram.id).filter(Diagram.project_id == project_id)
+            )
+        ).delete(synchronize_session=False)
+        db.query(TraceLink).filter(
+            TraceLink.project_id == project_id
+        ).delete(synchronize_session=False)
+        db.query(ProjectBaseline).filter(
+            ProjectBaseline.project_id == project_id
+        ).delete(synchronize_session=False)
+        db.query(GlossaryTerm).filter(
+            GlossaryTerm.project_id == project_id
+        ).delete(synchronize_session=False)
+        db.query(EntityRevision).filter(
+            EntityRevision.project_id == project_id
+        ).delete(synchronize_session=False)
+        if specification_ids:
+            db.query(SpecificationApproval).filter(
+                SpecificationApproval.specification_id.in_(specification_ids)
+            ).delete(synchronize_session=False)
         db.query(Diagram).filter(Diagram.project_id == project_id).delete(
             synchronize_session=False
         )
         db.query(SrsDocument).filter(SrsDocument.project_id == project_id).delete(
-            synchronize_session=False
-        )
-        db.query(Specification).filter(Specification.project_id == project_id).delete(
             synchronize_session=False
         )
         if use_case_ids:
