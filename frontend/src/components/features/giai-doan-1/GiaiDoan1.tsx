@@ -783,6 +783,9 @@ export default function GiaiDoan1({
     setError("");
     try {
       await updateSpecification(record.id, content);
+      // Sửa nội dung sẽ thu hồi phê duyệt ở backend; đồng bộ lại danh sách
+      // đặc tả để workflow không giữ cờ approved cũ và mở nhầm Giai đoạn 2.
+      await refreshSpecifications();
       await refreshSrsDocument();
     } catch (reason) {
       setError(`Không thể lưu đặc tả ${record.feature}: ${formatError(reason)}`);
