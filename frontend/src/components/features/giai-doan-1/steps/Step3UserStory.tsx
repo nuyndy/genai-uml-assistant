@@ -73,13 +73,13 @@ export default function Step3UserStory({
         <Card tone="emerald" title="Yêu cầu đã được xác nhận" subtitle="Các User Story đã lưu thành công.">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className={`text-sm leading-6 text-slate-700 ${textWrap}`}>Bạn có thể tiếp tục sang Bước 4 để tạo đặc tả chức năng và phi chức năng.</p>
-            <PrimaryButton onClick={() => onStepChange(4)}>Tiếp tục sang Bước 4 <span aria-hidden="true">→</span></PrimaryButton>
+            
           </div>
         </Card>
       ) : total === 0 ? (
         <Card title="Chưa có yêu cầu để rà soát">
           <EmptyState title="Danh sách yêu cầu đang trống" hint="Quay lại Bước 1 để thêm yêu cầu, sau đó phân tích và tạo User Story." />
-          <div className="mt-4 flex justify-start"><GhostButton onClick={() => onStepChange(1)}>Quay lại Bước 1</GhostButton></div>
+          <div className="mt-4 flex justify-start"></div>
         </Card>
       ) : (
         <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
@@ -140,7 +140,7 @@ export default function Step3UserStory({
         </Card>
       )}
 
-      {!allRequirementsConfirmed && <div className="flex justify-start"><GhostButton onClick={() => onStepChange(2)}>← Quay lại Bước 2</GhostButton></div>}
+      {!allRequirementsConfirmed && <div className="flex justify-start"></div>}
     </div>
   );
 }
