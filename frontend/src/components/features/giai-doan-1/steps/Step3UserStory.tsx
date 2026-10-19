@@ -1,11 +1,12 @@
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
-import type { UserStoryDraft } from "../../../../services/requirementService";
+import type { UserStory, UserStoryDraft } from "../../../../services/requirementService";
 
 interface Props {
   projectId?: number;
   draftRequirements: any[];
   confirmedRequirementsCount: number;
+  savedStories: UserStory[];
   requirementValues: Record<number, RawRequirement>;
   storyDrafts: Record<number, UserStoryDraft>;
   loadingStoryDrafts: boolean;
@@ -26,6 +27,7 @@ interface Props {
 export default function Step3UserStory({
   draftRequirements,
   confirmedRequirementsCount,
+  savedStories,
   requirementValues,
   storyDrafts,
   loadingStoryDrafts,
@@ -68,6 +70,29 @@ export default function Step3UserStory({
           <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Đã duyệt</p><p className="mt-1 text-xs leading-tight opacity-75">Yêu cầu đã xác nhận</p></div>
         </div>
       </div>
+
+      {savedStories.length > 0 && (
+        <Card title="User Story đã lưu" subtitle="US mới nhất hiển thị trước.">
+          <div className="space-y-3">
+            {[...savedStories].sort((a, b) => b.id - a.id).map((story, index) => (
+              <article key={story.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 bg-slate-50/60 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">USER STORY · US-{String(story.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(story.requirement_id ?? 0).padStart(3, "0")}</p>
+                  <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>{story.feature}</h3>
+                  <div className="mt-2 flex flex-wrap items-center gap-2"><StatusBadge tone="success">AI đã sinh</StatusBadge><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
+                </div>
+                <div className="space-y-3 p-4">
+                  <p className={`text-sm leading-6 text-slate-700 ${textWrap}`}>Với vai trò là <strong>{story.role || "Chưa xác định vai trò"}</strong>, tôi muốn <strong>{story.feature}</strong> để <strong>{story.benefit || "đạt được lợi ích chưa mô tả"}</strong>.</p>
+                  <div><p className="text-sm font-semibold text-slate-800">Tiêu chí chấp nhận</p><p className="mt-1 text-xs text-slate-500">Điều kiện xác định chức năng đáp ứng yêu cầu.</p>
+                    <ol className="mt-2 space-y-2">{(story.acceptance_criteria || "").split(/\r?\n/).filter((line) => line.trim()).map((criterion, criterionIndex) => <li key={criterionIndex} className="flex items-start gap-2 text-sm text-slate-700"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">{String(criterionIndex + 1).padStart(2, "0")}</span><span className={`min-w-0 flex-1 ${textWrap}`}>{criterion}</span></li>)}</ol>
+                  </div>
+                  <p className="text-sm text-slate-600"><span className="font-semibold text-slate-800">Ghi chú kỹ thuật:</span> Chưa có ghi chú kỹ thuật.</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {allRequirementsConfirmed ? (
         <Card tone="emerald" title="Yêu cầu đã được xác nhận" subtitle="Các User Story đã lưu thành công.">
