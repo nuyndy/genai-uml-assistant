@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_actor_glossary_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_sequence_methods_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
 from services.plantuml_parser import parse_plantuml
 
 
@@ -306,3 +306,102 @@ def test_baseline_consistency_detects_class_member_mismatch():
         "missing_in_snapshot": [],
         "missing_in_diagram": ["+huyDon()"],
     }]
+
+
+
+def test_baseline_consistency_detects_sequence_call_missing_from_class_methods():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "class_entity": [{
+                "id": 1,
+                "name": "DonHangService",
+                "methods": ["+xacNhan()"],
+            }],
+            "diagram": [{
+                "id": 7,
+                "type": "sequence",
+                "source_code": """@startuml
+participant "DonHangService" as Service
+actor KhachHang
+KhachHang -> Service : huyDon()
+@enduml""",
+            }],
+        },
+    }
+
+    issues = _check_sequence_methods_snapshot(snapshot)
+
+    assert issues == [{
+        "type": "sequence_method_mismatch",
+        "diagram_id": 7,
+        "line": 4,
+        "sender": "khachhang",
+        "receiver": "donhangservice",
+        "method": "huydon",
+    }]
+
+
+def test_baseline_consistency_accepts_sequence_call_present_in_receiver_class():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "class_entity": [{
+                "id": 1,
+                "name": "DonHangService",
+                "methods": ["+xacNhan()"],
+            }],
+            "diagram": [{
+                "id": 7,
+                "type": "sequence",
+                "source_code": """@startuml
+participant "DonHangService" as Service
+actor KhachHang
+KhachHang -> Service : xacNhan()
+@enduml""",
+            }],
+        },
+    }
+
+    assert _check_sequence_methods_snapshot(snapshot) == []
+
+
+def test_baseline_consistency_detects_actor_using_glossary_alias():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "actor": [{"id": 2, "name": "Khách"}],
+            "glossary_term": [{
+                "id": 3,
+                "term": "Khách hàng",
+                "canonical_term": "Khách hàng",
+                "aliases": ["Khách", "Người mua"],
+            }],
+            "diagram": [],
+        },
+    }
+
+    assert _check_actor_glossary_snapshot(snapshot) == [{
+        "type": "actor_glossary_alias_mismatch",
+        "actor_id": 2,
+        "actor_name": "Khách",
+        "canonical_term": "Khách hàng",
+    }]
+
+
+def test_baseline_consistency_accepts_actor_using_canonical_glossary_term():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "actor": [{"id": 2, "name": "Khách hàng"}],
+            "glossary_term": [{
+                "id": 3,
+                "term": "Khách hàng",
+                "canonical_term": "Khách hàng",
+                "aliases": ["Khách", "Người mua"],
+            }],
+            "diagram": [],
+        },
+    }
+
+    assert _check_actor_glossary_snapshot(snapshot) == []
