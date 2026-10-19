@@ -66,7 +66,7 @@ export default function Step3UserStory({
 
         <Card>
           <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-3 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold uppercase tracking-wide text-slate-700">USER STORY · US-{String(activeSavedStory.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
                 <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
