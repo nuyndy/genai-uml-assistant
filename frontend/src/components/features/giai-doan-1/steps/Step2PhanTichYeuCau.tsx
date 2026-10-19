@@ -35,11 +35,13 @@ function Metric({ label, value, detail, tone = "neutral" }: {
     warn: "border-amber-200 bg-amber-50 text-amber-900",
   };
   return (
-    <div className={`flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3 ${styles[tone]}`}>
-      <p className="shrink-0 text-3xl font-bold leading-none tracking-tight sm:text-4xl">{value}</p>
-      <div className="min-w-0">
+    <div className={`flex min-w-0 items-center justify-start gap-3 rounded-xl border px-4 py-3 ${styles[tone]}`}>
+      <div className="flex h-14 w-16 shrink-0 items-center justify-center">
+        <p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{value}</p>
+      </div>
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold leading-tight">{label}</p>
-        <p className="mt-0.5 text-xs leading-tight opacity-70">{detail}</p>
+        <p className="mt-1 text-xs leading-tight opacity-70">{detail}</p>
       </div>
     </div>
   );
