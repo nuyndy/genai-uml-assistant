@@ -141,6 +141,35 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     expect(screen.getByRole("button", { name: "Sequence" })).toBeTruthy();
   });
 
+  it("không yêu cầu xác nhận lại khi bấm tab Sequence đang được chọn", async () => {
+    const initial = emptyWorkflow();
+    initial.actors = [{ id: 1, name: "Khách hàng" }];
+    initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.scenarios = { 1: { mainFlow: ["Bước 1"], altFlows: [], exceptions: [] } };
+    initial.useCaseDiagramCode = "@startuml\\n@enduml";
+    initial.useCaseDiagramUrl = "https://example.com/use-case.png";
+    initial.useCaseDiagramConfirmed = true;
+    initial.scenariosConfirmed = true;
+    initial.interactions = [{
+      usecaseId: 1,
+      type: "sequence",
+      imageUrl: "https://example.com/sequence.png",
+      sourceCode: "@startuml\\n@enduml",
+    }];
+    initial.interactionsConfirmed = true;
+
+    render(<Harness initial={initial} />);
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Các biểu đồ đã được xác nhận.")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Sequence" }));
+
+    expect(screen.getByText("Các biểu đồ đã được xác nhận.")).toBeTruthy();
+  });
+
   it("Bước 4 sang Bước 5 không bị chặn", async () => {
     const initial = emptyWorkflow();
     initial.actors = [{ id: 1, name: "Khách hàng" }];
