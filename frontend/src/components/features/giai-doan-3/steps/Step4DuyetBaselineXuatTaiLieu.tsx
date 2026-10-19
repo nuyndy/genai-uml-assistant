@@ -1,5 +1,5 @@
 import type { ExportFormat } from "../../../../types/workflow";
-import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, GhostButton, StatusBadge } from "../../../common/ui/primitives";
+import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -32,7 +32,6 @@ export default function Step4DuyetBaselineXuatTaiLieu({
   onCreateBaseline,
   onApproveBaseline,
   onExportSrs,
-  onStepChange,
 }: Props) {
   return (
     <div className="space-y-6">
