@@ -237,3 +237,37 @@ def test_requirement_analysis_scorer_checks_production_schema_types():
     result = score_output(case, invalid)
     assert result["passed"] is False
     assert any("Sai kiểu dữ liệu" in error for error in result["errors"])
+
+
+
+def test_nonfunctional_specification_benchmark_uses_production_prompt_builder():
+    from services.spec_generator import NONFUNCTIONAL_GROUPS, build_nonfunctional_spec_prompt
+
+    case = _case("SRS-003")
+    assert case["expected"]["production_schema"] == "NonFunctionalSpecification"
+    assert build_prompt(case) == build_nonfunctional_spec_prompt(case["input"]["project_context"])
+    assert all(group in build_prompt(case) for group in NONFUNCTIONAL_GROUPS)
+
+
+def test_nonfunctional_specification_scorer_checks_fixed_groups_and_content():
+    case = _case("SRS-003")
+    from services.spec_generator import NONFUNCTIONAL_GROUPS
+
+    valid = json.dumps({
+        "items": [
+            {"group": group, "criteria": f"Tiêu chí kiểm chứng {index}", "requirement": f"Yêu cầu cụ thể {index}"}
+            for index, group in enumerate(NONFUNCTIONAL_GROUPS, start=1)
+        ]
+    }, ensure_ascii=False)
+    assert score_output(case, valid)["passed"] is True
+
+    invalid = json.dumps({
+        "items": [
+            {"group": group, "criteria": "", "requirement": "Yêu cầu"}
+            for group in reversed(NONFUNCTIONAL_GROUPS)
+        ]
+    }, ensure_ascii=False)
+    result = score_output(case, invalid)
+    assert result["passed"] is False
+    assert any("thứ tự" in error for error in result["errors"])
+    assert any("không rỗng" in error for error in result["errors"])
