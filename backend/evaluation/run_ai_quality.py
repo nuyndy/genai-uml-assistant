@@ -134,16 +134,25 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
     results = []
     model_name = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
     for case in cases:
+        prompt = build_prompt(case)
+        output_source = "saved_output"
         raw_output = supplied.get(case["id"])
         if raw_output is None and run_ollama:
             from services.ollama import generate_content
-            raw_output = generate_content(build_prompt(case), json_response=True)
+            raw_output = generate_content(prompt, json_response=True)
+            output_source = "ollama_generic_benchmark_prompt"
         if raw_output is None:
             results.append({"id": case["id"], "phase": case.get("phase"),
                              "task": case["task"], "skipped": True,
                              "reason": "Không có đầu ra; dùng --run-ollama hoặc --outputs."})
             continue
-        results.append(score_output(case, raw_output))
+        scored = score_output(case, raw_output)
+        # Lưu bằng chứng gốc để có thể truy nguyên từng lỗi; prompt này là prompt
+        # benchmark chung, không phải prompt nghiệp vụ thực tế của từng endpoint.
+        scored["output_source"] = output_source
+        scored["prompt"] = prompt
+        scored["raw_output"] = raw_output
+        results.append(scored)
 
     evaluated = [item for item in results if not item.get("skipped")]
     passed = sum(bool(item.get("passed")) for item in evaluated)
@@ -166,10 +175,18 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
             "pass_rate": round(passed / len(evaluated), 4) if evaluated else None,
             "by_phase": by_phase,
         },
+        "generation_config": {
+            "ollama_model": model_name if run_ollama else None,
+            "temperature": os.getenv("OLLAMA_TEMPERATURE", "0") if run_ollama else None,
+            "seed": 0 if run_ollama else None,
+            "prompt_mode": "generic_benchmark_prompt",
+        },
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
+            "Prompt hiện tại là prompt benchmark chung, chưa gọi trực tiếp prompt/pipeline của từng endpoint sản phẩm; kết quả chưa đại diện đầy đủ cho chất lượng AI trong ứng dụng.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
+            "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],
         "results": results,
     }

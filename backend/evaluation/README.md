@@ -59,3 +59,10 @@ Chỉ số `pass_rate` hiện tại là tỷ lệ ca đạt các kiểm tra cấ
 
 
 Báo cáo có thống kê tổng thể và theo từng giai đoạn. Các kiểm tra UML/SRS hiện chỉ xác nhận cấu trúc, sự hiện diện của tên lớp hoặc ID và số lượng phần tử; chúng không chứng minh sơ đồ UML hợp lệ hay truy vết có ý nghĩa nghiệp vụ. Cần đánh giá thủ công bổ sung trước khi dùng kết quả làm kết luận khóa luận.
+
+
+## Truy nguyên kết quả lỗi
+
+Mỗi kết quả trong báo cáo lưu thêm `prompt`, `raw_output` và `output_source` để xem chính xác model đã nhận prompt nào và trả về gì. Báo cáo cũng lưu cấu hình model/temperature/seed khi gọi Ollama. Trước khi chia sẻ báo cáo, hãy kiểm tra prompt và đầu ra không chứa dữ liệu nhạy cảm.
+
+**Giới hạn quan trọng:** runner hiện vẫn dùng prompt benchmark chung và gọi `generate_content` trực tiếp. Nó chưa chạy prompt nghiệp vụ, schema Pydantic và luồng retry tương ứng của từng endpoint trong ứng dụng. Vì vậy, báo cáo hiện hữu ích để chẩn đoán model với bộ prompt chuẩn hóa, nhưng chưa thể kết luận đây là chất lượng đầu ra của toàn bộ sản phẩm. Bước tiếp theo là ánh xạ từng ca kiểm thử vào prompt/schema thực tế của endpoint tương ứng rồi mới so sánh trước/sau chỉnh sửa.
