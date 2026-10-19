@@ -33,7 +33,6 @@ export default function Step3UserStory({
   storyDrafts,
   loadingStoryDrafts,
   busy,
-  allStoryDraftsReady,
   allRequirementsConfirmed,
   generateStoryDrafts,
   changeStoryDraft,
