@@ -55,13 +55,17 @@ function Harness({ initial, stage, step }: {
 }) {
   const [state, setState] = useState<WorkflowState>(initial);
   const noop = () => {};
-  const Panel =
-    stage === 1 ? GiaiDoan1 : stage === 2 ? GiaiDoan2 : GiaiDoan3;
   return (
     <>
       <GiaiDoanStepper stage={stage} maxUnlockedStage={3} completedStages={[]} />
       <Stepper stage={stage} step={step} maxUnlockedStep={5} />
-      <Panel projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
+      {stage === 1 ? (
+        <GiaiDoan1 state={state} setState={setState} step={step} onStepChange={noop} />
+      ) : stage === 2 ? (
+        <GiaiDoan2 projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
+      ) : (
+        <GiaiDoan3 projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
+      )}
     </>
   );
 }
@@ -69,9 +73,9 @@ function Harness({ initial, stage, step }: {
 describe("GiaiDoanStepper", () => {
   it("hiển thị đủ 3 giai đoạn lớn", () => {
     render(<GiaiDoanStepper stage={1} maxUnlockedStage={3} completedStages={[]} />);
-    expect(screen.getByText("Thu thập & Đặc tả")).toBeTruthy();
-    expect(screen.getByText("Mô hình hóa UML")).toBeTruthy();
-    expect(screen.getByText("Tùy chỉnh & Xuất")).toBeTruthy();
+    expect(screen.getByText("Phân tích yêu cầu")).toBeTruthy();
+    expect(screen.getByText("Mô hình UML")).toBeTruthy();
+    expect(screen.getByText("SRS & Hoàn thiện")).toBeTruthy();
   });
 
   it("tô xanh lá đúng các giai đoạn đã hoàn thành thật", () => {
@@ -93,10 +97,10 @@ describe("GiaiDoanStepper", () => {
 describe("Giai đoạn 1: sub-stepper 5 bước", () => {
   const steps = [
     "Nhập yêu cầu",
-    "Phân tích thiếu sót",
-    "Kiểm duyệt User Story",
-    "Sinh đặc tả",
-    "Tổng hợp tài liệu",
+    "Phân tích và làm rõ",
+    "Xác nhận yêu cầu và User Story",
+    "Xây dựng đặc tả FR/NFR",
+    "Rà soát và đồng bộ SRS",
   ];
 
   it.each(steps)("hiển thị bước %s trong sub-stepper", (name) => {
@@ -107,7 +111,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
   it("Bước 1 hiển thị form nhập yêu cầu", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={1} />);
     expect(screen.getAllByText("Nhập yêu cầu").length).toBeGreaterThan(0);
-    expect(screen.getByPlaceholderText("VD: Sinh viên, Khách hàng")).toBeTruthy();
+    expect(screen.getByPlaceholderText(/Sinh viên|Khách hàng|mô tả/i)).toBeTruthy();
   });
 
   it("Bước 2 cho phép sang bước tiếp theo dù có yêu cầu thiếu", () => {
