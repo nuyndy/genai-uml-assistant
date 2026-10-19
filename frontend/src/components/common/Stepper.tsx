@@ -19,7 +19,7 @@ export default function Stepper({
   return (
     <div className="overflow-x-auto bg-white px-4 py-3 sm:px-6">
       <ol className="mx-auto flex w-max min-w-max max-w-full items-center gap-1 rounded-full bg-slate-100 p-1.5 sm:gap-2">
-        {steps.map((item, index) => {
+        {steps.map((item) => {
           const active = item.id === step;
           const complete = completedSteps
             ? completedSteps.includes(item.id)
