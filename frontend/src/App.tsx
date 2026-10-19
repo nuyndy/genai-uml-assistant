@@ -294,7 +294,7 @@ function App() {
       )}
 
       <ErrorBoundary>
-      <main>
+      <main className="pb-24 sm:pb-20">
         {stage === 1 && (
           <GiaiDoan1
             projectId={activeProject.id}
@@ -329,7 +329,7 @@ function App() {
       </main>
       </ErrorBoundary>
 
-      <footer className="sticky bottom-0 z-30 border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
+      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1600px] items-center gap-3 px-3 py-2 sm:px-6 lg:px-8">
           <button
             type="button"
