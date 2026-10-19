@@ -338,8 +338,10 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
         a_name = names_by_id.get(a_id)
         b_name = names_by_id.get(b_id)
         if a_name and b_name:
-            endpoints = tuple(sorted((a_name, b_name)))
             relation_type = str(item.get("relation_type") or "association").strip().casefold()
+            endpoints = (a_name, b_name)
+            if relation_type == "association":
+                endpoints = tuple(sorted(endpoints))
             saved_relations.add((*endpoints, relation_type))
 
     issues = []
@@ -384,10 +386,11 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
         source = str(item.get("from", "")).strip().casefold()
         target = str(item.get("to", "")).strip().casefold()
         if source and target:
-            parsed_relations.add((
-                *sorted((source, target)),
-                str(item.get("type") or "association").strip().casefold(),
-            ))
+            relation_type = str(item.get("type") or "association").strip().casefold()
+            endpoints = (source, target)
+            if relation_type == "association":
+                endpoints = tuple(sorted(endpoints))
+            parsed_relations.add((*endpoints, relation_type))
 
     if parsed_relations != saved_relations:
         issues.append({
