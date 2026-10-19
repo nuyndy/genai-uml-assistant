@@ -3,7 +3,6 @@ import {
   Card,
   SoftButton,
   PrimaryButton,
-  GhostButton,
   EmptyState,
   DiagramPreview,
 } from "../../../common/ui/primitives";
@@ -56,7 +55,6 @@ export default function Step4InteractionDiagram({
   onSaveDiagram,
   onConfirm,
   confirmed,
-  onStepChange,
   wrapClass,
   inputClass = "w-full rounded-lg border border-slate-300 p-3 text-sm",
 }: Props) {
