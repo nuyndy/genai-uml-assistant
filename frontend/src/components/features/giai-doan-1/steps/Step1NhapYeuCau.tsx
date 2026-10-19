@@ -42,8 +42,8 @@ export default function Step1NhapYeuCau({
         </Card>
 
         <Card compact title="Danh sách yêu cầu" actions={<StatusBadge tone={requirements.length ? "success" : "muted"}>{requirements.length} yêu cầu</StatusBadge>}>
-          
-          {requirements.length === 0 ? <EmptyState title="Chưa có yêu cầu nào" hint="Điền biểu mẫu và chọn “Thêm yêu cầu” để bắt đầu xây dựng danh sách." /> : (
+          <div className="max-h-[420px] overflow-y-auto pr-1">
+{requirements.length === 0 ? <EmptyState title="Chưa có yêu cầu nào" hint="Điền biểu mẫu và chọn “Thêm yêu cầu” để bắt đầu xây dựng danh sách." /> : (
             <ul className="space-y-1.5 pr-1">
               {requirements.map((item) => {
                 const rawValue = requirementValues[item.id];
@@ -55,6 +55,7 @@ export default function Step1NhapYeuCau({
               })}
             </ul>
           )}
+          </div>
         </Card>
       </div>
     </div>
