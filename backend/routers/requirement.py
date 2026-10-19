@@ -497,7 +497,7 @@ def save_requirement_user_story(
     _: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     """Save one reviewed User Story and confirm its source requirement."""
-    requirement = _get_requirement(db, requirement_id)
+    requirement = _requirement(db, requirement_id)
     try:
         story = (
             db.query(UserStory)
