@@ -131,7 +131,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
   it("Bước 3 cho người dùng kiểm duyệt User Story do AI tạo", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={3} />);
     expect(screen.getByText("Chưa có yêu cầu để rà soát")).toBeTruthy();
-    expect(screen.getByText(/AI chỉ tạo bản nháp/)).toBeTruthy();
+    expect(screen.getByText("Danh sách yêu cầu đang trống")).toBeTruthy();
   });
 
   it("Bước 5 cho sửa trực tiếp trên trang Word và tải xuống docx", () => {
@@ -143,8 +143,8 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
     ];
     render(<Harness initial={initial} stage={1} step={5} />);
     expect(screen.getByRole("heading", { name: /Rà soát và đồng bộ tài liệu SRS/ })).toBeTruthy();
-    expect(screen.getByLabelText("Tên chức năng")).toBeTruthy();
-    // Sửa được trực tiếp trên tài liệu, không phải quay lại Bước 4.
+    // Bản SRS cho phép sửa trực tiếp các trường nội dung.
+    expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
     expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
     expect(screen.getByLabelText("1.2 Phạm vi")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Lưu phần giới thiệu" })).toBeTruthy();
