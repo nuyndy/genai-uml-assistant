@@ -16,7 +16,7 @@ export default function GiaiDoanStepper({
 }: GiaiDoanStepperProps) {
   return (
     <nav aria-label="Các giai đoạn của quy trình" className="w-full min-w-0">
-      <ol className="mx-auto flex w-full max-w-3xl items-center gap-1 rounded-full bg-slate-100/90 p-1 sm:gap-1.5">
+      <ol className="mx-auto flex w-full max-w-3xl items-center gap-1 rounded-full bg-sky-50 p-1 sm:gap-1.5">
         {STAGE_ORDER.map((id) => {
           const def = STAGES[id];
           const active = id === stage;
@@ -35,7 +35,7 @@ export default function GiaiDoanStepper({
                 onClick={() => clickable && onStageChange?.(id)}
                 className={`flex min-h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-full px-1.5 py-2 text-center text-xs font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${
                   active
-                    ? "bg-emerald-800 text-white shadow-sm"
+                    ? "bg-emerald-500 text-white shadow-sm"
                     : done
                       ? "text-emerald-800 hover:bg-white"
                       : unlocked
