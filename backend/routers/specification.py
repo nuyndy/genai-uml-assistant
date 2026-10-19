@@ -57,6 +57,16 @@ def _story(db: Session, story_id: int) -> UserStory:
     return story
 
 
+def _approval_status(db: Session, specification_id: int) -> str:
+    """Đọc trạng thái duyệt thật, không mặc định draft khi đặc tả đã được duyệt."""
+    approval = (
+        db.query(SpecificationApproval)
+        .filter(SpecificationApproval.specification_id == specification_id)
+        .first()
+    )
+    return approval.status if approval is not None else "draft"
+
+
 def _specification(db: Session, specification_id: int) -> Specification:
     try:
         specification = db.query(Specification).filter(
@@ -377,6 +387,7 @@ def list_user_story_specifications(
             type=item.type,
             content=item.content,
             version=item.version,
+            approval_status=_approval_status(db, item.id),
         )
         for item in specifications
     ]
@@ -404,6 +415,7 @@ def get_specification(
         type=specification.type,
         content=specification.content,
         version=specification.version,
+        approval_status=_approval_status(db, specification.id),
     )
 
 
