@@ -47,7 +47,7 @@ import Step2UseCaseDiagram from "./steps/Step2UseCaseDiagram";
 import Step3UseCaseScenario from "./steps/Step3UseCaseScenario";
 import Step4InteractionDiagram from "./steps/Step4InteractionDiagram";
 import Step5ClassDiagram from "./steps/Step5ClassDiagram";
-import { checkProjectRequirementCoverage, createProjectRequirementsBatch, listProjectRequirements, type RequirementCoverageAnalysis, type RequirementCoverageSuggestion } from "../../../services/requirementService";
+import { checkProjectRequirementCoverage, createProjectRequirementsBatch, listProjectRequirements, type RequirementCoverageAnalysis, type RequirementCoverageSuggestion, type RequirementRecord } from "../../../services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -226,6 +226,7 @@ export default function GiaiDoan2({
   const [coverageAdding, setCoverageAdding] = useState(false);
   const [coverageSelected, setCoverageSelected] = useState<number[]>([]);
   const [coverageAdded, setCoverageAdded] = useState<number[]>([]);
+  const [projectRequirements, setProjectRequirements] = useState<RequirementRecord[]>([]);
   const [diagramType, setDiagramType] = useState<InteractionType>("sequence");
   const [specifications, setSpecifications] = useState<ProjectSpecificationRecord[] | null>(null);
   const [specificationError, setSpecificationError] = useState("");
@@ -464,7 +465,15 @@ export default function GiaiDoan2({
       busy={busy}
       loaded={loadedProjectId !== undefined}
       error={error}
-      runBatchAnalysis={runExtract}
+      runBatchAnalysis={runCoverageCheck}
+      coverageAnalysis={coverageAnalysis}
+      coverageLoading={coverageLoading}
+      coverageAdding={coverageAdding}
+      coverageSelected={coverageSelected}
+      coverageAdded={coverageAdded}
+      coverageStats={{ pending: projectRequirements.filter((item) => item.status !== "confirmed").length, analyzed: projectRequirements.length, complete: projectRequirements.filter((item) => item.status === "confirmed").length, added: coverageAdded.length }}
+      onToggleCoverage={(index, selected) => setCoverageSelected((previous) => selected ? [...previous.filter((item) => item !== index), index] : previous.filter((item) => item !== index))}
+      onAddCoverage={addCoverageSuggestions}
       confirmed={state.actorsUseCasesConfirmed}
       onConfirm={() =>
         setState((previous) => ({
