@@ -40,7 +40,7 @@ export default function GiaiDoanStepper({
     >
       <div className="mx-auto w-full max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
         <ol className="mx-auto flex max-w-4xl items-center gap-1 rounded-full bg-slate-100/90 p-1.5 shadow-inner sm:gap-2">
-          {STAGE_ORDER.map((id, index) => {
+          {STAGE_ORDER.map((id) => {
             const def = STAGES[id];
             const isActive = id === stage;
             const isDone = completedStages.includes(id);
