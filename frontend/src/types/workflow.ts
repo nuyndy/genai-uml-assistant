@@ -1,9 +1,10 @@
 /**
  * Kiểu dữ liệu dùng chung cho toàn bộ luồng 3 GIAI ĐOẠN.
  *
- * Mọi trạng thái này được giữ trong MỘT object `WorkflowState` tại App.tsx và
- * truyền xuống các component qua props — không lưu localStorage, không gọi lại
- * API khi chuyển qua lại giữa các bước đã hoàn thành.
+ * Dữ liệu nghiệp vụ được tải/lưu qua API; trạng thái UI được giữ trong một
+ * object `WorkflowState` tại App.tsx. Riêng cờ xác nhận UML được lưu cục bộ
+ * theo project để khôi phục khi tải lại trang, không thay thế trạng thái nghiệp vụ
+ * trong database.
  */
 
 /* ------------------------------------------------------------------ */
