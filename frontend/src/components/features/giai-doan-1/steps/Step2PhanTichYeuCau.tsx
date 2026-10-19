@@ -77,8 +77,6 @@ export default function Step2PhanTichYeuCau({
 
   return (
     <div className="space-y-6">
-      </section>
-
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric label="Yêu cầu cần rà soát" value={draftRequirements.length} detail="Các yêu cầu bản nháp" />
         <Metric label="Đã phân tích" value={analyzedCount} detail={draftRequirements.length ? `${Math.round((analyzedCount / draftRequirements.length) * 100)}% số yêu cầu` : "Chưa có dữ liệu"} />
