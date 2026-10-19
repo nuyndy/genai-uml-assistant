@@ -85,7 +85,7 @@ export default function Step2UseCaseDiagram({
           </section>
         </div>
       </Card>
-      <div className="workflow-action-bar sticky bottom-0 z-30 flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl">
+      <div className="workflow-action-bar flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl">
         <div className="text-sm text-slate-700">
           {confirmed
             ? "Đã xác nhận biểu đồ Use Case."
@@ -96,8 +96,8 @@ export default function Step2UseCaseDiagram({
         </PrimaryButton>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => onStepChange(1)} className="text-sm text-slate-500 hover:text-emerald-600">← Quay lại</button>
-        <PrimaryButton disabled={!confirmed} onClick={() => onStepChange(3)}>Tiếp tục sang Bước 3</PrimaryButton>
+        
+        
       </div>
     </div>
   );
