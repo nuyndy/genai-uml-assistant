@@ -58,7 +58,7 @@ function Harness({ initial }: { initial: WorkflowState }) {
         maxUnlockedStep={maxUnlockedStage2(state)}
         onStepChange={setStep}
       />
-      <GiaiDoan2 projectId={undefined} state={state} setState={setState} step={step} onStepChange={setStep} />
+      <GiaiDoan2 projectId={1} state={state} setState={setState} step={step} onStepChange={setStep} />
     </>
   );
 }
@@ -70,7 +70,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     render(<Harness initial={initial} />);
 
-    const step2 = screen.getByRole("button", { name: /Sinh biểu đồ UC tổng quát/ });
+    const step2 = screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ });
     expect(step2).not.toBeDisabled();
     fireEvent.click(step2);
     expect(screen.getByText("Biểu đồ use case tổng quát")).toBeTruthy();
@@ -91,7 +91,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.useCaseDiagramCode = "@startuml\n@enduml";
     render(<Harness initial={initial} />);
 
-    const step3 = screen.getByRole("button", { name: /Sinh kịch bản use case chi tiết/ });
+    const step3 = screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ });
     expect(step3).not.toBeDisabled();
     fireEvent.click(step3);
     expect(screen.getByText("Sinh kịch bản use case")).toBeTruthy();
@@ -129,7 +129,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.scenarios = { 1: { mainFlow: ["Bước 1"], altFlows: [], exceptions: [] } };
     render(<Harness initial={initial} />);
-    fireEvent.click(screen.getByRole("button", { name: /Sinh biểu đồ tương tác/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" })).toBeTruthy(),
     );
