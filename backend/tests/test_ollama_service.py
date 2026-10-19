@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
+from schemas.requirement import UserStoryDraftContent
 from schemas.uml import ExtractActorsUseCasesResult
 from services.ollama import AIServiceError, generate_content, generate_json
 
@@ -124,6 +125,42 @@ def test_generate_json_repairs_items_wrapper_and_title_key():
 
     assert [actor.name for actor in result.suggested_actors] == ["Sinh viên"]
     assert [item.name for item in result.suggested_use_cases] == ["Đăng ký môn"]
+
+
+def test_generate_json_retries_when_model_returns_schema_instead_of_data():
+    """Model có thể nhầm trả JSON Schema; lần retry phải yêu cầu dữ liệu thực tế."""
+    schema_response = {
+        "description": "Nội dung user story",
+        "properties": {
+            "role": {"title": "Role", "type": "string"},
+            "feature": {"title": "Feature", "type": "string"},
+            "benefit": {"title": "Benefit", "type": "string"},
+            "acceptance_criteria": {"title": "Acceptance Criteria", "type": "string"},
+        },
+        "required": ["role", "feature", "benefit", "acceptance_criteria"],
+        "type": "object",
+    }
+    valid_response = {
+        "role": "Khách hàng",
+        "feature": "đăng nhập",
+        "benefit": "truy cập tài khoản của mình",
+        "acceptance_criteria": "Hệ thống xác thực thông tin đăng nhập",
+    }
+    with patch(
+        "services.ollama.urlopen",
+        side_effect=[
+            _ollama_response(json.dumps(schema_response)),
+            _ollama_response(json.dumps(valid_response)),
+        ],
+    ) as urlopen:
+        result = generate_json("Tạo User Story", UserStoryDraftContent)
+
+    assert result.role == "Khách hàng"
+    assert result.feature == "đăng nhập"
+    assert urlopen.call_count == 2
+    retry_prompt = json.loads(urlopen.call_args.args[0].data)["prompt"]
+    assert "không phải JSON Schema" in retry_prompt
+    assert "properties" in retry_prompt
 
 
 def test_generate_json_strips_markdown_fence():
