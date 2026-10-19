@@ -162,7 +162,7 @@ export default function Step2PhanTichYeuCau({
         )}
         <div className="mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className={`text-xs leading-5 text-slate-500 ${inheritedWrapClass || wrapClass}`}>Kết quả AI là gợi ý rà soát; hãy kiểm tra nội dung nghiệp vụ trước khi xác nhận yêu cầu.</p>
-          <PrimaryButton disabled={!canContinue} onClick={() => onStepChange(3)}>Tiếp tục sang Bước 3 <span aria-hidden="true">→</span></PrimaryButton>
+          
         </div>
       </Card>
     </div>
