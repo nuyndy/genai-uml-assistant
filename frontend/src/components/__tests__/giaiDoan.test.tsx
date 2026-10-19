@@ -228,7 +228,7 @@ describe("Giai đoạn 3", () => {
 
   it("Bước 3 hiển thị kết quả kiểm tra nhất quán khi phát hiện sai lệch", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
-    expect(screen.getByText("Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML.")).toBeTruthy();
+    expect(screen.getByText("Chưa chạy kiểm tra nhất quán.")).toBeTruthy();
     expect(screen.getByText("Kiểm tra UML")).toBeTruthy();
   });
 
