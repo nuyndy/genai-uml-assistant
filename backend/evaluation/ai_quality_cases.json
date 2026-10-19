@@ -11,8 +11,7 @@
         "target_object",
         "purpose"
       ],
-      "must_not_invent": true,
-      "production_schema": "RequirementUpdate"
+      "must_not_invent": true
     },
     "checks": [
       "schema_fields_present",
@@ -71,8 +70,7 @@
         "alt_flow",
         "exception_flow"
       ],
-      "minimum_main_flow_steps": 1,
-      "production_schema": "UseCaseScenarioSuggestion"
+      "minimum_main_flow_steps": 1
     },
     "checks": [
       "schema_fields_present",
@@ -93,8 +91,7 @@
       "must_include_classes": [
         "SinhVien",
         "LichHoc"
-      ],
-      "production_schema": "ClassDiagramSuggestion"
+      ]
     },
     "checks": [
       "schema_fields_present",
@@ -112,8 +109,7 @@
         "lifelines",
         "messages"
       ],
-      "minimum_messages": 3,
-      "production_schema": "InteractionDiagramInput"
+      "minimum_messages": 3
     },
     "checks": [
       "schema_fields_present",
@@ -136,8 +132,7 @@
         "FR-01",
         "US-01",
         "UC-01"
-      ],
-      "production_schema": "traceability review contract (needs explicit mapping)"
+      ]
     },
     "checks": [
       "schema_fields_present",
@@ -154,8 +149,7 @@
         "issues",
         "recommendation"
       ],
-      "minimum_issues": 1,
-      "production_schema": "consistency review contract (needs explicit mapping)"
+      "minimum_issues": 1
     },
     "checks": [
       "schema_fields_present",
