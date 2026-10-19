@@ -75,7 +75,7 @@ export default function LoginPage() {
   }, [login]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-white px-4 py-10">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-32 -top-36 h-96 w-96 rounded-full bg-violet-200/50 blur-3xl"
@@ -86,7 +86,7 @@ export default function LoginPage() {
       />
       <div className="relative mx-auto grid min-h-[calc(100vh-5rem)] max-w-5xl items-center gap-10 lg:grid-cols-2">
         <section className="space-y-7 text-center lg:text-left">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-xl font-bold text-white shadow-lg shadow-violet-200 lg:mx-0">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500 text-xl font-bold text-white shadow-lg shadow-violet-200 lg:mx-0">
             U
           </div>
           <div className="space-y-4">
@@ -109,7 +109,7 @@ export default function LoginPage() {
             ].map(([number, title, description]) => (
               <div
                 key={number}
-                className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-sky-50/70 p-4 shadow-sm"
               >
                 <p className="text-xs font-semibold text-violet-600">{number}</p>
                 <p className="mt-2 text-sm font-semibold text-slate-800">
