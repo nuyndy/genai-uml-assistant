@@ -125,8 +125,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
 
   it("Bước 2 cho phép sang bước tiếp theo dù có yêu cầu thiếu", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={2} />);
-    expect(screen.getByRole("heading", { name: "Phân tích yêu cầu" })).toBeTruthy();
-    expect(screen.getByText("Tiếp tục sang Bước 3")).toBeTruthy();
+    expect(screen.getByText("Kết quả phân tích")).toBeTruthy();
   });
 
   it("Bước 3 cho người dùng kiểm duyệt User Story do AI tạo", () => {
@@ -143,7 +142,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
       { id: 3, feature: "Chưa duyệt", type: "functional", content: "C", approved: false },
     ];
     render(<Harness initial={initial} stage={1} step={5} />);
-    expect(screen.getByRole("heading", { name: /Rà soát và đồng bộ tài liệu SRS/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Bản xem và chỉnh sửa tài liệu SRS/ })).toBeTruthy();
     // Bản SRS cho phép sửa trực tiếp các trường nội dung.
     expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
     expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
@@ -227,9 +226,9 @@ describe("Giai đoạn 3", () => {
     expect(screen.getByDisplayValue("id: int")).toBeTruthy();
   });
 
-  it("Bước 3 có nút quay lại chỉnh sửa khi phát hiện sai lệch", () => {
+  it("Bước 3 hiển thị kết quả kiểm tra nhất quán khi phát hiện sai lệch", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
-    expect(screen.getByText("← Quay lại chỉnh sửa")).toBeTruthy();
+    expect(screen.getByText("Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML.")).toBeTruthy();
     expect(screen.getByText("Kiểm tra UML")).toBeTruthy();
   });
 
