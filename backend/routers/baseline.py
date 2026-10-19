@@ -295,6 +295,72 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
+def _check_acceptance_criteria_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-008: mỗi User Story và đặc tả chức năng phải có tiêu chí chấp nhận."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+
+    stories = entities.get("user_story", [])
+    specifications = entities.get("specification", [])
+    if not isinstance(stories, list) or not isinstance(specifications, list):
+        return [{
+            "type": "invalid_snapshot",
+            "message": "Danh sách User Story hoặc đặc tả không hợp lệ.",
+        }]
+
+    def has_content(value: Any) -> bool:
+        if value is None:
+            return False
+        if isinstance(value, str):
+            return bool(value.strip())
+        if isinstance(value, (list, dict)):
+            return bool(value)
+        return bool(str(value).strip())
+
+    story_by_id = {
+        item.get("id"): item
+        for item in stories
+        if isinstance(item, dict) and item.get("id") is not None
+    }
+    issues = []
+    for story_id, story in story_by_id.items():
+        if not has_content(story.get("acceptance_criteria")):
+            issues.append({
+                "type": "missing_acceptance_criteria",
+                "entity_type": "user_story",
+                "entity_id": story_id,
+            })
+
+    for spec in specifications:
+        if not isinstance(spec, dict) or spec.get("type") != "functional":
+            continue
+        story = story_by_id.get(spec.get("user_story_id"), {})
+        if has_content(story.get("acceptance_criteria")):
+            continue
+
+        content = spec.get("content")
+        parsed_content = content
+        if isinstance(content, str):
+            try:
+                parsed_content = json.loads(content)
+            except (json.JSONDecodeError, TypeError):
+                parsed_content = {}
+        criteria = (
+            parsed_content.get("acceptance_criteria")
+            if isinstance(parsed_content, dict)
+            else None
+        )
+        if not has_content(criteria):
+            issues.append({
+                "type": "missing_acceptance_criteria",
+                "entity_type": "functional_specification",
+                "entity_id": spec.get("id"),
+                "user_story_id": spec.get("user_story_id"),
+            })
+    return issues
+
+
 def _check_trace_links_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """Phát hiện trace link mồ côi trong baseline trước khi chốt chính thức."""
     entities = snapshot.get("entities", {})
@@ -600,6 +666,17 @@ def approve_baseline(
         )
 
     # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
+    # CON-008: không chốt baseline khi User Story/FR thiếu tiêu chí chấp nhận.
+    acceptance_criteria_issues = _check_acceptance_criteria_snapshot(snapshot)
+    if acceptance_criteria_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline khi còn User Story/FR thiếu tiêu chí chấp nhận.",
+                "acceptance_criteria_issues": acceptance_criteria_issues,
+            },
+        )
+
     actors = entities.get("actor", [])
     use_cases = entities.get("use_case", [])
     diagrams = entities.get("diagram", [])
