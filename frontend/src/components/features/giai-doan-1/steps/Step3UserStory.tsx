@@ -62,32 +62,20 @@ export default function Step3UserStory({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{total}</p></div>
-          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Yêu cầu cần duyệt</p><p className="mt-1 text-xs leading-tight opacity-75">Yêu cầu còn bản nháp</p></div>
-        </div>
-        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sky-900">
-          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{generatedCount}</p></div>
-          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">AI đã sinh</p><p className="mt-1 text-xs leading-tight opacity-75">Có bản nháp User Story</p></div>
-        </div>
-        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
-          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{readyCount}</p></div>
-          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Đủ trường</p><p className="mt-1 text-xs leading-tight opacity-75">Đủ 4 trường bắt buộc</p></div>
-        </div>
-        <div className="flex min-w-0 items-center justify-start gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-violet-900">
-          <div className="flex h-14 w-16 shrink-0 items-center justify-center"><p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{confirmedRequirementsCount}</p></div>
-          <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-tight">Đã duyệt</p><p className="mt-1 text-xs leading-tight opacity-75">Yêu cầu đã xác nhận</p></div>
-        </div>
-      </div>
-
       {orderedSavedStories.length > 0 && activeSavedStory && (
+
         <Card>
           <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">USER STORY · US-{String(activeSavedStory.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
                 <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <StatusBadge tone="warn">Cần duyệt · {total}</StatusBadge>
+                  <StatusBadge tone="info">AI đã sinh · {generatedCount}</StatusBadge>
+                  <StatusBadge tone="success">Đủ trường · {readyCount}</StatusBadge>
+                  <StatusBadge tone="neutral">Đã duyệt · {confirmedRequirementsCount}</StatusBadge>
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 <StatusBadge tone="neutral">{activeSavedIndex + 1}/{orderedSavedStories.length}</StatusBadge>
