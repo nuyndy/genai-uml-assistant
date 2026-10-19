@@ -36,7 +36,7 @@ export default function Step1DongBoSRS({
           </p>
           <p>
             Tài liệu SRS:{" "}
-            <StatusBadge tone={srsLoaded ? "success" : "neutral"}>
+            <StatusBadge tone={srsLoaded ? "success" : "muted"}>
               {srsLoaded ? "Đã tải" : "Chưa tải"}
             </StatusBadge>
           </p>
