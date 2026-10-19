@@ -171,3 +171,132 @@ def test_delete_project_removes_all_dependent_records(client, db_session):
         EntityRevision,
     ):
         assert db_session.query(model).count() == 0, model.__name__
+
+
+
+def _owned_project(db_session):
+    user = User(
+        email="trace-cleanup@example.com",
+        name="Trace Cleanup",
+        google_id="trace-cleanup-google-id",
+    )
+    db_session.add(user)
+    db_session.flush()
+    project = Project(name="Trace Cleanup Project", user_id=user.id)
+    db_session.add(project)
+    db_session.flush()
+    token = auth._sign({"uid": user.id, "exp": time.time() + 60})
+    return project, {"Authorization": f"Bearer {token}"}
+
+
+def test_delete_requirement_removes_incoming_and_outgoing_trace_links(client, db_session):
+    project, headers = _owned_project(db_session)
+    requirement = RawRequirement(
+        project_id=project.id,
+        content='{"actor":"Người dùng"}',
+        status="draft",
+    )
+    db_session.add(requirement)
+    db_session.flush()
+    db_session.add_all([
+        TraceLink(
+            project_id=project.id,
+            source_type="requirement",
+            source_id=requirement.id,
+            target_type="external",
+            target_id=99,
+        ),
+        TraceLink(
+            project_id=project.id,
+            source_type="external",
+            source_id=99,
+            target_type="raw_requirement",
+            target_id=requirement.id,
+        ),
+    ])
+    db_session.commit()
+
+    response = client.delete(f"/api/requirements/{requirement.id}", headers=headers)
+
+    assert response.status_code == 204
+    assert db_session.get(RawRequirement, requirement.id) is None
+    assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
+
+
+def test_delete_user_story_removes_incoming_and_outgoing_trace_links(client, db_session):
+    project, headers = _owned_project(db_session)
+    requirement = RawRequirement(
+        project_id=project.id,
+        content='{"actor":"Người dùng"}',
+        status="confirmed",
+    )
+    db_session.add(requirement)
+    db_session.flush()
+    story = UserStory(
+        requirement_id=requirement.id,
+        role="Người dùng",
+        feature="Quản lý dữ liệu",
+    )
+    db_session.add(story)
+    db_session.flush()
+    db_session.add_all([
+        TraceLink(
+            project_id=project.id,
+            source_type="user_story",
+            source_id=story.id,
+            target_type="external",
+            target_id=99,
+        ),
+        TraceLink(
+            project_id=project.id,
+            source_type="external",
+            source_id=99,
+            target_type="user_story",
+            target_id=story.id,
+        ),
+    ])
+    db_session.commit()
+
+    response = client.delete(f"/api/user-stories/{story.id}", headers=headers)
+
+    assert response.status_code == 204
+    assert db_session.get(UserStory, story.id) is None
+    assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
+
+
+def test_delete_specification_removes_incoming_and_outgoing_trace_links(client, db_session):
+    project, headers = _owned_project(db_session)
+    specification = Specification(
+        project_id=project.id,
+        type="non_functional",
+        content="{}",
+        version=1,
+    )
+    db_session.add(specification)
+    db_session.flush()
+    db_session.add_all([
+        TraceLink(
+            project_id=project.id,
+            source_type="specification",
+            source_id=specification.id,
+            target_type="external",
+            target_id=99,
+        ),
+        TraceLink(
+            project_id=project.id,
+            source_type="external",
+            source_id=99,
+            target_type="specification",
+            target_id=specification.id,
+        ),
+    ])
+    db_session.commit()
+
+    response = client.delete(
+        f"/api/specifications/{specification.id}",
+        headers=headers,
+    )
+
+    assert response.status_code == 204
+    assert db_session.get(Specification, specification.id) is None
+    assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
