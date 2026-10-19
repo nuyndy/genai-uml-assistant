@@ -673,7 +673,7 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
         for member_type in ("attributes", "methods"):
             diagram_members = normalize_members(parsed_class.get(member_type))
             saved_members = normalize_members(saved_class.get(member_type))
-            if diagram_members != saved_members:
+            if set(diagram_members) != set(saved_members):
                 member_mismatches.append({
                     "class_name": class_name,
                     "member_type": member_type,
