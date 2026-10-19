@@ -1109,6 +1109,16 @@ def approve_baseline(
             detail="Không tìm thấy baseline.",
         )
 
+    # Lệnh duyệt có tính idempotent: nếu baseline đã được duyệt, trả lại
+    # trạng thái hiện có thay vì buộc người dùng xác nhận hoặc xử lý lại lần nữa.
+    if row.status == "approved":
+        return {
+            "id": row.id,
+            "version": row.version,
+            "status": row.status,
+            "approved_at": row.approved_at,
+        }
+
     if row.status != "draft":
         raise HTTPException(
             status_code=409,
