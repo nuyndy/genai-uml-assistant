@@ -16,6 +16,7 @@ from database.models import (
     User,
     UserStory,
     ProjectBaseline,
+    SpecificationApproval,
 )
 from routers.auth import get_current_user
 from routers.ownership import require_project_owner
