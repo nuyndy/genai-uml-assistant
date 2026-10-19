@@ -178,7 +178,14 @@ describe("one-time specification generation and manual editing", () => {
 
     await waitFor(() => expect(mocked.updateSpecification).toHaveBeenCalledTimes(1));
     expect(mocked.generateSpecification).toHaveBeenCalledTimes(1);
-    expect(mocked.state.records[0].version).toBe(2);
+    expect(mocked.state.records.find((record) => record.type === "functional")?.version).toBe(2);
+
+    // Bước 5 chỉ mở khi đã có cả đặc tả chức năng và phi chức năng.
+    const generateNonFunctional = screen.getAllByRole("button", { name: "Thử sinh bằng AI" });
+    fireEvent.click(generateNonFunctional[generateNonFunctional.length - 1]);
+    await waitFor(() => {
+      expect(mocked.state.records.some((record) => record.type === "non_functional")).toBe(true);
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" }));
     await screen.findByText(/tài liệu SRS/i);
