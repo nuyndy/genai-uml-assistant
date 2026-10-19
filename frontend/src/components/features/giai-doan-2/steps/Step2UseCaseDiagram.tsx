@@ -23,7 +23,6 @@ export default function Step2UseCaseDiagram({
   onRegenerate,
   onSave,
   onConfirm,
-  onStepChange,
 }: Props) {
   const [draftCode, setDraftCode] = useState(imageCode ?? "");
 
