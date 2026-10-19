@@ -78,8 +78,8 @@ export default function HomePage({
   };
 
   return (
-    <div className="min-h-screen w-full bg-white text-left">
-      <nav className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen w-full bg-gradient-to-br from-sky-50 via-white to-violet-50 text-left">
+      <nav className="border-b border-sky-200 bg-white/95 shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-white">
@@ -157,7 +157,7 @@ export default function HomePage({
         <section aria-label="Danh sách dự án" className="space-y-5">
           {mode === "create" ? (
             <form
-              className="rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_30px_-24px_rgba(83,109,183,0.28)] sm:p-6"
+              className="rounded-2xl border border-sky-200 bg-white p-5 shadow-[0_12px_36px_-24px_rgba(83,109,183,0.35)] sm:p-6"
               onSubmit={(event) => {
                 event.preventDefault();
                 void handleCreate();
