@@ -109,15 +109,6 @@ export default function Step4DacTa({
 
   return (
     <div className="w-full min-w-0 space-y-5">
-      <section className="relative overflow-hidden rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-100 via-white to-amber-100 p-5 sm:p-7">
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-900">Giai đoạn 1 · Đặc tả yêu cầu</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Đặc tả chức năng &amp; phi chức năng</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Sinh đặc tả từ User Story đã xác nhận, rà soát luồng xử lý và yêu cầu chất lượng, sau đó lưu để đồng bộ vào bản nháp SRS ở bước rà soát.</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-800">04</span><span><span className="block text-sm font-semibold text-slate-900">Xây dựng đặc tả</span><span className="block text-xs text-slate-500">Bước 4 / 5</span></span></div>
-        </div>
       </section>
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
       <Card tone="emerald" title="Đặc tả chức năng">
