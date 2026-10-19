@@ -952,6 +952,83 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
         })
 
     return issues
+def _compare_snapshots(baseline_snapshot: dict[str, Any], current_snapshot: dict[str, Any]) -> dict[str, Any]:
+    """So sánh snapshot đã chốt với dữ liệu hiện tại, không sửa lịch sử baseline."""
+    old_entities = baseline_snapshot.get("entities", {})
+    new_entities = current_snapshot.get("entities", {})
+    if not isinstance(old_entities, dict) or not isinstance(new_entities, dict):
+        return {"has_drift": True, "changed_entity_types": [], "changes": [], "invalid_snapshot": True}
+
+    changes = []
+    changed_types = []
+    for entity_type in sorted(set(old_entities) | set(new_entities)):
+        old_rows = old_entities.get(entity_type, [])
+        new_rows = new_entities.get(entity_type, [])
+        if not isinstance(old_rows, list) or not isinstance(new_rows, list):
+            if old_rows != new_rows:
+                changed_types.append(entity_type)
+                changes.append({"entity_type": entity_type, "change_type": "structure_changed"})
+            continue
+
+        def row_key(row: Any, index: int) -> str:
+            if isinstance(row, dict) and row.get("id") is not None:
+                return str(row["id"])
+            return f"index:{index}"
+
+        old_by_id = {row_key(row, index): row for index, row in enumerate(old_rows)}
+        new_by_id = {row_key(row, index): row for index, row in enumerate(new_rows)}
+        added = sorted(set(new_by_id) - set(old_by_id))
+        removed = sorted(set(old_by_id) - set(new_by_id))
+        updated = sorted(key for key in set(old_by_id) & set(new_by_id) if old_by_id[key] != new_by_id[key])
+        if added or removed or updated:
+            changed_types.append(entity_type)
+            changes.append({
+                "entity_type": entity_type,
+                "added_ids": added,
+                "removed_ids": removed,
+                "updated_ids": updated,
+            })
+    return {
+        "has_drift": bool(changes),
+        "changed_entity_types": changed_types,
+        "changes": changes,
+        "invalid_snapshot": False,
+    }
+
+
+@router.get("/{project_id}/baselines/{baseline_id}/drift")
+def get_baseline_drift(
+    project_id: int,
+    baseline_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Báo cáo dữ liệu đã đổi kể từ baseline; không sửa hoặc xóa baseline cũ."""
+    _owned_project(project_id, db, current_user)
+    baseline = (
+        db.query(ProjectBaseline)
+        .filter(ProjectBaseline.id == baseline_id, ProjectBaseline.project_id == project_id)
+        .first()
+    )
+    if baseline is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy baseline.")
+    if (
+        not isinstance(baseline.snapshot, dict)
+        or baseline.snapshot.get("project_id") != project_id
+        or not isinstance(baseline.snapshot.get("entities"), dict)
+    ):
+        raise HTTPException(status_code=409, detail="Snapshot baseline không hợp lệ hoặc không thuộc project này.")
+
+    comparison = _compare_snapshots(baseline.snapshot, _project_snapshot(db, project_id))
+    return {
+        "baseline_id": baseline.id,
+        "baseline_version": baseline.version,
+        "baseline_status": baseline.status,
+        "review_required": comparison["has_drift"],
+        **comparison,
+    }
+
+
 @router.post("/{project_id}/baselines/{baseline_id}/approve")
 def approve_baseline(
     project_id: int,
