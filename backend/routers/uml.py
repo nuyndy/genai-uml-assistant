@@ -76,7 +76,10 @@ def _require_approved_specifications(db: Session, project_id: int) -> None:
             SpecificationApproval,
             SpecificationApproval.specification_id == Specification.id,
         )
-        .filter(RawRequirement.project_id == project_id)
+        .filter(
+            (RawRequirement.project_id == project_id)
+            | (Specification.project_id == project_id)
+        )
         .all()
     )
     if not rows:
@@ -594,15 +597,16 @@ def check_uml_consistency(
         }
 
         def normalize_relation(source, target, relation_type):
-            endpoints = sorted([
+            normalized_type = (relation_type or "association").strip().casefold()
+            endpoints = [
                 source.strip().casefold(),
                 target.strip().casefold(),
-            ])
-            return (
-                endpoints[0],
-                endpoints[1],
-                (relation_type or "association").strip().casefold(),
-            )
+            ]
+            # Association là quan hệ không định hướng; các quan hệ còn lại
+            # cần giữ thứ tự để phát hiện đảo chiều kế thừa/phụ thuộc.
+            if normalized_type == "association":
+                endpoints.sort()
+            return (endpoints[0], endpoints[1], normalized_type)
 
         source_relations = {
             normalize_relation(
