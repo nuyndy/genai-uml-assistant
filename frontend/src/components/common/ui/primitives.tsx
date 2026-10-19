@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-emerald-100.
  */
 export const inputClass =
-  "w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100";
+  "w-full min-w-0 rounded-lg border border-sky-200 bg-sky-50/70 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100";
 
 /** Ô nhập 1 dòng: chiều cao cố định để các ô cùng hàng thẳng nhau. */
 export const singleLineClass = `${inputClass} h-10`;
@@ -32,12 +32,12 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-sky-50/80" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/80 via-sky-50 to-violet-100/70" />
       <div
-        className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-55"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(117,185,168,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(166,184,240,0.08) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(85,150,190,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(135,120,210,0.09) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
@@ -73,7 +73,7 @@ export function Card({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.35)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-24px_rgba(10,51,35,0.45)] ${accent}`}
+      className={`relative overflow-hidden rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_30px_-18px_rgba(70,120,160,0.28)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-18px_rgba(70,120,160,0.35)] ${accent}`}
     >
       {(title || actions) && (
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -123,7 +123,7 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-200 px-5 text-sm font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-300 px-5 text-sm font-semibold text-emerald-950 shadow-sm transition hover:bg-emerald-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
