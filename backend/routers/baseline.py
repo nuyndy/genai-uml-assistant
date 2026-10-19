@@ -737,6 +737,66 @@ def _check_actor_glossary_snapshot(snapshot: dict[str, Any]) -> list[dict[str, A
     return issues
 
 
+def _check_use_case_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-006: đối chiếu Actor/Use Case trên sơ đồ với mô hình nghiệp vụ đã lưu."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+    actors = entities.get("actor", [])
+    use_cases = entities.get("use_case", [])
+    diagrams = entities.get("diagram", [])
+    if not all(isinstance(rows, list) for rows in (actors, use_cases, diagrams)):
+        return [{"type": "invalid_snapshot", "message": "Danh sách Actor, Use Case hoặc diagram không hợp lệ."}]
+
+    saved_actors = {
+        str(item.get("name") or "").strip().casefold()
+        for item in actors
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    }
+    saved_use_cases = {
+        str(item.get("name") or "").strip().casefold()
+        for item in use_cases
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    }
+    issues = []
+    for diagram in diagrams:
+        if not isinstance(diagram, dict) or str(diagram.get("type") or "").casefold() != "use_case":
+            continue
+        source = diagram.get("source_code")
+        if not isinstance(source, str) or not source.strip():
+            issues.append({"type": "empty_use_case_diagram", "diagram_id": diagram.get("id")})
+            continue
+        try:
+            parsed = parse_plantuml(source)
+        except Exception as exc:
+            issues.append({
+                "type": "unparseable_use_case_diagram",
+                "diagram_id": diagram.get("id"),
+                "message": str(exc),
+            })
+            continue
+        diagram_actors = {
+            str(item.get("name") or "").strip().casefold()
+            for item in parsed.get("actors", [])
+            if str(item.get("name") or "").strip()
+        }
+        diagram_use_cases = {
+            str(item.get("name") or "").strip().casefold()
+            for item in parsed.get("use_cases", [])
+            if str(item.get("name") or "").strip()
+        }
+        if diagram_actors != saved_actors or diagram_use_cases != saved_use_cases:
+            issues.append({
+                "type": "use_case_diagram_mismatch",
+                "diagram_id": diagram.get("id"),
+                "missing_in_snapshot_actors": sorted(diagram_actors - saved_actors),
+                "missing_in_diagram_actors": sorted(saved_actors - diagram_actors),
+                "missing_in_snapshot_use_cases": sorted(diagram_use_cases - saved_use_cases),
+                "missing_in_diagram_use_cases": sorted(saved_use_cases - diagram_use_cases),
+            })
+    return issues
+
+
 def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """Kiểm tra class diagram trong snapshot so với class và relation đã lưu."""
     entities = snapshot.get("entities", {})
@@ -1128,6 +1188,16 @@ def approve_baseline(
                 ),
                 "open_issues": unresolved_issues,
                 "accepted_issues": accepted_issues,
+            },
+        )
+
+    use_case_diagram_issues = _check_use_case_diagram_snapshot(snapshot)
+    if use_case_diagram_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline vì sơ đồ Use Case chưa đồng bộ với mô hình đã lưu.",
+                "use_case_diagram_issues": use_case_diagram_issues,
             },
         )
 
