@@ -180,22 +180,40 @@ def _normalize_keys(value: object) -> object:
     return normalized
 
 
-def _repair_payload(payload: object) -> object:
-    """Sửa những lệch cấu trúc phổ biến của model trước khi validate.
-
-    Ví dụ thực tế: model trả
-        {"suggested_actors": {"items": [{"title": "Sinh viên"}]}}
-    thay vì
-        {"suggested_actors": [{"name": "Sinh viên"}]}.
-    """
+def _repair_payload(payload: object, model: type | None = None) -> object:
+    """Sửa các sai lệch cấu trúc phổ biến mà không làm mất ý nghĩa dữ liệu."""
     if not isinstance(payload, dict):
         return payload
+
     repaired: dict[str, object] = {}
+    is_user_story = model is not None and model.__name__ == "UserStoryDraftContent"
     for key, value in payload.items():
-        target_key = _KEY_ALIASES.get(key, key)
-        if target_key in _LIST_KEYS:
-            value = _unwrap_list(value)
-        repaired[target_key] = _normalize_keys(value)
+        target_key = key
+        if is_user_story:
+            # Model nhỏ đôi khi gọi feature là name/title/description.
+            aliases = {
+                "name": "feature",
+                "title": "feature",
+                "description": "feature",
+                "acceptanceCriteria": "acceptance_criteria",
+                "acceptance criteria": "acceptance_criteria",
+            }
+            target_key = aliases.get(key, key)
+            # Tiêu chí chấp nhận phải là chuỗi; nếu AI trả danh sách, giữ từng
+            # tiêu chí trên một dòng thay vì làm mất nội dung.
+            if target_key == "acceptance_criteria" and isinstance(value, list):
+                value = "\\n".join(
+                    str(item).strip() for item in value if item is not None and str(item).strip()
+                )
+        else:
+            target_key = _KEY_ALIASES.get(key, key)
+            if target_key in _LIST_KEYS:
+                value = _unwrap_list(value)
+            value = _normalize_keys(value)
+
+        # Không ghi đè trường đúng đã có bằng một alias xuất hiện sau đó.
+        if target_key not in repaired or key == target_key:
+            repaired[target_key] = value
     return repaired
 
 
@@ -216,7 +234,7 @@ def _validate_json(value: object, model: type) -> object:
     except ValidationError:
         # Thử lại sau khi sửa các lệch cấu trúc phổ biến; nếu vẫn sai thì để
         # lỗi gốc nổi lên và tầng retry phía trên xử lý.
-        return model.model_validate(_repair_payload(payload))
+        return model.model_validate(_repair_payload(payload, model))
 
 
 def json_contract(model: type) -> str:
