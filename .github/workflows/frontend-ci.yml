@@ -3,8 +3,14 @@ name: Frontend CI
 on:
   push:
     branches: [luong_moi, fix/luong-moi-build-cleanup]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
   pull_request:
     branches: [luong_moi]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
 
 jobs:
   frontend:
