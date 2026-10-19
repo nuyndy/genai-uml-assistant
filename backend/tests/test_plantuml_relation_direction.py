@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot
 from services.plantuml_parser import parse_plantuml
 
 
@@ -214,3 +214,47 @@ def test_baseline_consistency_accepts_documented_requirement_exception():
     }
 
     assert _check_requirement_coverage_snapshot(snapshot) == []
+
+
+
+def test_baseline_consistency_detects_use_case_without_scenario_or_srs_section():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "use_case": [{
+                "id": 4,
+                "specification_id": 30,
+                "main_flow": "",
+            }],
+            "specification": [{
+                "id": 30,
+                "type": "non_functional",
+            }],
+        },
+    }
+
+    issues = _check_use_case_scenarios_snapshot(snapshot)
+
+    assert {issue["type"] for issue in issues} == {
+        "missing_use_case_scenario",
+        "missing_srs_section",
+    }
+
+
+def test_baseline_consistency_accepts_use_case_with_scenario_and_functional_spec():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "use_case": [{
+                "id": 4,
+                "specification_id": 30,
+                "main_flow": "1. Người dùng gửi yêu cầu. 2. Hệ thống xác nhận.",
+            }],
+            "specification": [{
+                "id": 30,
+                "type": "functional",
+            }],
+        },
+    }
+
+    assert _check_use_case_scenarios_snapshot(snapshot) == []
