@@ -235,6 +235,10 @@ export function updateUserStory(
   });
 }
 
+export function improveUserStory(id: number): Promise<UserStory> {
+  return apiFetch(`/api/user-stories/${id}/improve`, { method: "POST" });
+}
+
 export function deleteUserStory(id: number): Promise<void> {
   return apiFetch(`/api/user-stories/${id}`, { method: "DELETE" });
 }
