@@ -15,7 +15,6 @@ import {
   checkProjectUmlConsistency,
 } from "../../../services/umlService";
 import {
-  StepHeading,
   singleLineClass,
   wrapClass,
 } from "../../common/ui/primitives";
@@ -53,7 +52,6 @@ export default function GiaiDoan3({
   const [selectedBaselineId, setSelectedBaselineId] = useState<number | null>(null);
   const [stage3Message, setStage3Message] = useState("");
 
-  const def = STAGES[3].steps[step - 1];
 
   const loadBaselines = async () => {
     const items = await listProjectBaselines(projectId);
@@ -269,12 +267,6 @@ export default function GiaiDoan3({
     <div className="relative">
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <StepHeading
-          step={`Bước ${step} / 4`}
-          title={def.label}
-          icon={def.icon}
-        />
-
         {step === 1 && (
           <Step1DongBoSRS
             srsLoaded={srsLoaded}
