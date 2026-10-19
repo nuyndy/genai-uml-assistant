@@ -548,10 +548,7 @@ export function Notice({
 
 /** Tiêu đề bước. Chữ tự xuống dòng, không tràn khung ở màn hình hẹp. */
 export function StepHeading({
-  step,
   title,
-  description,
-  icon,
 }: {
   step: string;
   title: string;
