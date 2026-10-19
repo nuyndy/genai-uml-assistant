@@ -16,7 +16,7 @@ export default function GiaiDoanStepper({
 }: GiaiDoanStepperProps) {
   return (
     <nav aria-label="Các giai đoạn của quy trình" className="w-full min-w-0">
-      <ol className="mx-auto flex w-full max-w-3xl items-center gap-1 rounded-full bg-[#DCEFFF] p-1 sm:gap-1.5">
+      <ol className="mx-auto flex w-full max-w-3xl items-center gap-1 rounded-full bg-[#EAF3EF] p-1 sm:gap-1.5">
         {STAGE_ORDER.map((id) => {
           const def = STAGES[id];
           const active = id === stage;
@@ -35,9 +35,9 @@ export default function GiaiDoanStepper({
                 onClick={() => clickable && onStageChange?.(id)}
                 className={`flex min-h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-full px-1.5 py-2 text-center text-xs font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${
                   active
-                    ? "bg-[#1D2E7A] text-white shadow-sm"
+                    ? "bg-[#184F47] text-[#F5FAF7] shadow-sm"
                     : done
-                      ? "text-[#294BB6] hover:bg-white"
+                      ? "text-[#236554] hover:bg-white"
                       : unlocked
                         ? "text-slate-600 hover:bg-white"
                         : "cursor-not-allowed text-slate-400"
@@ -45,9 +45,9 @@ export default function GiaiDoanStepper({
               >
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
                   active
-                    ? "bg-[#A8D4FD] text-[#1D2E7A]"
+                    ? "bg-[#B6CF66] text-[#123F3A]"
                     : done
-                      ? "bg-[#DCEFFF] text-[#294BB6]"
+                      ? "bg-[#C8DDD7] text-[#184F47]"
                       : unlocked
                         ? "bg-white text-slate-600"
                         : "bg-slate-200 text-slate-400"
