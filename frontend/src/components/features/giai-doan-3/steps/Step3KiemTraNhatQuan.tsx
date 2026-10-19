@@ -1,4 +1,4 @@
-import { Card, SoftButton, GhostButton, PrimaryButton, Notice } from "../../../common/ui/primitives";
+import { Card, SoftButton, PrimaryButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -20,7 +20,6 @@ export default function Step3KiemTraNhatQuan({
   onRenderAndSave,
   onConsistencyCheck,
   stage3Message,
-  onStepChange,
 }: Props) {
   return (
     <div className="space-y-6">
