@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState } from "react";
 import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
+import Stepper from "../common/Stepper";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import type { SpecificationRecord, UserStory } from "../../services/requirementService";
 
@@ -132,13 +133,16 @@ function Harness() {
   const [step, setStep] = useState(4);
   const [state, setState] = useState<WorkflowState>(emptyWorkflow);
   return (
-    <GiaiDoan1
+    <>
+      <Stepper stage={1} step={step} maxUnlockedStep={5} onStepChange={setStep} />
+      <GiaiDoan1
       projectId={55}
       state={state}
       setState={setState}
       step={step}
       onStepChange={setStep}
-    />
+      />
+    </>
   );
 }
 
@@ -187,7 +191,7 @@ describe("one-time specification generation and manual editing", () => {
       expect(mocked.state.records.some((record) => record.type === "non_functional")).toBe(true);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" }));
+    fireEvent.click(screen.getByRole("button", { name: /Rà soát và đồng bộ SRS/ }));
     expect((await screen.findAllByText(/tài liệu SRS/i)).length).toBeGreaterThan(0);
     // Tên chức năng đã sửa ở Bước 4 được phản ánh trên tiêu đề đặc tả trong trang Word.
     await waitFor(() => {
