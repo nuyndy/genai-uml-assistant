@@ -10,7 +10,7 @@ import {
   listProjects,
   type Project,
 } from "./components/home/projectStore";
-import { type StageId } from "./stages";
+import { STAGES, type StageId } from "./stages";
 import { StageBackdrop } from "./components/common/ui/primitives";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { emptyWorkflow, type WorkflowState } from "./types/workflow";
@@ -328,6 +328,49 @@ function App() {
         )}
       </main>
       </ErrorBoundary>
+
+      <footer className="sticky bottom-0 z-30 border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center gap-3 px-3 py-2 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            disabled={step <= 1}
+            onClick={() => setStep((current) => Math.max(1, current - 1))}
+            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
+          >
+            ← <span className="hidden sm:inline">Bước trước</span>
+          </button>
+          <nav aria-label="Điều hướng bước" className="min-w-0 flex-1">
+            <ol className="flex items-center justify-center gap-1 overflow-x-auto py-0.5 sm:gap-2">
+              {STAGES[stage].steps.map((item) => (
+                <li key={item.id} className="shrink-0">
+                  <button
+                    type="button"
+                    aria-current={step === item.id ? "step" : undefined}
+                    title={item.label}
+                    onClick={() => setStep(item.id)}
+                    className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition sm:px-4 sm:text-sm ${
+                      step === item.id
+                        ? "bg-emerald-800 text-white shadow-sm"
+                        : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800"
+                    }`}
+                  >
+                    <span className="tabular-nums">{item.id}</span>
+                    <span className="hidden md:inline">{item.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </nav>
+          <button
+            type="button"
+            disabled={step >= STAGES[stage].steps.length}
+            onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))}
+            className="shrink-0 rounded-xl bg-emerald-800 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
+          >
+            <span className="hidden sm:inline">Bước tiếp</span> →
+          </button>
+        </div>
+      </footer>
       </div>
     </div>
   );
