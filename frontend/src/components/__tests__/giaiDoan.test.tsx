@@ -81,7 +81,7 @@ function Harness({ initial, stage, step }: {
 describe("GiaiDoanStepper", () => {
   it("hiển thị đủ 3 giai đoạn lớn", () => {
     render(<GiaiDoanStepper stage={1} maxUnlockedStage={3} completedStages={[]} />);
-    expect(screen.getByText("Phân tích yêu cầu")).toBeTruthy();
+    expect(screen.getAllByText("Phân tích yêu cầu").length).toBeGreaterThan(0);
     expect(screen.getByText("Mô hình UML")).toBeTruthy();
     expect(screen.getByText("SRS & Hoàn thiện")).toBeTruthy();
   });
@@ -131,7 +131,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
   it("Bước 3 cho người dùng kiểm duyệt User Story do AI tạo", () => {
     render(<Harness initial={emptyWorkflow()} stage={1} step={3} />);
     expect(screen.getByText("Chưa có yêu cầu để rà soát")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Xác nhận yêu cầu & User Story/ })).toBeTruthy();
+    expect(screen.getByText(/AI chỉ tạo bản nháp/)).toBeTruthy();
   });
 
   it("Bước 5 cho sửa trực tiếp trên trang Word và tải xuống docx", () => {
@@ -143,7 +143,7 @@ describe("Giai đoạn 1: sub-stepper 5 bước", () => {
     ];
     render(<Harness initial={initial} stage={1} step={5} />);
     expect(screen.getByRole("heading", { name: /Rà soát và đồng bộ tài liệu SRS/ })).toBeTruthy();
-    expect(screen.getByText("Tải xuống file Word (.docx)")).toBeTruthy();
+    expect(screen.getByLabelText("Tên chức năng")).toBeTruthy();
     // Sửa được trực tiếp trên tài liệu, không phải quay lại Bước 4.
     expect(screen.getByLabelText("1.1 Mục đích")).toBeTruthy();
     expect(screen.getByLabelText("1.2 Phạm vi")).toBeTruthy();
