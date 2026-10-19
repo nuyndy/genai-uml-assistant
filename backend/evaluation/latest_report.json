@@ -1,0 +1,193 @@
+{
+  "created_at_utc": "2026-10-19T09:51:39.859031+00:00",
+  "model": "qwen2.5:3b",
+  "dataset": "ai_quality_cases.json",
+  "summary": {
+    "total_cases": 8,
+    "evaluated_cases": 8,
+    "skipped_cases": 0,
+    "passed_cases": 3,
+    "pass_rate": 0.375,
+    "by_phase": {
+      "1": {
+        "evaluated_cases": 4,
+        "passed_cases": 1,
+        "pass_rate": 0.25
+      },
+      "2": {
+        "evaluated_cases": 2,
+        "passed_cases": 0,
+        "pass_rate": 0.0
+      },
+      "3": {
+        "evaluated_cases": 2,
+        "passed_cases": 2,
+        "pass_rate": 1.0
+      }
+    }
+  },
+  "limitations": [
+    "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
+    "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
+    "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge."
+  ],
+  "results": [
+    {
+      "id": "REQ-001",
+      "phase": 1,
+      "task": "requirement_analysis",
+      "json_valid": true,
+      "required_fields_present": false,
+      "task_checks_passed": false,
+      "passed": false,
+      "errors": [
+        "Thiếu trường bắt buộc: actor, action, target_object, purpose",
+        "actor/action/target_object/purpose phải là chuỗi không rỗng."
+      ],
+      "missing_fields": [
+        "actor",
+        "action",
+        "target_object",
+        "purpose"
+      ],
+      "task_checks": [
+        {
+          "name": "actor_action_specific",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "phase": 1,
+      "task": "requirement_analysis",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": true,
+      "passed": true,
+      "errors": [],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "actor_action_specific",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "US-001",
+      "phase": 1,
+      "task": "user_story",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": false,
+      "passed": false,
+      "errors": [
+        "acceptance_criteria phải là danh sách có ít nhất 1 phần tử."
+      ],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "acceptance_criteria_nonempty",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "UC-001",
+      "phase": 1,
+      "task": "use_case_scenario",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": false,
+      "passed": false,
+      "errors": [
+        "main_flow phải là danh sách có ít nhất 1 bước."
+      ],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "main_flow_nonempty",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "UML-001",
+      "phase": 2,
+      "task": "uml_class_model",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": false,
+      "passed": false,
+      "errors": [
+        "classes phải có ít nhất 2 phần tử.",
+        "Thiếu lớp UML bắt buộc: SinhVien, LichHoc"
+      ],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "minimum_classes",
+          "passed": false
+        },
+        {
+          "name": "required_class_names",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "UML-002",
+      "phase": 2,
+      "task": "uml_sequence_model",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": false,
+      "passed": false,
+      "errors": [
+        "messages phải có ít nhất 3 phần tử."
+      ],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "minimum_messages",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "SRS-001",
+      "phase": 3,
+      "task": "srs_traceability",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": true,
+      "passed": true,
+      "errors": [],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "traceability_ids_present",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "SRS-002",
+      "phase": 3,
+      "task": "srs_consistency_review",
+      "json_valid": true,
+      "required_fields_present": true,
+      "task_checks_passed": true,
+      "passed": true,
+      "errors": [],
+      "missing_fields": [],
+      "task_checks": [
+        {
+          "name": "consistency_issue_detected",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}
