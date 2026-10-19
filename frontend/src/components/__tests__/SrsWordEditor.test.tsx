@@ -36,6 +36,7 @@ const nonFunctionalRecord: SpecificationRecord = {
   type: "non_functional",
   content: "{}",
   version: 1,
+  approval_status: "draft",
 };
 
 const functionalValue: FunctionalSpecification = {
