@@ -1029,6 +1029,61 @@ def get_baseline_drift(
     }
 
 
+@router.get("/{project_id}/baselines/{baseline_id}/review-status")
+def get_baseline_review_status(
+    project_id: int,
+    baseline_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Tổng hợp độ lệch dữ liệu và sai lệch chưa xử lý để giao diện quyết định có cần duyệt lại."""
+    _owned_project(project_id, db, current_user)
+    baseline = (
+        db.query(ProjectBaseline)
+        .filter(
+            ProjectBaseline.id == baseline_id,
+            ProjectBaseline.project_id == project_id,
+        )
+        .first()
+    )
+    if baseline is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy baseline.")
+    if (
+        not isinstance(baseline.snapshot, dict)
+        or baseline.snapshot.get("project_id") != project_id
+        or not isinstance(baseline.snapshot.get("entities"), dict)
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Snapshot baseline không hợp lệ hoặc không thuộc project này.",
+        )
+
+    comparison = _compare_snapshots(
+        baseline.snapshot,
+        _project_snapshot(db, project_id),
+    )
+    issues = baseline.open_issues if isinstance(baseline.open_issues, list) else []
+    unresolved, accepted = _partition_baseline_issues(issues)
+    review_required = (
+        comparison["has_drift"]
+        or bool(unresolved)
+        or baseline.status != "approved"
+    )
+    return {
+        "baseline_id": baseline.id,
+        "baseline_version": baseline.version,
+        "baseline_status": baseline.status,
+        "review_required": review_required,
+        "data_drift": comparison["has_drift"],
+        "changed_entity_types": comparison["changed_entity_types"],
+        "changes": comparison["changes"],
+        "unresolved_issue_count": len(unresolved),
+        "accepted_issue_count": len(accepted),
+        "unresolved_issues": unresolved,
+        "accepted_issues": accepted,
+    }
+
+
 @router.post("/{project_id}/baselines/{baseline_id}/approve")
 def approve_baseline(
     project_id: int,
