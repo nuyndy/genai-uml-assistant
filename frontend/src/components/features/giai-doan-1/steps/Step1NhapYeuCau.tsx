@@ -39,6 +39,7 @@ export default function Step1NhapYeuCau({
 
   return (
     <div className="space-y-6">
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
         <Card tone="emerald" title="Tạo yêu cầu mới" subtitle="Các trường có dấu * là bắt buộc. Mỗi yêu cầu nên mô tả một mục tiêu nghiệp vụ cụ thể.">
           <RequirementFormFields value={newRequirement} onChange={onChangeNewField} preConditions={newRequirement.preConditions} businessRules={newRequirement.businessRules} onChangeList={onChangeNewList} error={error} checkLabel={busy ? "Đang lưu yêu cầu..." : "Thêm yêu cầu"} disabled={busy || !loaded} onCheck={onAddRequirement} />
@@ -65,7 +66,7 @@ export default function Step1NhapYeuCau({
       </div>
 
       {requirements.length > 0 && <Card tone="amber" title="Kiểm tra độ bao phủ chức năng" subtitle="AI rà soát danh sách hiện tại và đề xuất chức năng thiết yếu có thể còn thiếu. Gợi ý không được lưu cho đến khi bạn chọn thêm." actions={<SoftButton disabled={busy || loadingCoverage || !loaded} onClick={onCheckCoverage}>{loadingCoverage ? "Đang kiểm tra..." : "Kiểm tra bằng AI"}</SoftButton>}>
-        {!coverageAnalysis ? <div className="flex flex-col gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/60 p-4 sm:flex-row sm:items-center sm:justify-between"><p className={`text-sm text-slate-700 ${wrapClass}`}>Chạy kiểm tra để xem các chức năng nào có thể đang thiếu trước khi chuyển sang Bước 2.</p><span className="shrink-0 text-xs font-medium text-amber-800">Chưa kiểm tra</span></div> : (
+        {!coverageAnalysis ? <div className="flex flex-col gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/60 p-4 sm:flex-row sm:items-center sm:justify-between"><p className={`text-sm text-slate-700 ${wrapClass}`}>Chạy kiểm tra để xem các chức năng nào có thể đang thiếu trước khi tiếp tục quy trình.</p><span className="shrink-0 text-xs font-medium text-amber-800">Chưa kiểm tra</span></div> : (
           <div className="space-y-4">
             <div className={`rounded-xl border p-4 text-sm ${coverageAnalysis.is_sufficient ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"} ${wrapClass}`}><p className="font-semibold">{coverageAnalysis.is_sufficient ? "Độ bao phủ có vẻ đầy đủ" : "Có thể còn thiếu chức năng"}</p><p className="mt-1">{coverageAnalysis.summary}</p></div>
             {addedCoverageSuggestions.length > 0 && <p className="text-xs text-emerald-700">Đã thêm {addedCoverageSuggestions.length} chức năng được chọn. Kết quả kiểm tra đang hiển thị vẫn phản ánh danh sách trước khi bổ sung; hãy chạy kiểm tra lại để cập nhật.</p>}
@@ -78,7 +79,11 @@ export default function Step1NhapYeuCau({
                   <span className={`min-w-0 flex-1 text-sm text-slate-700 ${wrapClass}`}><span className="block font-medium text-slate-900">{suggestion.actor}: {suggestion.action} {suggestion.target_object}</span><span className="mt-1 block text-slate-600">Mục đích: {suggestion.purpose}</span><span className="mt-2 block text-xs text-slate-500">Lý do đề xuất: {suggestion.reason}</span>{alreadyAdded && <span className="mt-2 block text-xs font-medium text-emerald-700">Đã thêm vào danh sách yêu cầu.</span>}</span>
                 </label>;
               })}
-              {selectedCoverageIndexes.length > 0 && <div className="flex justify-end"></div>
+              {selectedCoverageIndexes.length > 0 && <div className="flex justify-end"><PrimaryButton disabled={busy} onClick={onAddSelectedCoverage}>Thêm {selectedCoverageIndexes.length} chức năng đã chọn</PrimaryButton></div>}
+            </div> : <EmptyState title="Không có gợi ý bổ sung" hint="AI chưa phát hiện chức năng thiết yếu nào khác trong lần kiểm tra này." />}
+          </div>
+        )}
+        <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-slate-500">Bạn vẫn có thể quay lại chỉnh sửa danh sách ở bất kỳ lúc nào.</p><PrimaryButton disabled={busy || !loaded || !coverageAnalysis || selectedCoverageIndexes.length > 0} onClick={() => onStepChange(2)}>Tiếp tục sang Bước 2</PrimaryButton></div>
       </Card>}
     </div>
   );
