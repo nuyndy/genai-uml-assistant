@@ -26,15 +26,6 @@ export default function RequirementFormFields({
 }: Props) {
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <p className="text-sm font-medium text-slate-900">Cấu trúc một yêu cầu tốt</p>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          <span className="font-medium text-emerald-700">Vai trò</span> thực hiện{" "}
-          <span className="font-medium text-emerald-700">hành động</span> trên{" "}
-          <span className="font-medium text-emerald-700">đối tượng</span> để đạt{" "}
-          <span className="font-medium text-emerald-700">mục đích</span>.
-        </p>
-      </div>
 
       <div>
         <label htmlFor="requirement-actor" className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -101,7 +92,6 @@ export default function RequirementFormFields({
         <div className="space-y-4 border-t border-slate-200 pt-4">
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Thông tin bổ sung (không bắt buộc)</h3>
-            <p className="mt-1 text-xs text-slate-500">Mỗi điều kiện hoặc quy tắc nhập trên một dòng.</p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
