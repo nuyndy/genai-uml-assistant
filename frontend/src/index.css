@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
-/* Fresh pastel design system: white canvas, mint primary, airy blue and lavender accents. */
+/* Ultra-light pastel system: bright white canvas, airy mint, sky and lavender; dark colors are reserved for readable text. */
 :root {
   --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --surface-alt: #F3F8FC;
-  --border: #DCE8F1;
+  --surface-alt: #F8FBFF;
+  --border: #E5EDF5;
 
   --text: #243746;
   --text-muted: #64798A;
-  --heading: #245C55;
+  --heading: #365F78;
 
-  --primary: #397F70;
-  --primary-hover: #2E6D60;
-  --secondary: #75B9A8;
+  --primary: #65BDA7;
+  --primary-hover: #4BA88F;
+  --secondary: #A5E0D1;
 
-  --accent: #A6B8F0;
-  --accent-text: #536DB7;
+  --accent: #C9D4FF;
+  --accent-text: #596DAA;
 
-  --success: #4D9B83;
+  --success: #6CC6A7;
   --warning: #B77936;
   --danger: #C35E78;
 
@@ -35,10 +35,10 @@
 }
 
 @theme {
-  --color-slate-50: #F7FAFD;
-  --color-slate-100: #EEF4F8;
-  --color-slate-200: #DCE8F1;
-  --color-slate-300: #C5D6E3;
+  --color-slate-50: #FBFDFF;
+  --color-slate-100: #F4F8FC;
+  --color-slate-200: #E5EDF5;
+  --color-slate-300: #D4E1EC;
   --color-slate-400: #8CA1B1;
   --color-slate-500: #64798A;
   --color-slate-600: #4B6273;
@@ -47,28 +47,28 @@
   --color-slate-900: #1B303E;
   --color-slate-950: #122530;
 
-  --color-violet-50: #F5F5FF;
-  --color-violet-100: #E9EBFF;
-  --color-violet-200: #D7DCFF;
-  --color-violet-300: #BEC8FA;
-  --color-violet-400: #A6B8F0;
-  --color-violet-500: #879CE0;
-  --color-violet-600: #6C83CC;
+  --color-violet-50: #FAFAFF;
+  --color-violet-100: #F0F2FF;
+  --color-violet-200: #E2E7FF;
+  --color-violet-300: #D0D9FF;
+  --color-violet-400: #BAC8FF;
+  --color-violet-500: #9CAFEF;
+  --color-violet-600: #7D94DA;
   --color-violet-700: #536DB7;
   --color-violet-800: #405A9F;
   --color-violet-900: #344B86;
   --color-violet-950: #293B6B;
 
-  --color-emerald-50: #F0FAF7;
-  --color-emerald-100: #DDF3EC;
-  --color-emerald-200: #BFE6D9;
-  --color-emerald-300: #97D2BF;
-  --color-emerald-400: #75B9A8;
-  --color-emerald-500: #5AA590;
-  --color-emerald-600: #478F7C;
-  --color-emerald-700: #397F70;
-  --color-emerald-800: #316F63;
-  --color-emerald-900: #285C53;
+  --color-emerald-50: #F4FFFB;
+  --color-emerald-100: #E5FBF4;
+  --color-emerald-200: #CFF3E7;
+  --color-emerald-300: #B0E9D7;
+  --color-emerald-400: #8ED8C1;
+  --color-emerald-500: #67C6A8;
+  --color-emerald-600: #49AD8D;
+  --color-emerald-700: #368F75;
+  --color-emerald-800: #2F765F;
+  --color-emerald-900: #285D4D
 
   /* Replace old amber/cream utilities with a clean pastel sky-blue scale. */
   --color-amber-50: #F2F8FF;
@@ -153,9 +153,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .uml-code-panel {
-  color: #D5E8E3;
-  background: #203D3A;
-  border-color: rgb(255 255 255 / 10%);
+  color: #35576B;
+  background: #F7FBFF;
+  border: 1px solid #DCEAF5;
   border-radius: 0 0 1rem 1rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;
@@ -163,7 +163,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   tab-size: 2;
 }
 
-.uml-code-panel::selection { color: #FFFFFF; background: #397F70; }
+.uml-code-panel::selection { color: #244052; background: #CFF3E7; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
