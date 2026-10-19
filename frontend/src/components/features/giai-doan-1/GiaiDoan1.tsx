@@ -29,7 +29,6 @@ import {
   type UserStoryDraft,
 } from "../../../services/requirementService";
 import type { RawRequirement, SpecDoc, WorkflowState } from "../../../types/workflow";
-import { STAGES } from "../../../stages";
 import Step1NhapYeuCau from "./steps/Step1NhapYeuCau";
 import Step2PhanTichYeuCau from "./steps/Step2PhanTichYeuCau";
 import Step3UserStory from "./steps/Step3UserStory";
@@ -836,7 +835,6 @@ export default function GiaiDoan1({
         setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: selected }))
       }
       onAddSelectedCoverage={addSelectedCoverageSuggestions}
-      onStepChange={onStepChange}
       requirementTitle={requirementTitle}
     />
   );
