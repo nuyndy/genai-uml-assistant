@@ -206,7 +206,7 @@ export default function Step4InteractionDiagram({
         )}
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-5 py-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.4)] sm:px-6">
+      <div className="workflow-action-bar sticky bottom-0 z-30 flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl sm:px-5">
         <p className="text-sm text-slate-700">
           {allDiagramsReady
             ? confirmed
