@@ -6,6 +6,11 @@ import type {
   UmlClass,
   WorkflowState,
 } from "../../../types/workflow";
+import {
+  readUmlConfirmations,
+  writeUmlConfirmations,
+  type UmlConfirmationState,
+} from "./umlConfirmationStorage";
 import { STAGES } from "../../../stages";
 import {
   deleteClass,
@@ -78,37 +83,6 @@ interface ClassDraft {
 }
 
 const UML_LOAD_TIMEOUT_MS = 15000;
-
-const UML_CONFIRMATION_FLAGS = [
-  "actorsUseCasesConfirmed",
-  "useCaseDiagramConfirmed",
-  "scenariosConfirmed",
-  "interactionsConfirmed",
-  "classDiagramConfirmed",
-] as const;
-
-type UmlConfirmationState = Pick<WorkflowState, (typeof UML_CONFIRMATION_FLAGS)[number]>;
-
-function confirmationStorageKey(projectId: number): string {
-  return `genai-uml-confirmations:${projectId}`;
-}
-
-function readUmlConfirmations(projectId: number): Partial<UmlConfirmationState> {
-  try {
-    const raw = window.localStorage.getItem(confirmationStorageKey(projectId));
-    if (!raw) return {};
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return {};
-    const result: Partial<UmlConfirmationState> = {};
-    for (const key of UML_CONFIRMATION_FLAGS) {
-      const value = (parsed as Record<string, unknown>)[key];
-      if (typeof value === "boolean") result[key] = value;
-    }
-    return result;
-  } catch {
-    return {};
-  }
-}
 
 function explainError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Đã xảy ra lỗi không xác định.";
@@ -326,10 +300,7 @@ export default function GiaiDoan2({
       classDiagramConfirmed: state.classDiagramConfirmed,
     };
     try {
-      window.localStorage.setItem(
-        confirmationStorageKey(projectId),
-        JSON.stringify(confirmations),
-      );
+      writeUmlConfirmations(projectId, confirmations);
     } catch {
       // Nếu trình duyệt chặn lưu trữ, các xác nhận vẫn hoạt động trong phiên hiện tại.
     }
