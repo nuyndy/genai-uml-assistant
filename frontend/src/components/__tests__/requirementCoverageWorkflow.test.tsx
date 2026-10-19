@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
+import Stepper from "../common/Stepper";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import type {
   RequirementCoverageAnalysis,
@@ -102,13 +103,16 @@ function Harness() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<WorkflowState>(emptyWorkflow);
   return (
-    <GiaiDoan1
+    <>
+      <Stepper stage={1} step={step} maxUnlockedStep={5} onStepChange={setStep} />
+      <GiaiDoan1
       projectId={55}
       state={state}
       setState={setState}
       step={step}
       onStepChange={setStep}
-    />
+      />
+    </>
   );
 }
 
@@ -122,8 +126,8 @@ describe("Step 1 requirement coverage check", () => {
     render(<Harness />);
 
     await screen.findByText("Khách hàng: đặt đơn hàng");
-    const continueButton = screen.getByRole("button", { name: "Tiếp tục sang Bước 2" });
-    expect(continueButton).toHaveProperty("disabled", true);
+    const continueButton = screen.getByRole("button", { name: /Phân tích và làm rõ/ });
+    expect(continueButton).toHaveProperty("disabled", false);
 
     fireEvent.click(screen.getByRole("button", { name: "Kiểm tra bằng AI" }));
     await screen.findByText("Còn thiếu chức năng quản trị tài khoản.");
@@ -153,6 +157,6 @@ describe("Step 1 requirement coverage check", () => {
     expect(continueButton).toHaveProperty("disabled", false);
 
     fireEvent.click(continueButton);
-    await screen.findByRole("heading", { name: "Phân tích yêu cầu" });
+    await screen.findByText("Kết quả phân tích");
   });
 });
