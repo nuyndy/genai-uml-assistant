@@ -1,4 +1,4 @@
-import { Card, SoftButton, PrimaryButton, EmptyState } from "../../../common/ui/primitives";
+import { Card, SoftButton, EmptyState } from "../../../common/ui/primitives";
 
 interface ActorItem {
   id: number;
@@ -55,7 +55,6 @@ export default function Step1ActorUseCase({
   runBatchAnalysis,
   onConfirm,
   confirmed,
-  onStepChange,
   wrapClass,
 }: Props) {
   const hasSuggestions = suggestions.actors.length > 0 || suggestions.useCases.length > 0;
