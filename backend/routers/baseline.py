@@ -296,6 +296,27 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
+def _partition_baseline_issues(issues: list[Any]) -> tuple[list[Any], list[Any]]:
+    """CON-007: chỉ coi sai lệch là đã chấp nhận khi có trạng thái và lý do rõ ràng."""
+    unresolved = []
+    accepted = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            unresolved.append(issue)
+            continue
+        status = str(issue.get("status") or "").strip().lower()
+        reason = str(
+            issue.get("acceptance_reason")
+            or issue.get("reason")
+            or ""
+        ).strip()
+        if status in {"accepted", "waived"} and reason:
+            accepted.append(issue)
+        else:
+            unresolved.append(issue)
+    return unresolved, accepted
+
+
 def _check_use_case_scenarios_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """CON-002: mỗi Use Case cần có luồng kịch bản và đặc tả FR để xuất vào SRS."""
     entities = snapshot.get("entities", {})
@@ -871,15 +892,17 @@ def approve_baseline(
             detail="Danh sách open_issues của baseline không hợp lệ.",
         )
 
-    if open_issues:
+    unresolved_issues, accepted_issues = _partition_baseline_issues(open_issues)
+    if unresolved_issues:
         raise HTTPException(
             status_code=409,
             detail={
                 "message": (
                     "Baseline còn vấn đề chưa xử lý; "
-                    "hãy xử lý hoặc ghi nhận việc chấp nhận sai lệch trước khi duyệt."
+                    "sai lệch được chấp nhận phải có trạng thái accepted/waived và lý do."
                 ),
-                "open_issues": open_issues,
+                "open_issues": unresolved_issues,
+                "accepted_issues": accepted_issues,
             },
         )
 
