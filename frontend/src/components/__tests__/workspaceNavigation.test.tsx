@@ -117,7 +117,7 @@ describe("Chuyển giai đoạn lớn trong workspace", () => {
 
     // Chờ request nạp dữ liệu UML xong rồi mới khẳng định nội dung hiện ra.
     expect(await screen.findByText("Tác nhân và use case")).toBeTruthy();
-    expect(screen.getByText("Tiếp tục sang Bước 2")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ })).toBeTruthy();
   });
 
   it("vẫn hiện Bước 1 khi API nạp dữ liệu thất bại", async () => {
