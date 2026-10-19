@@ -35,7 +35,7 @@ export default function GiaiDoanStepper({
                 onClick={() => clickable && onStageChange?.(id)}
                 className={`flex min-h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-full px-1.5 py-2 text-center text-xs font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${
                   active
-                    ? "bg-emerald-500 text-white shadow-sm"
+                    ? "bg-emerald-200 text-emerald-900 shadow-sm"
                     : done
                       ? "text-emerald-800 hover:bg-white"
                       : unlocked
@@ -45,7 +45,7 @@ export default function GiaiDoanStepper({
               >
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
                   active
-                    ? "bg-white text-emerald-900"
+                    ? "bg-white text-emerald-800"
                     : done
                       ? "bg-emerald-100 text-emerald-800"
                       : unlocked
