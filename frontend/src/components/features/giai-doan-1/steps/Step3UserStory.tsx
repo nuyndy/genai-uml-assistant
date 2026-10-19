@@ -103,9 +103,17 @@ export default function Step3UserStory({
                     <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-start justify-between gap-2"><h3 className={`break-words text-sm font-semibold leading-6 text-slate-900 ${textWrap}`}>{requirementTitle(rawValue)}</h3><StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường bắt buộc" : story ? "Cần hoàn thiện" : "Chưa có bản nháp"}</StatusBadge></div>
-                        <p className={`mt-1 text-sm leading-5 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
-                        <p className="mt-1 text-xs text-slate-500">Mã yêu cầu: REQ-{String(item.id).padStart(3, "0")}</p>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Requirement · REQ-{String(item.id).padStart(3, "0")}</p>
+                          <SoftButton disabled={busy || loadingStoryDrafts} onClick={regenerateStoryDrafts}>✦ Yêu cầu AI hoàn thiện</SoftButton>
+                        </div>
+                        <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>USER STORY · {story?.feature?.trim() || `Bản nháp cho REQ-${String(item.id).padStart(3, "0")}`}</h3>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <StatusBadge tone={story ? "success" : "warn"}>{story ? "AI đã sinh" : "AI chưa sinh"}</StatusBadge>
+                          <StatusBadge tone="warn">Chưa duyệt</StatusBadge>
+                          <StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường" : "Cần hoàn thiện"}</StatusBadge>
+                        </div>
+                        <p className={`mt-2 text-sm leading-5 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {requirementTitle(rawValue)} — {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
                       </div>
                     </div>
                     {!story ? (
