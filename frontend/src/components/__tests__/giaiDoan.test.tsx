@@ -91,8 +91,8 @@ describe("GiaiDoanStepper", () => {
     const { container } = render(
       <GiaiDoanStepper stage={3} maxUnlockedStage={3} completedStages={[1, 2]} />,
     );
-    // Giai đoạn 1 và 2 đã hoàn thành -> huy hiệu hoàn thành màu emerald nhạt.
-    expect(container.querySelectorAll(".bg-emerald-100").length).toBe(2);
+    // Kiểm tra trạng thái ngữ nghĩa thay vì class màu cụ thể của giao diện.
+    expect(container.querySelectorAll('button[aria-label$=", đã hoàn thành"]').length).toBe(2);
   });
 
   it("không tô xanh giai đoạn chưa hoàn thành dù đang đứng ở giai đoạn sau", () => {
