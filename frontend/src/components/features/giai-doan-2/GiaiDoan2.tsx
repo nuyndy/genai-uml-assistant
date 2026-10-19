@@ -559,6 +559,9 @@ export default function GiaiDoan2({
       }))}
       currentDiagramType={diagramType}
       setDiagramType={(nextType) => {
+        // Chọn lại tab đang hoạt động không làm thay đổi mô hình, vì vậy
+        // không được thu hồi xác nhận chỉ vì người dùng bấm lại cùng loại biểu đồ.
+        if (nextType === diagramType) return;
         setDiagramType(nextType);
         setState((previous) => ({
           ...previous,
