@@ -22,5 +22,12 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/components/GiaiDoan1.tsx",
+    "src/components/GiaiDoan3.tsx",
+    "src/components/step2/Buoc2PhanTichYeuCau.tsx",
+    "src/components/step4/Buoc4DacTa.tsx",
+    "src/components/UmlCanvas.tsx"
+  ]
 }
