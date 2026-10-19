@@ -14,6 +14,7 @@ from database.models import (
     RawRequirement,
     Specification,
     SpecificationApproval,
+    TraceLink,
     UseCase,
     User,
     UserStory,
@@ -421,6 +422,13 @@ def delete_specification(
                 status_code=409,
                 detail="Không thể xóa đặc tả đang được tham chiếu bởi use case.",
             )
+        # Xóa trace link trỏ đến đặc tả trước khi xóa bản ghi.
+        db.query(TraceLink).filter(
+            or_(
+                ((TraceLink.source_type == "specification") & (TraceLink.source_id == specification_id)),
+                ((TraceLink.target_type == "specification") & (TraceLink.target_id == specification_id)),
+            )
+        ).delete(synchronize_session=False)
         db.delete(specification)
         db.commit()
     except HTTPException:
