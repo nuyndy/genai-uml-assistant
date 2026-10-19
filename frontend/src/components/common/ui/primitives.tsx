@@ -32,7 +32,7 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-white to-sky-50/60" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-sky-50/80" />
       <div
         className="absolute inset-0 opacity-40"
         style={{
@@ -41,8 +41,8 @@ export function StageBackdrop() {
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-emerald-200/30 blur-3xl" />
-      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-sky-100/40 blur-3xl" />
+      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-emerald-200/45 blur-3xl" />
+      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-violet-100/50 blur-3xl" />
     </div>
   );
 }
@@ -123,7 +123,7 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-500 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-200 px-5 text-sm font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
