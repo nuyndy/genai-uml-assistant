@@ -92,15 +92,15 @@ export default function Step4InteractionDiagram({
         title="Sinh biểu đồ tương tác"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <div className="flex rounded-full bg-slate-100 p-1.5">
               {DIAGRAM_TYPES.map(({ value, label }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setDiagramType(value)}
-                  className={`rounded-lg px-3 py-2 text-xs font-medium ${
+                  className={`rounded-full px-4 py-2.5 text-sm font-semibold transition ${
                     currentDiagramType === value
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-800 text-white shadow-sm"
                       : "text-slate-600 hover:bg-white"
                   }`}
                 >
@@ -129,7 +129,7 @@ export default function Step4InteractionDiagram({
               return (
                 <section
                   key={useCase.id}
-                  className="min-w-0 rounded-xl border border-slate-200 bg-white p-4"
+                  className="min-w-0 rounded-2xl bg-slate-50/70 p-4 sm:p-5"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className={`min-w-0 break-words font-semibold text-slate-900 ${wrapClass}`}>
@@ -160,9 +160,9 @@ export default function Step4InteractionDiagram({
                   />
 
                   {diagram?.sourceCode && diagram.id !== undefined && (
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50">
-                      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                        <span className="text-xs font-semibold text-slate-600">
+                    <div className="mt-5 overflow-hidden rounded-2xl bg-[#102d24]">
+                      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 text-emerald-50">
+                        <span className="text-sm font-semibold text-emerald-100">
                           Mã PlantUML đã lưu
                         </span>
                         {!editing && (
@@ -175,13 +175,13 @@ export default function Step4InteractionDiagram({
                         )}
                       </div>
                       {editing ? (
-                        <div className="space-y-3 border-t border-slate-200 p-4">
+                        <div className="space-y-3 border-t border-white/10 p-4">
                           <textarea
                             value={draft}
                             onChange={(event) => setDraft(event.target.value)}
                             rows={12}
                             spellCheck={false}
-                            className={`${inputClass} min-h-48 resize-y font-mono text-xs leading-6 whitespace-pre`}
+                            className={`${inputClass} min-h-56 resize-y border-white/10 bg-[#0b211a] font-mono text-sm leading-6 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
                           />
                           <div className="flex flex-wrap items-center justify-end gap-3">
                             <GhostButton onClick={() => setEditingUseCaseId(null)}>Đóng</GhostButton>
@@ -194,7 +194,7 @@ export default function Step4InteractionDiagram({
                           </div>
                         </div>
                       ) : (
-                        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-slate-200 p-4 font-mono text-xs text-slate-700 [overflow-wrap:anywhere]">
+                        <pre className="uml-code-panel max-h-[28rem] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-5 [overflow-wrap:anywhere]">
                           {diagram.sourceCode}
                         </pre>
                       )}
@@ -207,7 +207,7 @@ export default function Step4InteractionDiagram({
         )}
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-5 py-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.4)] sm:px-6">
         <p className="text-sm text-slate-700">
           {allDiagramsReady
             ? confirmed
