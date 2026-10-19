@@ -668,8 +668,19 @@ def create_trace_link(
                 detail=f"Loại phần tử chưa được hỗ trợ: {element_type}",
             )
         query = db.query(model).filter(model.id == element_id)
-        if hasattr(model, "project_id"):
-            query = query.filter(model.project_id == project_id)
+        # Một số đặc tả thuộc User Story có project_id = NULL; xác định
+        # phạm vi dự án qua RawRequirement trong trường hợp đó.
+        if model is Specification:
+            query = query.outerjoin(
+                UserStory,
+                Specification.user_story_id == UserStory.id,
+            ).outerjoin(
+                RawRequirement,
+                UserStory.requirement_id == RawRequirement.id,
+            ).filter(
+                (Specification.project_id == project_id)
+                | (RawRequirement.project_id == project_id)
+            )
         elif model is UserStory:
             query = query.join(
                 RawRequirement,
@@ -679,7 +690,18 @@ def create_trace_link(
             query = query.join(
                 Specification,
                 UseCase.specification_id == Specification.id,
-            ).filter(Specification.project_id == project_id)
+            ).outerjoin(
+                UserStory,
+                Specification.user_story_id == UserStory.id,
+            ).outerjoin(
+                RawRequirement,
+                UserStory.requirement_id == RawRequirement.id,
+            ).filter(
+                (Specification.project_id == project_id)
+                | (RawRequirement.project_id == project_id)
+            )
+        elif hasattr(model, "project_id"):
+            query = query.filter(model.project_id == project_id)
         return query.first() is not None
     if not element_exists(source_type, source_id):
         raise HTTPException(
