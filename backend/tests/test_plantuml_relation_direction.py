@@ -1,4 +1,4 @@
-from routers.baseline import _check_class_diagram_snapshot
+from routers.baseline import _check_class_diagram_snapshot, _check_trace_links_snapshot
 from services.plantuml_parser import parse_plantuml
 
 
@@ -69,3 +69,49 @@ def test_baseline_consistency_accepts_matching_inheritance_direction():
     )
 
     assert not any(issue["type"] == "class_relation_mismatch" for issue in issues)
+
+
+
+def test_baseline_consistency_detects_orphan_trace_link():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "raw_requirement": [{"id": 1}],
+            "trace_link": [{
+                "id": 99,
+                "source_type": "requirement",
+                "source_id": 1,
+                "target_type": "use_case",
+                "target_id": 404,
+            }],
+        },
+    }
+
+    issues = _check_trace_links_snapshot(snapshot)
+
+    assert issues == [{
+        "type": "orphan_trace_link",
+        "trace_link_id": 99,
+        "endpoint": "target",
+        "entity_type": "use_case",
+        "entity_id": 404,
+    }]
+
+
+def test_baseline_consistency_accepts_trace_link_type_aliases():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "raw_requirement": [{"id": 1}],
+            "class_entity": [{"id": 2}],
+            "trace_link": [{
+                "id": 3,
+                "source_type": "requirement",
+                "source_id": 1,
+                "target_type": "class",
+                "target_id": 2,
+            }],
+        },
+    }
+
+    assert _check_trace_links_snapshot(snapshot) == []
