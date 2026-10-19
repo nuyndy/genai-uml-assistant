@@ -48,7 +48,12 @@ function maxUnlockedStage2(workflow: WorkflowState): number {
 }
 
 function Harness({ initial }: { initial: WorkflowState }) {
-  const [state, setState] = useState<WorkflowState>(initial);
+  const [state, setState] = useState<WorkflowState>(() => ({
+    ...initial,
+    specs: initial.specs.length > 0
+      ? initial.specs
+      : [{ id: 1, feature: "Đặt hàng", type: "functional", content: "{}", approved: true }],
+  }));
   const [step, setStep] = useState(1);
   return (
     <>
@@ -58,7 +63,7 @@ function Harness({ initial }: { initial: WorkflowState }) {
         maxUnlockedStep={maxUnlockedStage2(state)}
         onStepChange={setStep}
       />
-      <GiaiDoan2 projectId={1} state={state} setState={setState} step={step} onStepChange={setStep} />
+      <GiaiDoan2 projectId={undefined} state={state} setState={setState} step={step} onStepChange={setStep} />
     </>
   );
 }
