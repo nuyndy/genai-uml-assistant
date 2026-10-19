@@ -126,7 +126,7 @@ describe("Chuyển giai đoạn lớn trong workspace", () => {
       new Error("Không kết nối được server"),
     );
     render(<Workspace />);
-    fireEvent.click(screen.getByRole("button", { name: /Mô hình hóa UML/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Mô hình UML/ }));
 
     // Lỗi tải dữ liệu không được làm trắng màn hình.
     expect(await screen.findByText("Trích xuất tác nhân và use case")).toBeTruthy();
