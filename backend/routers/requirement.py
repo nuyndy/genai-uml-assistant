@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from database.db import get_db
-from database.models import Project, RawRequirement, Specification, User, UserStory
+from database.models import Project, RawRequirement, Specification, TraceLink, User, UserStory
 from routers.auth import get_current_user
 from routers.ownership import require_project_owner
 from schemas.requirement import (
@@ -502,6 +502,13 @@ def delete_requirement(
                 status_code=409,
                 detail="Không thể xóa yêu cầu đang được tham chiếu bởi user story.",
             )
+        # Xóa trace link trỏ đến yêu cầu trước khi xóa bản ghi.
+        db.query(TraceLink).filter(
+            or_(
+                ((TraceLink.source_type.in_(("requirement", "raw_requirement"))) & (TraceLink.source_id == requirement_id)),
+                ((TraceLink.target_type.in_(("requirement", "raw_requirement"))) & (TraceLink.target_id == requirement_id)),
+            )
+        ).delete(synchronize_session=False)
         db.delete(requirement)
         db.commit()
     except HTTPException:
@@ -735,6 +742,13 @@ def delete_user_story(
                 status_code=409,
                 detail="Không thể xóa user story đang được tham chiếu bởi đặc tả.",
             )
+        # Xóa trace link trỏ đến User Story để tránh liên kết mồ côi.
+        db.query(TraceLink).filter(
+            or_(
+                ((TraceLink.source_type == "user_story") & (TraceLink.source_id == story_id)),
+                ((TraceLink.target_type == "user_story") & (TraceLink.target_id == story_id)),
+            )
+        ).delete(synchronize_session=False)
         db.delete(story)
         db.commit()
     except HTTPException:
