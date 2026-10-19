@@ -82,6 +82,24 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
         ]
         record("requirement_analysis_types", not invalid,
                "Sai kiểu dữ liệu ở trường phân tích yêu cầu: " + ", ".join(invalid))
+    if case["task"] == "nonfunctional_specification":
+        items = payload.get("items")
+        from services.spec_generator import NONFUNCTIONAL_GROUPS
+        valid_items = isinstance(items, list) and len(items) == len(NONFUNCTIONAL_GROUPS)
+        record("nonfunctional_item_count", valid_items,
+               f"items phải có đúng {len(NONFUNCTIONAL_GROUPS)} nhóm phi chức năng.")
+        if valid_items:
+            groups = [item.get("group") if isinstance(item, dict) else None for item in items]
+            record("nonfunctional_fixed_groups", tuple(groups) == NONFUNCTIONAL_GROUPS,
+                   "Các nhóm phi chức năng phải đúng tên và thứ tự đã quy định.")
+            fields_valid = all(
+                isinstance(item, dict)
+                and isinstance(item.get("criteria"), str) and bool(item["criteria"].strip())
+                and isinstance(item.get("requirement"), str) and bool(item["requirement"].strip())
+                for item in items
+            )
+            record("nonfunctional_content_nonempty", fields_valid,
+                   "Mỗi nhóm phải có criteria và requirement là chuỗi không rỗng.")
     if "minimum_classes" in expected:
         classes = payload.get("classes")
         record("minimum_classes",
@@ -153,6 +171,10 @@ def build_prompt(case: dict[str, Any]) -> str:
             case["input"]["use_case_context"],
             case["input"]["specification_context"],
         )
+
+    if case["task"] == "nonfunctional_specification":
+        from services.spec_generator import build_nonfunctional_spec_prompt
+        return build_nonfunctional_spec_prompt(case["input"]["project_context"])
 
     if case["task"] == "uml_sequence_rendering":
         return (
@@ -228,7 +250,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
             "production_deterministic_builder"
             if case["task"] == "uml_sequence_rendering"
             else "production_prompt_builder"
-            if case["task"] in {"requirement_analysis", "user_story", "use_case_scenario", "uml_class_model"}
+            if case["task"] in {"requirement_analysis", "user_story", "use_case_scenario", "uml_class_model", "nonfunctional_specification"}
             else "generic_benchmark_prompt"
         )
         scored["prompt"] = prompt
@@ -265,7 +287,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
-            "Phân tích yêu cầu, User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint; biểu đồ tuần tự dùng bộ dựng PlantUML xác định của endpoint; các tác vụ còn lại vẫn dùng prompt benchmark chung.",
+            "Phân tích yêu cầu, User Story, kịch bản Use Case, mô hình lớp UML và đặc tả phi chức năng dùng chung prompt builder với endpoint; biểu đồ tuần tự dùng bộ dựng PlantUML xác định của endpoint; các tác vụ còn lại vẫn dùng prompt benchmark chung.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
             "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],
