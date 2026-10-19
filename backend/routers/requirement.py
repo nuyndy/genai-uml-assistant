@@ -489,6 +489,40 @@ def delete_requirement(
         raise HTTPException(status_code=500, detail="Không thể xóa yêu cầu.") from exc
 
 
+@router.post("/api/requirements/{requirement_id}/user-story", response_model=UserStoryRecord)
+def save_requirement_user_story(
+    requirement_id: int,
+    data: UserStoryDraftContent,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UserStoryRecord:
+    """Save one reviewed User Story and confirm its source requirement."""
+    requirement = _get_requirement(db, requirement_id)
+    try:
+        story = (
+            db.query(UserStory)
+            .filter(UserStory.requirement_id == requirement.id)
+            .order_by(UserStory.id.desc())
+            .first()
+        )
+        if story is None:
+            story = UserStory(requirement_id=requirement.id, **data.model_dump())
+            db.add(story)
+        else:
+            story.role = data.role
+            story.feature = data.feature
+            story.benefit = data.benefit
+            story.acceptance_criteria = data.acceptance_criteria
+        requirement.status = "confirmed"
+        db.commit()
+        db.refresh(story)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save a single User Story")
+        raise HTTPException(status_code=500, detail="Không thể lưu User Story.") from exc
+    return UserStoryRecord.model_validate(story)
+
+
 @router.post(
     "/api/requirements/{requirement_id}/confirm",
     response_model=UserStoryRecord,
