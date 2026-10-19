@@ -13,9 +13,9 @@ interface Props {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100";
+  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#2C8578] focus:ring-2 focus:ring-[#C8DDD7]";
 const primaryButtonClass =
-  "inline-flex min-h-11 whitespace-nowrap items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-violet-600 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
+  "inline-flex min-h-11 whitespace-nowrap items-center justify-center gap-2 rounded-xl bg-[#184F47] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[#2C8578] hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#C8DDD7] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
 
 /** Trang chủ: chọn một dự án có sẵn hoặc tạo dự án mới trước khi vào workspace. */
 export default function HomePage({
@@ -78,11 +78,11 @@ export default function HomePage({
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-sky-50 via-white to-violet-50 text-left">
-      <nav className="border-b border-sky-200 bg-white/95 shadow-sm">
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#EAF3EF] via-[#F5FAF7] to-[#C8DDD7]/60 text-left">
+      <nav className="border-b border-[#C8DDD7] bg-white/95 shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#184F47] text-sm font-bold text-[#F5FAF7]">
               U
             </div>
             <span className="truncate text-sm font-semibold tracking-tight text-slate-900">
@@ -123,7 +123,7 @@ export default function HomePage({
             <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
               <span>Workspace</span>
               <span aria-hidden="true" className="text-slate-300">/</span>
-              <span className="text-violet-700">Dự án</span>
+              <span className="text-[#236554]">Dự án</span>
             </div>
             <h1 className="m-0 text-4xl font-semibold leading-tight tracking-[-0.035em] text-slate-900 sm:text-5xl">
               Không gian dự án
@@ -157,7 +157,7 @@ export default function HomePage({
         <section aria-label="Danh sách dự án" className="space-y-5">
           {mode === "create" ? (
             <form
-              className="rounded-2xl border border-sky-200 bg-white p-5 shadow-[0_12px_36px_-24px_rgba(83,109,183,0.35)] sm:p-6"
+              className="rounded-2xl border border-[#C8DDD7] bg-white p-5 shadow-[0_12px_36px_-24px_rgba(83,109,183,0.35)] sm:p-6"
               onSubmit={(event) => {
                 event.preventDefault();
                 void handleCreate();
@@ -175,7 +175,7 @@ export default function HomePage({
                 htmlFor="project-name"
                 className="mb-1.5 block text-sm font-medium text-slate-700"
               >
-                Tên dự án <span className="text-violet-700">*</span>
+                Tên dự án <span className="text-[#236554]">*</span>
               </label>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <input
@@ -221,7 +221,7 @@ export default function HomePage({
             </div>
           ) : projects.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-800">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-[#C8DDD7] bg-[#EAF3EF] text-[#184F47]">
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 24 24"
@@ -252,7 +252,7 @@ export default function HomePage({
               <button
                 type="button"
                 onClick={() => setMode("create")}
-                className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition duration-200 hover:border-violet-300 hover:bg-violet-50"
+                className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition duration-200 hover:border-violet-300 hover:bg-[#EAF3EF]"
               >
                 Tạo dự án
               </button>
@@ -271,7 +271,7 @@ export default function HomePage({
                   }`}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-base font-semibold text-violet-800">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#C8DDD7] bg-[#EAF3EF] text-base font-semibold text-[#184F47]">
                       {project.name.slice(0, 1).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
