@@ -40,7 +40,7 @@ import {
   emptyFunctionalSpecification,
   emptyNonFunctionalSpecification,
 } from "../../SpecificationEditor";
-import { StepHeading, inputClass, wrapClass } from "../../common/ui/primitives";
+import { inputClass, wrapClass } from "../../common/ui/primitives";
 
 interface Props {
   projectId?: number;
@@ -200,7 +200,6 @@ export default function GiaiDoan1({
   const autoGenerationAttempts = useRef(new Set<string>());
   const generationInFlight = useRef(new Set<string>());
 
-  const definition = STAGES[1].steps[step - 1] ?? STAGES[1].steps[0];
 
   const draftRequirements = useMemo(
     () => requirements.filter((item) => item.status === "draft"),
@@ -930,7 +929,6 @@ export default function GiaiDoan1({
     <div className="relative">
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <StepHeading step={`Bước ${step} / 5`} title={definition.label} icon={definition.icon} />
         {!loaded && (
           <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
             Đang tải dữ liệu từ cơ sở dữ liệu...
