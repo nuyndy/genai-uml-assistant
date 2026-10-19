@@ -333,17 +333,7 @@ export default function GiaiDoan1({
     }
   }, [draftRequirements.length, projectId]);
 
-  useEffect(() => {
-    if (step !== 2) {
-      batchAnalysisKey.current = "";
-      return;
-    }
-    if (!loaded || !projectId || !draftIdsKey) return;
-    const key = `${projectId}:${draftIdsKey}`;
-    if (batchAnalysisKey.current === key) return;
-    batchAnalysisKey.current = key;
-    void runBatchAnalysis();
-  }, [draftIdsKey, loaded, projectId, runBatchAnalysis, step]);
+
 
   const changeNewField = (field: RequirementTextField, value: string) => {
     setNewRequirement((previous) => ({ ...previous, [field]: value }));
@@ -844,12 +834,19 @@ export default function GiaiDoan1({
       projectId={projectId}
       requirements={requirements}
       requirementValues={requirementValues}
-      analyses={analyses}
-      loadingAnalysis={loadingAnalysis}
+      coverageAnalysis={coverageAnalysis}
+      loadingCoverage={loadingCoverage}
+      addedCoverageSuggestions={addedCoverageSuggestions}
+      selectedCoverageSuggestions={selectedCoverageSuggestions}
+      selectedCoverageIndexes={selectedCoverageIndexes}
+      onCheckCoverage={checkRequirementCoverage}
+      onToggleCoverageSuggestion={(index, selected) =>
+        setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: selected }))
+      }
+      onAddSelectedCoverage={() => void addSelectedCoverageSuggestions()}
       busy={busy}
       loaded={loaded}
       error={error}
-      runBatchAnalysis={runBatchAnalysis}
       onStepChange={onStepChange}
       requirementTitle={requirementTitle}
       wrapClass={wrapClass}
