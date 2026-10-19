@@ -39,8 +39,10 @@ def _owned_project(
     project = db.query(Project).filter(Project.id == project_id).first()
     if project is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy project.")
-    if project.user_id is not None and project.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Không có quyền truy cập project.")
+    # Chỉ chủ sở hữu đã xác thực mới được thao tác baseline/traceability.
+    # Project không có owner cũng không được coi là công khai.
+    if project.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Không tìm thấy project hoặc bạn không có quyền truy cập.")
     return project
 
 def _serialize(row: Any) -> dict[str, Any]:
