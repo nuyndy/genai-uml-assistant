@@ -11,7 +11,8 @@
         "target_object",
         "purpose"
       ],
-      "must_not_invent": true
+      "must_not_invent": true,
+      "production_schema": "RequirementUpdate"
     },
     "checks": [
       "schema_fields_present",
@@ -44,11 +45,14 @@
     "input": "Sinh viên muốn xem lịch học của mình sau khi đăng nhập.",
     "expected": {
       "required_fields": [
-        "name",
-        "description",
+        "role",
+        "feature",
+        "benefit",
         "acceptance_criteria"
       ],
-      "minimum_acceptance_criteria": 1
+      "minimum_acceptance_criteria": 1,
+      "acceptance_criteria_type": "string",
+      "production_schema": "UserStoryDraftContent"
     },
     "checks": [
       "schema_fields_present",
@@ -67,7 +71,8 @@
         "alt_flow",
         "exception_flow"
       ],
-      "minimum_main_flow_steps": 1
+      "minimum_main_flow_steps": 1,
+      "production_schema": "UseCaseScenarioSuggestion"
     },
     "checks": [
       "schema_fields_present",
@@ -88,7 +93,8 @@
       "must_include_classes": [
         "SinhVien",
         "LichHoc"
-      ]
+      ],
+      "production_schema": "ClassDiagramSuggestion"
     },
     "checks": [
       "schema_fields_present",
@@ -106,7 +112,8 @@
         "lifelines",
         "messages"
       ],
-      "minimum_messages": 3
+      "minimum_messages": 3,
+      "production_schema": "InteractionDiagramInput"
     },
     "checks": [
       "schema_fields_present",
@@ -129,7 +136,8 @@
         "FR-01",
         "US-01",
         "UC-01"
-      ]
+      ],
+      "production_schema": "traceability review contract (needs explicit mapping)"
     },
     "checks": [
       "schema_fields_present",
@@ -146,7 +154,8 @@
         "issues",
         "recommendation"
       ],
-      "minimum_issues": 1
+      "minimum_issues": 1,
+      "production_schema": "consistency review contract (needs explicit mapping)"
     },
     "checks": [
       "schema_fields_present",
