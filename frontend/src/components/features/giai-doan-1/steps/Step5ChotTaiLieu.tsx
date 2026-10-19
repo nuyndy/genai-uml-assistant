@@ -3,7 +3,6 @@ import type { Dispatch, SetStateAction } from "react";
 import {
   Card,
   EmptyState,
-  GhostButton,
   SoftButton,
   StatusBadge,
 } from "../../../common/ui/primitives";
@@ -45,7 +44,6 @@ export default function Step5ChotTaiLieu({
   srsFunctionalForEditor,
   srsNonFunctionalForEditor,
   busy,
-  onStepChange,
   saveSrsMetadataDraft,
   saveSrsSpecification,
   setSrsMetadata,
