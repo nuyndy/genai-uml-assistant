@@ -25,10 +25,10 @@ export default function RequirementFormFields({
   disabled = false,
 }: Props) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
 
       <div>
-        <label htmlFor="requirement-actor" className="mb-1.5 block text-sm font-medium text-slate-700">
+        <label htmlFor="requirement-actor" className="mb-1 block text-xs font-medium text-slate-700">
           Vai trò (Actor) <span className="text-rose-600">*</span>
         </label>
         <input
@@ -42,7 +42,7 @@ export default function RequirementFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="requirement-action" className="mb-1.5 block text-sm font-medium text-slate-700">
             Hành động <span className="text-rose-600">*</span>
@@ -89,7 +89,7 @@ export default function RequirementFormFields({
       </div>
 
       {preConditions && businessRules && onChangeList && (
-        <div className="space-y-4 border-t border-slate-200 pt-4">
+        <div className="space-y-2 border-t border-slate-200 pt-3">
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Thông tin bổ sung (không bắt buộc)</h3>
           </div>
@@ -103,7 +103,7 @@ export default function RequirementFormFields({
                 value={preConditions.join("\n")}
                 disabled={disabled}
                 onChange={(event) => onChangeList("preConditions", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean))}
-                rows={3}
+                rows={2}
                 placeholder="Ví dụ: Người dùng đã đăng nhập"
                 className={`${inputClass} resize-y`}
               />
@@ -136,7 +136,7 @@ export default function RequirementFormFields({
         type="button"
         onClick={onCheck}
         disabled={disabled}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {checkLabel}
       </button>
