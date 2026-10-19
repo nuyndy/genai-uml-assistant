@@ -150,6 +150,7 @@ export default function GiaiDoan1({
   const [selectedCoverageSuggestions, setSelectedCoverageSuggestions] =
     useState<Record<number, boolean>>({});
   const [addedCoverageSuggestions, setAddedCoverageSuggestions] = useState<number[]>([]);
+  const [coverageAddedCount, setCoverageAddedCount] = useState(0);
   const [loadingCoverage, setLoadingCoverage] = useState(false);
   const [newRequirement, setNewRequirement] = useState(state.rawRequirement);
   const [stories, setStories] = useState<UserStory[]>([]);
@@ -226,6 +227,7 @@ export default function GiaiDoan1({
     setCoverageAnalysis(null);
     setSelectedCoverageSuggestions({});
     setAddedCoverageSuggestions([]);
+    setCoverageAddedCount(0);
   };
 
   const refreshProjectData = useCallback(async () => {
@@ -282,6 +284,7 @@ export default function GiaiDoan1({
         setCoverageAnalysis(null);
         setSelectedCoverageSuggestions({});
         setAddedCoverageSuggestions([]);
+        setCoverageAddedCount(0);
         setRequirements(requirementRecords);
         setRequirementValues(parsed);
         setStories(storyRecords);
@@ -402,7 +405,6 @@ export default function GiaiDoan1({
       const result = await checkProjectRequirementCoverage(projectId);
       setCoverageAnalysis(result);
       setSelectedCoverageSuggestions({});
-      setAddedCoverageSuggestions([]);
     } catch (reason) {
       setCoverageAnalysis(null);
       setError(`Không thể kiểm tra mức độ đầy đủ của chức năng: ${formatError(reason)}`);
@@ -449,6 +451,7 @@ export default function GiaiDoan1({
         ...Object.fromEntries(created.map((item) => [item.id, parseRequirement(item.content)])),
       }));
       setAddedCoverageSuggestions((previous) => [...previous, ...selectedCoverageIndexes]);
+      setCoverageAddedCount((previous) => previous + created.length);
       setSelectedCoverageSuggestions((previous) => {
         const next = { ...previous };
         selectedCoverageIndexes.forEach((index) => { next[index] = false; });
@@ -789,6 +792,7 @@ export default function GiaiDoan1({
       coverageAnalysis={coverageAnalysis}
       loadingCoverage={loadingCoverage}
       addedCoverageSuggestions={addedCoverageSuggestions}
+      coverageAddedCount={coverageAddedCount}
       selectedCoverageSuggestions={selectedCoverageSuggestions}
       selectedCoverageIndexes={selectedCoverageIndexes}
       onChangeNewField={changeNewField}
