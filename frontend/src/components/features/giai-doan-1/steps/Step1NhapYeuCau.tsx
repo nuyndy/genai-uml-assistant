@@ -33,9 +33,6 @@ export default function Step1NhapYeuCau({
   onRemoveRequirement, onCheckCoverage, onToggleCoverageSuggestion, onAddSelectedCoverage,
   requirementTitle,
 }: Props) {
-  const draftCount = requirements.filter((item) => item.status === "draft").length;
-  const confirmedCount = requirements.length - draftCount;
-
   return (
     <div className="space-y-6">
 
@@ -45,10 +42,7 @@ export default function Step1NhapYeuCau({
         </Card>
 
         <Card title="Danh sách yêu cầu" subtitle="Các yêu cầu đã lưu trong dự án." actions={<StatusBadge tone={requirements.length ? "success" : "muted"}>{requirements.length} yêu cầu</StatusBadge>}>
-          <div className="mb-4 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3"><p className="text-xs text-slate-500">Bản nháp</p><p className="mt-1 text-xl font-semibold text-slate-900">{draftCount}</p></div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"><p className="text-xs text-emerald-700">Đã xác nhận</p><p className="mt-1 text-xl font-semibold text-emerald-800">{confirmedCount}</p></div>
-          </div>
+          
           {requirements.length === 0 ? <EmptyState title="Chưa có yêu cầu nào" hint="Điền biểu mẫu và chọn “Thêm yêu cầu” để bắt đầu xây dựng danh sách." /> : (
             <ul className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
               {requirements.map((item) => {
