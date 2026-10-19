@@ -151,6 +151,7 @@ def test_delete_project_removes_all_dependent_records(client, db_session):
     )
 
     assert response.status_code == 204
+    db_session.expire_all()
     assert db_session.get(Project, project_id) is None
     for model in (
         RawRequirement,
@@ -219,6 +220,7 @@ def test_delete_requirement_removes_incoming_and_outgoing_trace_links(client, db
     response = client.delete(f"/api/requirements/{requirement.id}", headers=headers)
 
     assert response.status_code == 204
+    db_session.expire_all()
     assert db_session.get(RawRequirement, requirement.id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
 
@@ -260,6 +262,7 @@ def test_delete_user_story_removes_incoming_and_outgoing_trace_links(client, db_
     response = client.delete(f"/api/user-stories/{story.id}", headers=headers)
 
     assert response.status_code == 204
+    db_session.expire_all()
     assert db_session.get(UserStory, story.id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
 
@@ -298,5 +301,6 @@ def test_delete_specification_removes_incoming_and_outgoing_trace_links(client, 
     )
 
     assert response.status_code == 204
+    db_session.expire_all()
     assert db_session.get(Specification, specification.id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
