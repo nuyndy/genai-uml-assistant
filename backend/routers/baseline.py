@@ -296,6 +296,50 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
+def _check_use_case_scenarios_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-002: mỗi Use Case cần có luồng kịch bản và đặc tả FR để xuất vào SRS."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+
+    use_cases = entities.get("use_case", [])
+    specifications = entities.get("specification", [])
+    if not isinstance(use_cases, list) or not isinstance(specifications, list):
+        return [{
+            "type": "invalid_snapshot",
+            "message": "Danh sách Use Case hoặc đặc tả không hợp lệ.",
+        }]
+
+    functional_spec_ids = {
+        item.get("id")
+        for item in specifications
+        if isinstance(item, dict) and item.get("type") == "functional"
+    }
+    issues = []
+    for use_case in use_cases:
+        if not isinstance(use_case, dict):
+            issues.append({
+                "type": "invalid_use_case",
+                "use_case_id": None,
+            })
+            continue
+        use_case_id = use_case.get("id")
+        scenario = str(use_case.get("main_flow") or "").strip()
+        specification_id = use_case.get("specification_id")
+        if not scenario:
+            issues.append({
+                "type": "missing_use_case_scenario",
+                "use_case_id": use_case_id,
+            })
+        if specification_id not in functional_spec_ids:
+            issues.append({
+                "type": "missing_srs_section",
+                "use_case_id": use_case_id,
+                "specification_id": specification_id,
+            })
+    return issues
+
+
 def _check_requirement_coverage_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """CON-001: mỗi yêu cầu phải đi tới Use Case hoặc nêu rõ ngoại lệ."""
     entities = snapshot.get("entities", {})
@@ -746,6 +790,17 @@ def approve_baseline(
         )
 
     # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
+    # CON-002: Use Case phải có kịch bản chính và đặc tả chức năng được đưa vào SRS.
+    use_case_scenario_issues = _check_use_case_scenarios_snapshot(snapshot)
+    if use_case_scenario_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline vì Use Case thiếu kịch bản hoặc đặc tả SRS tương ứng.",
+                "use_case_scenario_issues": use_case_scenario_issues,
+            },
+        )
+
     # CON-001: yêu cầu phải được truy vết tới Use Case hoặc có ngoại lệ ghi rõ.
     requirement_coverage_issues = _check_requirement_coverage_snapshot(snapshot)
     if requirement_coverage_issues:
