@@ -296,6 +296,85 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
+def _check_requirement_coverage_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-001: mỗi yêu cầu phải đi tới Use Case hoặc nêu rõ ngoại lệ."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+
+    requirements = entities.get("raw_requirement", [])
+    stories = entities.get("user_story", [])
+    specifications = entities.get("specification", [])
+    use_cases = entities.get("use_case", [])
+    trace_links = entities.get("trace_link", [])
+    if not all(isinstance(rows, list) for rows in (
+        requirements, stories, specifications, use_cases, trace_links
+    )):
+        return [{
+            "type": "invalid_snapshot",
+            "message": "Dữ liệu yêu cầu, User Story, đặc tả, Use Case hoặc trace link không hợp lệ.",
+        }]
+
+    story_ids_by_requirement = {}
+    for story in stories:
+        if isinstance(story, dict):
+            story_ids_by_requirement.setdefault(story.get("requirement_id"), set()).add(story.get("id"))
+
+    spec_ids_by_story = {}
+    for spec in specifications:
+        if isinstance(spec, dict) and spec.get("user_story_id") is not None:
+            spec_ids_by_story.setdefault(spec.get("user_story_id"), set()).add(spec.get("id"))
+
+    covered_spec_ids = {
+        use_case.get("specification_id")
+        for use_case in use_cases
+        if isinstance(use_case, dict) and use_case.get("specification_id") is not None
+    }
+    explicitly_linked_requirement_ids = set()
+    for link in trace_links:
+        if not isinstance(link, dict):
+            continue
+        source_type = str(link.get("source_type") or "").strip().lower()
+        target_type = str(link.get("target_type") or "").strip().lower()
+        source_id = link.get("source_id")
+        target_id = link.get("target_id")
+        if source_type in {"requirement", "raw_requirement"} and target_type == "use_case":
+            explicitly_linked_requirement_ids.add(source_id)
+        elif target_type in {"requirement", "raw_requirement"} and source_type == "use_case":
+            explicitly_linked_requirement_ids.add(target_id)
+
+    issues = []
+    for requirement in requirements:
+        if not isinstance(requirement, dict):
+            issues.append({
+                "type": "invalid_requirement",
+                "requirement_id": None,
+            })
+            continue
+        requirement_id = requirement.get("id")
+        story_ids = story_ids_by_requirement.get(requirement_id, set())
+        linked_spec_ids = {
+            spec_id
+            for story_id in story_ids
+            for spec_id in spec_ids_by_story.get(story_id, set())
+        }
+        has_use_case = bool(linked_spec_ids & covered_spec_ids)
+        notes = str(requirement.get("technical_notes") or "").strip().casefold()
+        documented_exception = notes.startswith(("ngoại lệ:", "ngoai le:", "exception:"))
+        if (
+            not has_use_case
+            and requirement_id not in explicitly_linked_requirement_ids
+            and not documented_exception
+        ):
+            issues.append({
+                "type": "requirement_without_use_case",
+                "requirement_id": requirement_id,
+                "user_story_ids": sorted(story_ids),
+                "specification_ids": sorted(linked_spec_ids),
+            })
+    return issues
+
+
 def _check_acceptance_criteria_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """CON-008: mỗi User Story và đặc tả chức năng phải có tiêu chí chấp nhận."""
     entities = snapshot.get("entities", {})
@@ -667,6 +746,17 @@ def approve_baseline(
         )
 
     # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
+    # CON-001: yêu cầu phải được truy vết tới Use Case hoặc có ngoại lệ ghi rõ.
+    requirement_coverage_issues = _check_requirement_coverage_snapshot(snapshot)
+    if requirement_coverage_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline vì có yêu cầu chưa được truy vết tới Use Case.",
+                "requirement_coverage_issues": requirement_coverage_issues,
+            },
+        )
+
     # CON-008: không chốt baseline khi User Story/FR thiếu tiêu chí chấp nhận.
     acceptance_criteria_issues = _check_acceptance_criteria_snapshot(snapshot)
     if acceptance_criteria_issues:
