@@ -1,4 +1,5 @@
 ﻿import json
+import re
 import logging
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
@@ -571,6 +572,171 @@ def _check_trace_links_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]
     return issues
 
 
+def _check_sequence_methods_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-003: lời gọi phương thức trong biểu đồ tuần tự phải có trong mô hình lớp."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+    diagrams = entities.get("diagram", [])
+    classes = entities.get("class_entity", [])
+    if not isinstance(diagrams, list) or not isinstance(classes, list):
+        return [{"type": "invalid_snapshot", "message": "Danh sách biểu đồ hoặc lớp không hợp lệ."}]
+
+    def decode_members(value: Any) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if isinstance(value, str):
+            try:
+                decoded = json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                decoded = None
+            if isinstance(decoded, list):
+                return [str(item).strip() for item in decoded if str(item).strip()]
+            return [line.strip() for line in value.splitlines() if line.strip()]
+        return []
+
+    methods_by_class: dict[str, set[str]] = {}
+    all_methods: set[str] = set()
+    for item in classes:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip()
+        if not name:
+            continue
+        methods = set()
+        for declaration in decode_members(item.get("methods")):
+            match = re.search(r"([A-Za-z_][\\w]*)\\s*\\(", declaration)
+            if match:
+                methods.add(match.group(1).casefold())
+        methods_by_class[name.casefold()] = methods
+        all_methods.update(methods)
+
+    issues = []
+    for diagram in diagrams:
+        if not isinstance(diagram, dict) or str(diagram.get("type") or "").casefold() != "sequence":
+            continue
+        source = diagram.get("source_code")
+        if not isinstance(source, str) or not source.strip():
+            continue
+        aliases: dict[str, str] = {}
+        for line in source.splitlines():
+            declaration = re.match(
+                r'\\s*(?:participant|actor|boundary|control|entity|database|collections)\\s+'
+                r'(?:"([^"]+)"|([\\w.]+))(?:\\s+as\\s+([\\w.]+))?',
+                line,
+                re.IGNORECASE,
+            )
+            if declaration:
+                display_name = (declaration.group(1) or declaration.group(2) or "").strip()
+                alias = (declaration.group(3) or declaration.group(2) or display_name).strip()
+                aliases[alias.casefold()] = display_name.casefold()
+
+        for line_number, line in enumerate(source.splitlines(), start=1):
+            if line.strip().startswith("'"):
+                continue
+            message = re.match(
+                r"\\s*([\\w.]+)\\s*(?:[-.]+>>?|<<?[-.]+|->|<-|\\|o|o\\|)\\s*"
+                r"([\\w.]+)\\s*:\\s*(.+?)\\s*$",
+                line,
+            )
+            if not message:
+                continue
+            sender, receiver, label = message.groups()
+            call = re.search(r"\\b([A-Za-z_][\\w]*)\\s*\\(", label)
+            if not call:
+                continue
+            method_name = call.group(1).casefold()
+            receiver_name = aliases.get(receiver.casefold(), receiver.casefold())
+            exists = (
+                method_name in methods_by_class[receiver_name]
+                if receiver_name in methods_by_class
+                else method_name in all_methods
+            )
+            if not exists:
+                issues.append({
+                    "type": "sequence_method_mismatch",
+                    "diagram_id": diagram.get("id"),
+                    "line": line_number,
+                    "sender": aliases.get(sender.casefold(), sender.casefold()),
+                    "receiver": receiver_name,
+                    "method": method_name,
+                })
+    return issues
+
+
+def _check_actor_glossary_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """CON-004: Actor dùng thuật ngữ chuẩn khi glossary đã khai báo bí danh."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+    actors = entities.get("actor", [])
+    glossary = entities.get("glossary_term", [])
+    diagrams = entities.get("diagram", [])
+    if not all(isinstance(rows, list) for rows in (actors, glossary, diagrams)):
+        return [{"type": "invalid_snapshot", "message": "Danh sách Actor, glossary hoặc diagram không hợp lệ."}]
+
+    alias_to_canonical: dict[str, str] = {}
+    for term in glossary:
+        if not isinstance(term, dict):
+            continue
+        canonical = str(term.get("canonical_term") or term.get("term") or "").strip()
+        if not canonical:
+            continue
+        aliases = term.get("aliases") or []
+        if isinstance(aliases, str):
+            try:
+                aliases = json.loads(aliases)
+            except (json.JSONDecodeError, TypeError):
+                aliases = [aliases]
+        if not isinstance(aliases, list):
+            continue
+        for alias in aliases:
+            alias = str(alias).strip()
+            if alias and alias.casefold() != canonical.casefold():
+                alias_to_canonical[alias.casefold()] = canonical
+
+    issues = []
+    seen: set[tuple[str, str]] = set()
+    for actor in actors:
+        if not isinstance(actor, dict):
+            continue
+        name = str(actor.get("name") or "").strip()
+        canonical = alias_to_canonical.get(name.casefold())
+        if canonical and canonical.casefold() != name.casefold():
+            seen.add((name.casefold(), canonical.casefold()))
+            issues.append({
+                "type": "actor_glossary_alias_mismatch",
+                "actor_id": actor.get("id"),
+                "actor_name": name,
+                "canonical_term": canonical,
+            })
+    for diagram in diagrams:
+        if not isinstance(diagram, dict) or str(diagram.get("type") or "").casefold() != "use_case":
+            continue
+        source = diagram.get("source_code")
+        if not isinstance(source, str):
+            continue
+        try:
+            parsed = parse_plantuml(source)
+        except Exception:
+            continue
+        for parsed_actor in parsed.get("actors", []):
+            name = str(parsed_actor.get("name") or "").strip()
+            canonical = alias_to_canonical.get(name.casefold())
+            key = (name.casefold(), canonical.casefold()) if canonical else None
+            if canonical and key not in seen:
+                seen.add(key)
+                issues.append({
+                    "type": "actor_glossary_alias_mismatch",
+                    "diagram_id": diagram.get("id"),
+                    "actor_name": name,
+                    "canonical_term": canonical,
+                })
+    return issues
+
+
 def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """Kiểm tra class diagram trong snapshot so với class và relation đã lưu."""
     entities = snapshot.get("entities", {})
@@ -854,6 +1020,22 @@ def approve_baseline(
         )
 
     # Cần có mô hình UML tối thiểu trước khi chốt baseline chính thức.
+    # CON-003: kiểm tra lời gọi phương thức trong biểu đồ tuần tự.
+    sequence_method_issues = _check_sequence_methods_snapshot(snapshot)
+    if sequence_method_issues:
+        raise HTTPException(status_code=409, detail={
+            "message": "Không thể duyệt baseline vì biểu đồ tuần tự gọi phương thức chưa có trong mô hình lớp.",
+            "sequence_method_issues": sequence_method_issues,
+        })
+
+    # CON-004: dùng thuật ngữ Actor chuẩn khi glossary đã khai báo bí danh.
+    actor_glossary_issues = _check_actor_glossary_snapshot(snapshot)
+    if actor_glossary_issues:
+        raise HTTPException(status_code=409, detail={
+            "message": "Không thể duyệt baseline vì tên Actor chưa thống nhất với thuật ngữ chuẩn.",
+            "actor_glossary_issues": actor_glossary_issues,
+        })
+
     # CON-002: Use Case phải có kịch bản chính và đặc tả chức năng được đưa vào SRS.
     use_case_scenario_issues = _check_use_case_scenarios_snapshot(snapshot)
     if use_case_scenario_issues:
