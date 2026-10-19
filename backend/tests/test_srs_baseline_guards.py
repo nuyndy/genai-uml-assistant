@@ -81,3 +81,35 @@ def test_export_rejects_snapshot_with_wrong_project_id(client, db_session):
 
     assert response.status_code == 409
     assert "Snapshot baseline không hợp lệ" in response.json()["detail"]
+
+
+def test_srs_preview_marks_draft_baseline_as_non_official(client, db_session):
+    project, headers = _project_and_headers(db_session)
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Bản nháp",
+        status="draft",
+        snapshot={
+            "project_id": project.id,
+            "entities": {
+                "srs_document": [],
+                "specification": [],
+                "user_story": [],
+            },
+        },
+        open_issues=[],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+    db_session.refresh(baseline)
+
+    response = client.get(
+        f"/api/projects/{project.id}/specification-document?baseline_id={baseline.id}",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["baseline_status"] == "draft"
+    assert body["is_official"] is False
