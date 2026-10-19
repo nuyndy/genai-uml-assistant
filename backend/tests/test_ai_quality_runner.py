@@ -206,3 +206,34 @@ def test_sequence_diagram_benchmark_uses_deterministic_production_builder():
     assert result["passed"] is True
     assert "activate SYS" in source
     assert "@enduml" in source
+
+
+def test_requirement_analysis_benchmark_uses_production_prompt_builder():
+    from services.requirement_analysis_prompts import build_requirement_analysis_prompt
+    case = _case("REQ-001")
+
+    assert case["expected"]["required_fields"] == [
+        "is_complete", "missing_elements", "feedback"
+    ]
+    assert case["expected"]["production_schema"] == "RequirementAnalysis"
+    assert build_prompt(case) == build_requirement_analysis_prompt(case["input"])
+    assert '"is_complete": boolean' in build_prompt(case)
+
+
+def test_requirement_analysis_scorer_checks_production_schema_types():
+    case = _case("REQ-001")
+    valid = json.dumps({
+        "is_complete": False,
+        "missing_elements": ["Làm rõ phạm vi lịch học"],
+        "feedback": "Cần xác nhận phạm vi dữ liệu lịch học.",
+    }, ensure_ascii=False)
+    assert score_output(case, valid)["passed"] is True
+
+    invalid = json.dumps({
+        "is_complete": "false",
+        "missing_elements": "không rõ",
+        "feedback": "",
+    }, ensure_ascii=False)
+    result = score_output(case, invalid)
+    assert result["passed"] is False
+    assert any("Sai kiểu dữ liệu" in error for error in result["errors"])

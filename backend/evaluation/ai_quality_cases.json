@@ -3,38 +3,60 @@
     "id": "REQ-001",
     "phase": 1,
     "task": "requirement_analysis",
-    "input": "Sinh viên đăng nhập bằng email và mật khẩu để xem lịch học của mình.",
+    "input": {
+      "actor": "Sinh viên",
+      "action": "đăng nhập",
+      "target_object": "bằng email và mật khẩu",
+      "purpose": "xem lịch học của mình",
+      "pre_conditions": [],
+      "business_rules": []
+    },
     "expected": {
       "required_fields": [
-        "actor",
-        "action",
-        "target_object",
-        "purpose"
+        "is_complete",
+        "missing_elements",
+        "feedback"
       ],
-      "must_not_invent": true
+      "production_schema": "RequirementAnalysis",
+      "field_types": {
+        "is_complete": "boolean",
+        "missing_elements": "list",
+        "feedback": "string"
+      }
     },
     "checks": [
       "schema_fields_present",
-      "actor_action_specific"
+      "requirement_analysis_types"
     ]
   },
   {
     "id": "REQ-002",
     "phase": 1,
     "task": "requirement_analysis",
-    "input": "Giảng viên muốn cập nhật điểm của sinh viên trong lớp mình phụ trách.",
+    "input": {
+      "actor": "Giảng viên",
+      "action": "cập nhật",
+      "target_object": "điểm của sinh viên trong lớp mình phụ trách",
+      "purpose": "ghi nhận kết quả học tập",
+      "pre_conditions": [],
+      "business_rules": []
+    },
     "expected": {
       "required_fields": [
-        "actor",
-        "action",
-        "target_object",
-        "purpose"
+        "is_complete",
+        "missing_elements",
+        "feedback"
       ],
-      "must_not_invent": true
+      "production_schema": "RequirementAnalysis",
+      "field_types": {
+        "is_complete": "boolean",
+        "missing_elements": "list",
+        "feedback": "string"
+      }
     },
     "checks": [
       "schema_fields_present",
-      "actor_action_specific"
+      "requirement_analysis_types"
     ]
   },
   {

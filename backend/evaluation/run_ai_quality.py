@@ -70,10 +70,18 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
                isinstance(value, list) and len(value) >= expected["minimum_main_flow_steps"],
                f'main_flow phải là danh sách có ít nhất {expected["minimum_main_flow_steps"]} bước.')
     if case["task"] == "requirement_analysis":
-        fields = ("actor", "action", "target_object", "purpose")
-        record("actor_action_specific",
-               all(isinstance(payload.get(field), str) and payload[field].strip() for field in fields),
-               "actor/action/target_object/purpose phải là chuỗi không rỗng.")
+        types = expected.get("field_types", {})
+        valid_types = {
+            "boolean": lambda value: isinstance(value, bool),
+            "list": lambda value: isinstance(value, list) and all(isinstance(item, str) for item in value),
+            "string": lambda value: isinstance(value, str),
+        }
+        invalid = [
+            field for field, type_name in types.items()
+            if type_name not in valid_types or not valid_types[type_name](payload.get(field))
+        ]
+        record("requirement_analysis_types", not invalid,
+               "Sai kiểu dữ liệu ở trường phân tích yêu cầu: " + ", ".join(invalid))
     if "minimum_classes" in expected:
         classes = payload.get("classes")
         record("minimum_classes",
@@ -123,6 +131,10 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
 
 
 def build_prompt(case: dict[str, Any]) -> str:
+    if case["task"] == "requirement_analysis":
+        from services.requirement_analysis_prompts import build_requirement_analysis_prompt
+        return build_requirement_analysis_prompt(case["input"])
+
     # User Story dùng chung prompt nghiệp vụ với endpoint sản phẩm để benchmark
     # không vô tình đánh giá một prompt giả lập khác với prompt đang chạy.
     if case["task"] == "user_story":
@@ -216,7 +228,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
             "production_deterministic_builder"
             if case["task"] == "uml_sequence_rendering"
             else "production_prompt_builder"
-            if case["task"] in {"user_story", "use_case_scenario", "uml_class_model"}
+            if case["task"] in {"requirement_analysis", "user_story", "use_case_scenario", "uml_class_model"}
             else "generic_benchmark_prompt"
         )
         scored["prompt"] = prompt
@@ -253,7 +265,7 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
-            "User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint; biểu đồ tuần tự dùng bộ dựng PlantUML xác định của endpoint; các tác vụ còn lại vẫn dùng prompt benchmark chung.",
+            "Phân tích yêu cầu, User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint; biểu đồ tuần tự dùng bộ dựng PlantUML xác định của endpoint; các tác vụ còn lại vẫn dùng prompt benchmark chung.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
             "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],

@@ -98,30 +98,9 @@ def _requirement(db: Session, requirement_id: int) -> RawRequirement:
 
 
 def _analyze_content(content: dict) -> RequirementAnalysis:
-    conditions = content.get("pre_conditions", [])
-    rules = content.get("business_rules", [])
-    natural_description = (
-        f"Với vai trò {content.get('actor', '')}, người dùng muốn "
-        f"{content.get('action', '')} {content.get('target_object', '')} "
-        f"để {content.get('purpose', '')}."
-    )
-    prompt = (
-        "Đánh giá tính đầy đủ và rõ ràng của yêu cầu phần mềm sau để có thể "
-        "đặc tả đúng chức năng được mô tả. Chỉ đánh giá thông tin liên quan "
-        "trực tiếp đến chức năng, tác nhân, hành động, đối tượng, mục đích, "
-        "điều kiện trước và quy tắc nghiệp vụ. Không yêu cầu định dạng tài liệu, "
-        "phông chữ, mã hóa ký tự hoặc các chi tiết không liên quan. Không suy "
-        "diễn rằng các trường dữ liệu hay quy trình chưa nêu là bắt buộc nếu "
-        "chúng không cần thiết để hiểu chức năng. Không tự bịa dữ kiện còn thiếu. "
-        "Chỉ liệt kê thông tin cụ thể còn thiếu mà thực sự ngăn cản việc đặc tả. "
-        "Chỉ trả về JSON hợp lệ theo cấu trúc "
-        '{"is_complete": boolean, "missing_elements": [string], '
-        '"feedback": string}. Đặt is_complete=false nếu còn thiếu dữ kiện '
-        "cần thiết hoặc diễn đạt mơ hồ.\n\n"
-        f"Mô tả: {natural_description}\n"
-        f"Điều kiện trước: {json.dumps(conditions, ensure_ascii=False)}\n"
-        f"Quy tắc nghiệp vụ: {json.dumps(rules, ensure_ascii=False)}"
-    )
+    from services.requirement_analysis_prompts import build_requirement_analysis_prompt
+
+    prompt = build_requirement_analysis_prompt(content)
     try:
         return generate_json(prompt, RequirementAnalysis)
     except AIServiceError as exc:
