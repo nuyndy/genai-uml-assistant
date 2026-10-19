@@ -295,6 +295,71 @@ def get_baseline(
         "approved_at": row.approved_at,
     }
 
+def _check_trace_links_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """Phát hiện trace link mồ côi trong baseline trước khi chốt chính thức."""
+    entities = snapshot.get("entities", {})
+    if not isinstance(entities, dict):
+        return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
+
+    type_aliases = {
+        "requirement": "raw_requirement",
+        "raw_requirement": "raw_requirement",
+        "user_story": "user_story",
+        "specification": "specification",
+        "use_case": "use_case",
+        "actor": "actor",
+        "class": "class_entity",
+        "class_entity": "class_entity",
+        "diagram": "diagram",
+        "glossary_term": "glossary_term",
+        "srs_document": "srs_document",
+    }
+    ids_by_type = {
+        entity_type: {
+            item.get("id")
+            for item in rows
+            if isinstance(item, dict) and item.get("id") is not None
+        }
+        for entity_type, rows in entities.items()
+        if isinstance(rows, list)
+    }
+    issues = []
+    for link in entities.get("trace_link", []):
+        if not isinstance(link, dict):
+            issues.append({
+                "type": "invalid_trace_link",
+                "trace_link_id": None,
+                "message": "Trace link trong snapshot không hợp lệ.",
+            })
+            continue
+
+        link_id = link.get("id")
+        for type_key, id_key in (
+            ("source_type", "source_id"),
+            ("target_type", "target_id"),
+        ):
+            raw_type = str(link.get(type_key) or "").strip().lower()
+            entity_type = type_aliases.get(raw_type)
+            entity_id = link.get(id_key)
+            if entity_type is None:
+                issues.append({
+                    "type": "unsupported_trace_link_type",
+                    "trace_link_id": link_id,
+                    "endpoint": type_key.replace("_type", ""),
+                    "entity_type": raw_type,
+                })
+                continue
+            if entity_id not in ids_by_type.get(entity_type, set()):
+                issues.append({
+                    "type": "orphan_trace_link",
+                    "trace_link_id": link_id,
+                    "endpoint": type_key.replace("_type", ""),
+                    "entity_type": raw_type,
+                    "entity_id": entity_id,
+                })
+    return issues
+
+
 def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     """Kiểm tra class diagram trong snapshot so với class và relation đã lưu."""
     entities = snapshot.get("entities", {})
@@ -596,6 +661,17 @@ def approve_baseline(
         )
 
     # Luôn kiểm tra snapshot UML trước khi duyệt, kể cả khi không có open issues.
+    # CON-005: trace link phải trỏ đến phần tử có thật trong cùng snapshot.
+    trace_link_issues = _check_trace_links_snapshot(snapshot)
+    if trace_link_issues:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Không thể duyệt baseline vì có trace link không hợp lệ.",
+                "trace_link_issues": trace_link_issues,
+            },
+        )
+
     uml_issues = _check_class_diagram_snapshot(snapshot)
     if uml_issues:
         raise HTTPException(
