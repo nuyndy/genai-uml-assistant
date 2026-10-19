@@ -163,17 +163,19 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         if raw_output is None and run_ollama:
             from services.ollama import generate_content
             raw_output = generate_content(prompt, json_response=True)
-            output_source = ("production_prompt_builder" if case["task"] in {"user_story", "use_case_scenario"} else "generic_benchmark_prompt")
+            output_source = "ollama"
         if raw_output is None:
             results.append({"id": case["id"], "phase": case.get("phase"),
                              "task": case["task"], "skipped": True,
                              "reason": "Không có đầu ra; dùng --run-ollama hoặc --outputs."})
             continue
         scored = score_output(case, raw_output)
-        # Ghi rõ ca nào dùng prompt builder chung với endpoint sản phẩm.
-        if output_source == "saved_output":
-            output_source = ("production_prompt_builder" if case["task"] in {"user_story", "use_case_scenario"} else "generic_benchmark_prompt")
         scored["output_source"] = output_source
+        scored["prompt_source"] = (
+            "production_prompt_builder"
+            if case["task"] in {"user_story", "use_case_scenario"}
+            else "generic_benchmark_prompt"
+        )
         scored["prompt"] = prompt
         scored["raw_output"] = raw_output
         results.append(scored)
