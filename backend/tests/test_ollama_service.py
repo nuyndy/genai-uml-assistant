@@ -182,7 +182,7 @@ def test_generate_json_repairs_user_story_feature_alias_and_acceptance_list():
 
     assert result.feature == "quản lý tài khoản"
     assert result.acceptance_criteria == (
-        "Sinh viên xem được thông tin tài khoản\\n"
+        "Sinh viên xem được thông tin tài khoản\n"
         "Sinh viên không có quyền chỉnh sửa"
     )
 
