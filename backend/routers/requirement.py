@@ -695,6 +695,53 @@ def update_user_story(
     return UserStoryRecord.model_validate(story)
 
 
+
+@router.post("/api/user-stories/{story_id}/improve", response_model=UserStoryRecord)
+def improve_user_story(
+    story_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> UserStoryRecord:
+    """Improve a saved User Story using its source requirement and current draft."""
+    try:
+        story = db.query(UserStory).filter(UserStory.id == story_id).first()
+        if story is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy User Story.")
+        requirement = db.query(RawRequirement).filter(
+            RawRequirement.id == story.requirement_id
+        ).first()
+        if requirement is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy yêu cầu gốc của User Story.")
+        content = _load_content(requirement)
+        prompt = (
+            "Bạn là chuyên gia phân tích nghiệp vụ. Hãy hoàn thiện User Story hiện tại "
+            "dựa trên yêu cầu gốc. Giữ đúng phạm vi nghiệp vụ, không tự thêm chức năng "
+            "không được hỗ trợ bởi yêu cầu. Viết role, feature, benefit rõ ràng, độc lập; "
+            "acceptance_criteria phải kiểm thử được, mỗi tiêu chí trên một dòng. "
+            "Trả về đúng JSON theo schema được cung cấp.\n"
+            f"Yêu cầu gốc: {json.dumps(content, ensure_ascii=False)}\n"
+            f"User Story hiện tại: {json.dumps({'role': story.role, 'feature': story.feature, 'benefit': story.benefit, 'acceptance_criteria': story.acceptance_criteria}, ensure_ascii=False)}"
+        )
+        improved = generate_json(prompt, UserStoryDraftContent)
+        story.role = improved.role
+        story.feature = improved.feature
+        story.benefit = improved.benefit
+        story.acceptance_criteria = improved.acceptance_criteria
+        db.commit()
+        db.refresh(story)
+    except HTTPException:
+        raise
+    except AIServiceError as exc:
+        db.rollback()
+        logger.exception("AI could not improve User Story")
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not improve User Story")
+        raise HTTPException(status_code=500, detail="Không thể lưu User Story đã hoàn thiện.") from exc
+    return UserStoryRecord.model_validate(story)
+
+
 @router.delete("/api/user-stories/{story_id}", status_code=204)
 def delete_user_story(
     story_id: int,
