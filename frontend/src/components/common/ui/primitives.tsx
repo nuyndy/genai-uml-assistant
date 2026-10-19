@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-emerald-100.
  */
 export const inputClass =
-  "w-full min-w-0 rounded-lg border border-[#C8DDD7] bg-[#F5FAF7] px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#2C8578] focus:bg-white focus:ring-4 focus:ring-[#C8DDD7]";
+  "w-full min-w-0 rounded-lg border border-[#D8DDE5] bg-[#F3F4F6] px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#5E8FDB] focus:bg-white focus:ring-4 focus:ring-[#DCEFFF]";
 
 /** Ô nhập 1 dòng: chiều cao cố định để các ô cùng hàng thẳng nhau. */
 export const singleLineClass = `${inputClass} h-10`;
@@ -32,17 +32,17 @@ export function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[#EAF3EF] via-[#F5FAF7] to-[#C8DDD7]/70" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#DCEFFF] via-[#F3F4F6] to-[#A8D4FD]/50" />
       <div
         className="absolute inset-0 opacity-55"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(35,101,84,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(44,133,120,0.08) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(41,75,182,0.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(94,143,219,0.08) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#B6CF66]/25 blur-3xl" />
-      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-[#2C8578]/10 blur-3xl" />
+      <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#79B2EE]/25 blur-3xl" />
+      <div className="absolute -bottom-32 right-0 h-72 w-72 rounded-full bg-[#A8D4FD]/30 blur-3xl" />
     </div>
   );
 }
@@ -73,7 +73,7 @@ export function Card({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl border border-[#C8DDD7] bg-white p-5 shadow-[0_8px_30px_-18px_rgba(18,63,58,0.28)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-18px_rgba(18,63,58,0.38)] ${accent}`}
+      className={`relative overflow-hidden rounded-2xl border border-[#D8DDE5] bg-white p-5 shadow-[0_8px_30px_-18px_rgba(29,46,122,0.20)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-18px_rgba(29,46,122,0.28)] ${accent}`}
     >
       {(title || actions) && (
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -123,7 +123,7 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#184F47] px-5 text-sm font-semibold text-[#F5FAF7] shadow-sm transition hover:bg-[#2C8578] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#C8DDD7] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#294BB6] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5E8FDB] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#A8D4FD] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
@@ -148,7 +148,7 @@ export function SoftButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#C8DDD7] bg-[#EAF3EF] px-4 text-sm font-medium text-[#184F47] transition hover:bg-[#C8DDD7] hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#A8D4FD] bg-[#DCEFFF] px-4 text-sm font-medium text-[#1D2E7A] transition hover:bg-[#A8D4FD] hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -170,7 +170,7 @@ export function GhostButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border-[#C8DDD7] bg-white px-5 text-sm font-medium text-[#52736B] transition hover:bg-[#F5FAF7] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border-[#D8DDE5] bg-white px-5 text-sm font-medium text-[#6D7A8A] transition hover:bg-[#F3F4F6] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -195,7 +195,7 @@ export function MiniButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border-[#C8DDD7] bg-[#F5FAF7] px-4 text-sm font-medium text-[#236554] transition hover:bg-[#EAF3EF] disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border-[#D8DDE5] bg-[#F3F4F6] px-4 text-sm font-medium text-[#236554] transition hover:bg-[#EAF3EF] disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -233,18 +233,18 @@ export function RemoveButton({
 export type StatusTone = "success" | "warn" | "danger" | "info" | "muted";
 
 const STATUS_STYLE: Record<StatusTone, string> = {
-  success: "bg-[#EAF3EF] text-[#184F47] ring-[#C8DDD7]",
+  success: "bg-[#DCEFFF] text-[#1D2E7A] ring-[#A8D4FD]",
   warn: "bg-amber-100 text-amber-800 ring-amber-200",
   danger: "bg-rose-100 text-rose-700 ring-rose-200",
-  info: "bg-[#EAF3EF] text-[#184F47] ring-[#C8DDD7]",
+  info: "bg-[#DCEFFF] text-[#1D2E7A] ring-[#A8D4FD]",
   muted: "bg-slate-100 text-slate-600 ring-slate-200",
 };
 
 const STATUS_DOT: Record<StatusTone, string> = {
-  success: "bg-[#4F9E16]",
+  success: "bg-[#287B62]",
   warn: "bg-amber-500",
   danger: "bg-rose-500",
-  info: "bg-[#2C8578]",
+  info: "bg-[#5E8FDB]",
   muted: "bg-slate-400",
 };
 
