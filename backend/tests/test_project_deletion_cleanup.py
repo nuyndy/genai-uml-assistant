@@ -216,12 +216,13 @@ def test_delete_requirement_removes_incoming_and_outgoing_trace_links(client, db
         ),
     ])
     db_session.commit()
+    requirement_id = requirement.id
 
-    response = client.delete(f"/api/requirements/{requirement.id}", headers=headers)
+    response = client.delete(f"/api/requirements/{requirement_id}", headers=headers)
 
     assert response.status_code == 204
     db_session.expire_all()
-    assert db_session.get(RawRequirement, requirement.id) is None
+    assert db_session.get(RawRequirement, requirement_id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
 
 
@@ -258,12 +259,13 @@ def test_delete_user_story_removes_incoming_and_outgoing_trace_links(client, db_
         ),
     ])
     db_session.commit()
+    story_id = story.id
 
-    response = client.delete(f"/api/user-stories/{story.id}", headers=headers)
+    response = client.delete(f"/api/user-stories/{story_id}", headers=headers)
 
     assert response.status_code == 204
     db_session.expire_all()
-    assert db_session.get(UserStory, story.id) is None
+    assert db_session.get(UserStory, story_id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
 
 
@@ -294,13 +296,14 @@ def test_delete_specification_removes_incoming_and_outgoing_trace_links(client, 
         ),
     ])
     db_session.commit()
+    specification_id = specification.id
 
     response = client.delete(
-        f"/api/specifications/{specification.id}",
+        f"/api/specifications/{specification_id}",
         headers=headers,
     )
 
     assert response.status_code == 204
     db_session.expire_all()
-    assert db_session.get(Specification, specification.id) is None
+    assert db_session.get(Specification, specification_id) is None
     assert db_session.query(TraceLink).filter_by(project_id=project.id).count() == 0
