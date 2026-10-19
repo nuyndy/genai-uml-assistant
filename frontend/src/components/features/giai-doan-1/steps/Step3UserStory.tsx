@@ -51,6 +51,7 @@ export default function Step3UserStory({
   const orderedSavedStories = [...savedStories].sort((a, b) => b.id - a.id);
   const activeSavedStoryBase = orderedSavedStories[activeSavedIndex];
   const activeSavedStory = activeSavedStoryBase ? (savedEdits[activeSavedStoryBase.id] ?? activeSavedStoryBase) : undefined;
+  const activeSavedStoryDirty = Boolean(activeSavedStoryBase && activeSavedStory && savedEdits[activeSavedStoryBase.id] && (savedEdits[activeSavedStoryBase.id].role !== activeSavedStoryBase.role || savedEdits[activeSavedStoryBase.id].feature !== activeSavedStoryBase.feature || savedEdits[activeSavedStoryBase.id].benefit !== activeSavedStoryBase.benefit || savedEdits[activeSavedStoryBase.id].acceptance_criteria !== activeSavedStoryBase.acceptance_criteria));
   const total = draftRequirements.length;
   const generatedCount = draftRequirements.filter((item) => Boolean(storyDrafts[item.id])).length;
   const readyCount = draftRequirements.filter((item) => {
@@ -87,9 +88,11 @@ export default function Step3UserStory({
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">USER STORY · US-{String(activeSavedStory.id).padStart(3, "0")} · REQUIREMENT · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
                 <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
-                <div className="mt-2"><StatusBadge tone="success">Đã lưu</StatusBadge></div>
               </div>
-              <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Tạo lại bản nháp bằng AI"}</SoftButton>
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                <StatusBadge tone={activeSavedStoryDirty ? "warn" : "success"}>{activeSavedStoryDirty ? "Chưa lưu thay đổi" : "Đã lưu"}</StatusBadge>
+                <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Tạo lại bản nháp bằng AI"}</SoftButton>
+              </div>
             </div>
             <div className="grid gap-3 p-4 sm:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700">Vai trò *<input value={activeSavedStory.role ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, role: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
@@ -108,14 +111,7 @@ export default function Step3UserStory({
           </article>
         </Card>
       )}
-      {allRequirementsConfirmed ? (
-        <Card tone="emerald" title="Yêu cầu đã được xác nhận" subtitle="Các User Story đã lưu thành công.">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className={`text-sm leading-6 text-slate-700 ${textWrap}`}>Bạn có thể tiếp tục sang Bước 4 để tạo đặc tả chức năng và phi chức năng.</p>
-            
-          </div>
-        </Card>
-      ) : total === 0 ? (
+      {allRequirementsConfirmed ? null : total === 0 ? (
         <Card title="Chưa có yêu cầu để rà soát">
           <EmptyState title="Danh sách yêu cầu đang trống" hint="Quay lại Bước 1 để thêm yêu cầu, sau đó phân tích và tạo User Story." />
           <div className="mt-4 flex justify-start"></div>
