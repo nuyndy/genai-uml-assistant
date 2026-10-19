@@ -39,21 +39,6 @@ export default function Step1NhapYeuCau({
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-7">
-        <div aria-hidden="true" className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-emerald-100/70 blur-2xl" />
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Giai đoạn 1 · Phân tích và chốt yêu cầu</p>
-            <h2 className={`mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl ${wrapClass}`}>Nhập yêu cầu người dùng</h2>
-            <p className={`mt-2 text-sm leading-6 text-slate-600 ${wrapClass}`}>Mô tả ai thực hiện hành động gì, trên đối tượng nào và nhằm mục đích gì. Sau khi lưu, bạn có thể kiểm tra độ bao phủ chức năng trước khi sang bước phân tích.</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
-            <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 font-semibold text-emerald-700">01</span>
-            <span><span className="block font-medium text-slate-900">Nhập yêu cầu</span><span className="block text-xs text-slate-500">Bước 1 / 5</span></span>
-          </div>
-        </div>
-      </section>
-
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
         <Card tone="emerald" title="Tạo yêu cầu mới" subtitle="Các trường có dấu * là bắt buộc. Mỗi yêu cầu nên mô tả một mục tiêu nghiệp vụ cụ thể.">
           <RequirementFormFields value={newRequirement} onChange={onChangeNewField} preConditions={newRequirement.preConditions} businessRules={newRequirement.businessRules} onChangeList={onChangeNewList} error={error} checkLabel={busy ? "Đang lưu yêu cầu..." : "Thêm yêu cầu"} disabled={busy || !loaded} onCheck={onAddRequirement} />
