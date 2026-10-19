@@ -234,7 +234,9 @@ def json_contract(model: type) -> str:
     ]
     lines = [
         "YÊU CẦU ĐỊNH DẠNG NGHIÊM NGẶT:",
-        "- Chỉ trả về DUY NHẤT một đối tượng JSON, không kèm markdown, không giải thích.",
+        "- Chỉ trả về DUY NHẤT một đối tượng JSON chứa DỮ LIỆU THỰC TẾ, không kèm markdown, không giải thích.",
+        "- Đây là JSON của KẾT QUẢ, KHÔNG phải JSON Schema. TUYỆT ĐỐI không trả về các khóa mô tả schema như properties, type, description, required, title.",
+        "- Không sao chép schema mẫu làm kết quả. Hãy điền giá trị thực tế cho từng trường theo nội dung yêu cầu.",
         "- Các trường sau BẮT BUỘC có mặt: " + ", ".join(required) + ".",
     ]
     if list_fields:
@@ -274,8 +276,11 @@ def generate_json(prompt: str, model: type, *, attempts: int = 2) -> object:
                 break
             current_prompt = (
                 f"{base_prompt}\n\n"
-                "LẦN TRƯỚC SAI ĐỊNH DẠNG. Hãy trả lại CHỈ một đối tượng JSON hợp lệ, "
-                "không kèm markdown hay văn bản giải thích. "
+                "LẦN TRƯỚC SAI ĐỊNH DẠNG. Hãy tạo lại kết quả từ đầu. "
+                "Chỉ trả về một đối tượng JSON chứa GIÁ TRỊ DỮ LIỆU THỰC TẾ, không phải JSON Schema. "
+                "Không được trả các khóa properties, type, description, required hoặc sao chép schema. "
+                "Điền đủ các trường bắt buộc theo nội dung đầu vào; không chắc thì ghi rõ cần xác nhận. "
+                "Không kèm markdown hay văn bản giải thích. "
                 f"Lỗi cần khắc phục: {exc}"
             )
     raise AIServiceError(
