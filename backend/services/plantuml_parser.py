@@ -34,6 +34,7 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
     use_cases: List[Dict[str, str]] = []
     classes: List[Dict[str, Any]] = []
     relations: List[Dict[str, Any]] = []
+    aliases: Dict[str, str] = {}
 
     # State for class parsing
     current_class: Dict[str, Any] | None = None
@@ -118,6 +119,7 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
         # Class start: class with alias and body
         m = class_start_pat.match(line)
         if m:
+            aliases[m.group(2)] = _strip_quotes(m.group(1))
             current_class = {
                 'name': _strip_quotes(m.group(1)),
                 'alias': m.group(2),
@@ -133,8 +135,10 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
         )
         m = simple_class_pat.match(line)
         if m:
+            class_name = _strip_quotes(m.group(1))
+            aliases[m.group(1).strip('"')] = class_name
             classes.append({
-                'name': _strip_quotes(m.group(1)),
+                'name': class_name,
                 'alias': None,
                 'attributes': [],
                 'methods': [],
@@ -171,6 +175,12 @@ def parse_plantuml(source_code: str) -> Dict[str, Any]:
     # If a class block was never closed, add it anyway
     if current_class:
         classes.append(current_class)
+
+    # Quan hệ thường tham chiếu alias (ví dụ C1, C2), còn mô hình lưu tên lớp.
+    # Chuẩn hóa endpoint sang tên hiển thị để so sánh được với dữ liệu đã lưu.
+    for relation in relations:
+        relation['from'] = aliases.get(relation['from'], relation['from'])
+        relation['to'] = aliases.get(relation['to'], relation['to'])
 
     return {
         'actors': actors,
