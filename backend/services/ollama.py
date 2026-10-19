@@ -202,7 +202,7 @@ def _repair_payload(payload: object, model: type | None = None) -> object:
             # Tiêu chí chấp nhận phải là chuỗi; nếu AI trả danh sách, giữ từng
             # tiêu chí trên một dòng thay vì làm mất nội dung.
             if target_key == "acceptance_criteria" and isinstance(value, list):
-                value = "\n".join(
+                value = ". ".join(
                     str(item).strip() for item in value if item is not None and str(item).strip()
                 )
         else:
