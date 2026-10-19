@@ -130,8 +130,8 @@ def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path)
     assert "Chuyển yêu cầu phần mềm sau thành bản nháp User Story" in result["prompt"]
     assert "Dựa duy nhất trên dữ liệu đầu vào" in result["prompt"]
     assert result["output_source"] == "saved_output"
-    assert report["generation_config"]["prompt_mode"] == "generic_benchmark_prompt"
-    assert any("chưa gọi trực tiếp prompt/pipeline" in item for item in report["limitations"])
+    assert report["generation_config"]["prompt_mode"] == "task_specific_production_and_generic_prompts"
+    assert any("các tác vụ còn lại vẫn dùng prompt benchmark chung" in item for item in report["limitations"])
 
 
 
@@ -159,3 +159,18 @@ def test_user_story_benchmark_uses_production_prompt_builder():
 
     assert case["input"]["actor"] == "Sinh viên"
     assert build_prompt(case) == build_user_story_prompt(case["input"])
+
+
+
+def test_use_case_benchmark_uses_production_prompt_builder():
+    from services.use_case_prompts import build_use_case_scenario_prompt
+    case = _case("UC-001")
+
+    assert case["expected"]["required_fields"] == [
+        "main_flow", "alt_flow", "exception_flow"
+    ]
+    assert case["expected"]["production_schema"] == "UseCaseScenarioSuggestion"
+    assert build_prompt(case) == build_use_case_scenario_prompt(
+        case["input"]["use_case_name"], case["input"]["specification_context"]
+    )
+    assert "USE CASE: Xem lịch học" in build_prompt(case)

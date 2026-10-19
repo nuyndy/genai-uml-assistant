@@ -71,15 +71,18 @@
     "id": "UC-001",
     "phase": 1,
     "task": "use_case_scenario",
-    "input": "Sinh viên xem lịch học; cần có luồng chính và luồng ngoại lệ khi chưa đăng nhập.",
+    "input": {
+      "use_case_name": "Xem lịch học",
+      "specification_context": "SPECIFICATION_ID: 1\nMã chức năng: FR-01\nTên chức năng: Xem lịch học\nMô tả: Sinh viên xem lịch học của mình\nTác nhân: Sinh viên\nĐiều kiện trước: Sinh viên đã đăng nhập\nLuồng chính: Sinh viên mở chức năng xem lịch học\nLuồng ngoại lệ: Người dùng chưa đăng nhập"
+    },
     "expected": {
       "required_fields": [
-        "name",
         "main_flow",
         "alt_flow",
         "exception_flow"
       ],
-      "minimum_main_flow_steps": 1
+      "minimum_main_flow_steps": 1,
+      "production_schema": "UseCaseScenarioSuggestion"
     },
     "checks": [
       "schema_fields_present",

@@ -112,6 +112,12 @@ def build_prompt(case: dict[str, Any]) -> str:
     if case["task"] == "user_story":
         from services.requirement_prompts import build_user_story_prompt
         return build_user_story_prompt(case["input"])
+    if case["task"] == "use_case_scenario":
+        from services.use_case_prompts import build_use_case_scenario_prompt
+        return build_use_case_scenario_prompt(
+            case["input"]["use_case_name"],
+            case["input"]["specification_context"],
+        )
 
     fields = case["expected"]["required_fields"]
     array_fields = {
@@ -157,15 +163,16 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         if raw_output is None and run_ollama:
             from services.ollama import generate_content
             raw_output = generate_content(prompt, json_response=True)
-            output_source = "ollama_generic_benchmark_prompt"
+            output_source = ("production_prompt_builder" if case["task"] in {"user_story", "use_case_scenario"} else "generic_benchmark_prompt")
         if raw_output is None:
             results.append({"id": case["id"], "phase": case.get("phase"),
                              "task": case["task"], "skipped": True,
                              "reason": "Không có đầu ra; dùng --run-ollama hoặc --outputs."})
             continue
         scored = score_output(case, raw_output)
-        # Lưu bằng chứng gốc để có thể truy nguyên từng lỗi; prompt này là prompt
-        # benchmark chung, không phải prompt nghiệp vụ thực tế của từng endpoint.
+        # Ghi rõ ca nào dùng prompt builder chung với endpoint sản phẩm.
+        if output_source == "saved_output":
+            output_source = ("production_prompt_builder" if case["task"] in {"user_story", "use_case_scenario"} else "generic_benchmark_prompt")
         scored["output_source"] = output_source
         scored["prompt"] = prompt
         scored["raw_output"] = raw_output
@@ -196,12 +203,12 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
             "ollama_model": model_name if run_ollama else None,
             "temperature": os.getenv("OLLAMA_TEMPERATURE", "0") if run_ollama else None,
             "seed": 0 if run_ollama else None,
-            "prompt_mode": "generic_benchmark_prompt",
+            "prompt_mode": "task_specific_production_and_generic_prompts",
         },
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
-            "Prompt hiện tại là prompt benchmark chung, chưa gọi trực tiếp prompt/pipeline của từng endpoint sản phẩm; kết quả chưa đại diện đầy đủ cho chất lượng AI trong ứng dụng.",
+            "User Story và kịch bản Use Case dùng chung prompt builder với endpoint sản phẩm; các tác vụ còn lại vẫn dùng prompt benchmark chung và chưa gọi trực tiếp pipeline của endpoint.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
             "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],

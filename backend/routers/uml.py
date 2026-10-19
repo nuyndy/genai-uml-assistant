@@ -1601,17 +1601,13 @@ def _generate_scenario_for(
     Tách riêng để khi batch bỏ sót use case, hệ thống gọi lại đúng một use case
     mà không cần nhân bản prompt ở hai nơi.
     """
-    prompt = (
-        "Tạo kịch bản use case bằng tiếng Việt, chỉ dựa trên đặc tả và tên use case. "
-        "Không bịa quy tắc hoặc dữ liệu; nếu thiếu chi tiết, nêu giả định cần xác nhận "
-        "ngay trong bước liên quan. Trả JSON đúng schema: "
-        "{\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
-        "\"exception_flow\":[\"...\"]}. Mỗi phần tử là một bước ngắn.\n\n"
-        f"USE CASE: {use_case.name}\n"
-        f"ĐẶC TẢ:\n{_format_specification(specification, index=index)}"
+    from services.use_case_prompts import build_use_case_scenario_prompt
+
+    prompt = build_use_case_scenario_prompt(
+        use_case.name,
+        _format_specification(specification, index=index),
     )
     return _ai_json(prompt, UseCaseScenarioSuggestion)
-
 
 @router.post(
     "/api/use-cases/{use_case_id}/generate-scenario",
