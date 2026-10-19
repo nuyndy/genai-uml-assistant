@@ -105,7 +105,6 @@ export default function Step3UserStory({
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Requirement · REQ-{String(item.id).padStart(3, "0")}</p>
-                          <SoftButton disabled={busy || loadingStoryDrafts} onClick={regenerateStoryDrafts}>✦ Yêu cầu AI hoàn thiện</SoftButton>
                         </div>
                         <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>USER STORY · {story?.feature?.trim() || `Bản nháp cho REQ-${String(item.id).padStart(3, "0")}`}</h3>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -129,10 +128,28 @@ export default function Step3UserStory({
                         <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích <span className="text-rose-600">*</span>
                           <textarea aria-label={`Lợi ích User Story ${item.id}`} value={story.benefit ?? ""} onChange={(event) => changeStoryDraft(item.id, "benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 resize-y bg-white ${textWrap}`} placeholder="Để đạt được lợi ích hoặc mục tiêu nào?" />
                         </label>
-                        <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận <span className="text-rose-600">*</span>
-                          <textarea aria-label={`Tiêu chí chấp nhận User Story ${item.id}`} value={story.acceptance_criteria ?? ""} onChange={(event) => changeStoryDraft(item.id, "acceptance_criteria", event.target.value)} rows={4} className={`${inputClass} mt-1.5 resize-y bg-white ${textWrap}`} placeholder="Mô tả điều kiện để xác định chức năng hoạt động đúng..." />
-                          <span className="mt-1 block text-xs font-normal text-slate-500">Nên mô tả kết quả quan sát được để có thể kiểm thử.</span>
-                        </label>
+                        <div className="sm:col-span-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div><p className="text-sm font-medium text-slate-700">Tiêu chí chấp nhận <span className="text-rose-600">*</span></p><p className="mt-1 text-xs font-normal text-slate-500">Điều kiện xác định chức năng đáp ứng yêu cầu.</p></div>
+                            <SoftButton disabled={busy || loadingStoryDrafts} onClick={() => {
+                              const criteria = (story.acceptance_criteria ?? "").split("\\n");
+                              changeStoryDraft(item.id, "acceptance_criteria", [...criteria, ""].join("\\n"));
+                            }}>+ Thêm tiêu chí</SoftButton>
+                          </div>
+                          <div className="mt-2 space-y-2">
+                            {(story.acceptance_criteria ?? "").split("\\n").map((criterion, criterionIndex, criteria) => (
+                              <div key={criterionIndex} className="flex items-start gap-2">
+                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">{String(criterionIndex + 1).padStart(2, "0")}</span>
+                                <input aria-label={`Tiêu chí ${criterionIndex + 1} của User Story ${item.id}`} value={criterion} onChange={(event) => {
+                                  const next = [...criteria];
+                                  next[criterionIndex] = event.target.value;
+                                  changeStoryDraft(item.id, "acceptance_criteria", next.join("\\n"));
+                                }} className={`${inputClass} min-w-0 flex-1 bg-white`} placeholder="Nhập điều kiện có thể kiểm thử..." />
+                                {criteria.length > 1 && <button type="button" aria-label={`Xóa tiêu chí ${criterionIndex + 1}`} disabled={busy || loadingStoryDrafts} onClick={() => changeStoryDraft(item.id, "acceptance_criteria", criteria.filter((_, index) => index !== criterionIndex).join("\\n"))} className="rounded-lg px-2 py-2 text-sm text-slate-500 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40">×</button>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </article>
