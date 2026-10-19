@@ -89,7 +89,7 @@ export default function RequirementFormFields({
       </div>
 
       {preConditions && businessRules && onChangeList && (
-        <div className="space-y-2 border-t border-slate-200 pt-3">
+        <div className="space-y-2 pt-1">
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Thông tin bổ sung (không bắt buộc)</h3>
           </div>
