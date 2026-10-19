@@ -217,5 +217,35 @@
       "schema_fields_present",
       "consistency_issue_detected"
     ]
+  },
+  {
+    "id": "SRS-003",
+    "phase": 3,
+    "task": "nonfunctional_specification",
+    "input": {
+      "project_context": [
+        "Sinh viên đăng nhập để xem lịch học của mình.",
+        "Giảng viên cập nhật điểm của sinh viên trong lớp mình phụ trách."
+      ]
+    },
+    "expected": {
+      "required_fields": [
+        "items"
+      ],
+      "production_schema": "NonFunctionalSpecification",
+      "fixed_groups": [
+        "Hiệu năng & Dung lượng",
+        "Bảo mật & An toàn",
+        "Độ tin cậy & Khả dụng",
+        "Khả năng bảo trì & Mở rộng",
+        "Khả năng sử dụng & Tương thích"
+      ]
+    },
+    "checks": [
+      "schema_fields_present",
+      "nonfunctional_item_count",
+      "nonfunctional_fixed_groups",
+      "nonfunctional_content_nonempty"
+    ]
   }
 ]
