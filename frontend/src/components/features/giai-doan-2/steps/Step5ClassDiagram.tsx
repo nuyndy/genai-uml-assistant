@@ -103,7 +103,7 @@ export default function Step5ClassDiagram({
             hint="Bấm “Sinh biểu đồ lớp” để suy luận mô hình lớp từ các kịch bản use case."
           />
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
+          <div className="overflow-x-auto rounded-2xl bg-slate-50/70">
             <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
@@ -178,18 +178,18 @@ export default function Step5ClassDiagram({
           downloadName="class-diagram.svg"
         />
         {classDiagramCode && (
-          <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50">
-            <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-600">
+          <details className="mt-5 overflow-hidden rounded-2xl bg-[#102d24]">
+            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-emerald-100">
               Mã PlantUML đã lưu
             </summary>
-            <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-slate-200 p-4 font-mono text-xs text-slate-700 [overflow-wrap:anywhere]">
+            <pre className="uml-code-panel max-h-[28rem] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-5 [overflow-wrap:anywhere]">
               {classDiagramCode}
             </pre>
           </details>
         )}
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white px-5 py-5 shadow-[0_8px_30px_-24px_rgba(10,51,35,0.4)] sm:px-6">
         <p className="text-sm text-slate-700">Xác nhận mô hình lớp và biểu đồ lớp</p>
         <PrimaryButton
           disabled={busy || umlClasses.length === 0 || !classDiagramUrl}
