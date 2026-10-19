@@ -188,6 +188,15 @@ def generate_nonfunctional_specification(
     if existing:
         item = existing
         item.content = content.model_dump_json()
+        # Sinh lại NFR làm thay đổi nội dung đã duyệt, nên phải thu hồi
+        # phê duyệt giống như khi người dùng sửa đặc tả thủ công.
+        approval = db.query(SpecificationApproval).filter(
+            SpecificationApproval.specification_id == existing.id
+        ).with_for_update().first()
+        if approval is not None:
+            approval.status = "draft"
+            approval.approved_by = None
+            approval.approved_at = None
     else:
         item = Specification(
             user_story_id=None,
