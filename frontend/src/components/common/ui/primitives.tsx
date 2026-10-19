@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  * Giữ đúng design system: nền slate-50, viền slate-200, focus:ring-4 ring-emerald-100.
  */
 export const inputClass =
-  "w-full min-w-0 rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100";
+  "w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100";
 
 /** Ô nhập 1 dòng: chiều cao cố định để các ô cùng hàng thẳng nhau. */
 export const singleLineClass = `${inputClass} h-10`;
@@ -73,10 +73,10 @@ export function Card({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl border-slate-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md ${accent}`}
+      className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md ${accent}`}
     >
       {(title || actions) && (
-        <div className="mb-5 flex-wrap items-start justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             {title && (
               <h3
@@ -123,7 +123,7 @@ export function PrimaryButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none`}
     >
       {children}
     </button>
@@ -148,7 +148,7 @@ export function SoftButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border-emerald-200 bg-emerald-50 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`inline-flex ${BTN_H} items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>
@@ -391,7 +391,7 @@ export function FieldLabel({
   hint?: string;
 }) {
   return (
-    <div className="mb-2 flex-wrap items-center gap-2">
+    <div className="mb-2 flex flex-wrap items-center gap-2">
       <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
         {children}
       </span>
@@ -463,7 +463,7 @@ export function DiagramPreview({
   downloadName?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
         <p className="text-sm font-medium text-slate-700">Xem trước</p>
         {imageUrl && downloadName && (
