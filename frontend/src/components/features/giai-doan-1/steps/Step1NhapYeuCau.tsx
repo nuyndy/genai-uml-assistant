@@ -78,11 +78,7 @@ export default function Step1NhapYeuCau({
                   <span className={`min-w-0 flex-1 text-sm text-slate-700 ${wrapClass}`}><span className="block font-medium text-slate-900">{suggestion.actor}: {suggestion.action} {suggestion.target_object}</span><span className="mt-1 block text-slate-600">Mục đích: {suggestion.purpose}</span><span className="mt-2 block text-xs text-slate-500">Lý do đề xuất: {suggestion.reason}</span>{alreadyAdded && <span className="mt-2 block text-xs font-medium text-emerald-700">Đã thêm vào danh sách yêu cầu.</span>}</span>
                 </label>;
               })}
-              {selectedCoverageIndexes.length > 0 && <div className="flex justify-end"><PrimaryButton disabled={busy} onClick={onAddSelectedCoverage}>Thêm {selectedCoverageIndexes.length} chức năng đã chọn</PrimaryButton></div>}
-            </div> : <EmptyState title="Không có gợi ý bổ sung" hint="AI chưa phát hiện chức năng thiết yếu nào khác trong lần kiểm tra này." />}
-          </div>
-        )}
-        <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-slate-500">Bạn vẫn có thể quay lại chỉnh sửa danh sách ở bất kỳ lúc nào.</p><PrimaryButton disabled={busy || !loaded || !coverageAnalysis || selectedCoverageIndexes.length > 0} onClick={() => onStepChange(2)}>Tiếp tục sang Bước 2</PrimaryButton></div>
+              {selectedCoverageIndexes.length > 0 && <div className="flex justify-end"></div>
       </Card>}
     </div>
   );
