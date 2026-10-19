@@ -147,11 +147,11 @@ describe("Giai đoạn 2", () => {
   it("sub-stepper hiển thị đúng 5 tên bước", () => {
     render(<Stepper stage={2} step={1} maxUnlockedStep={5} />);
     [
-      "Trích xuất tác nhân & UC",
-      "Sinh biểu đồ UC tổng quát",
-      "Sinh kịch bản use case chi tiết",
-      "Sinh biểu đồ tương tác",
-      "Sinh biểu đồ lớp",
+      "Xác nhận Actor và Use Case",
+      "Xác nhận biểu đồ Use Case",
+      "Xác nhận kịch bản Use Case",
+      "Xác nhận biểu đồ tương tác",
+      "Xác nhận biểu đồ lớp",
     ].forEach((n) => expect(screen.getByText(n)).toBeTruthy());
   });
 
@@ -162,7 +162,7 @@ describe("Giai đoạn 2", () => {
     render(<Harness initial={initial} stage={2} step={1} />);
     expect(screen.getByText(/Khách hàng/)).toBeTruthy();
     expect(screen.getByText(/Đặt hàng/)).toBeTruthy();
-    expect(screen.getByText("Dữ liệu đã lưu trong dự án")).toBeTruthy();
+    expect(screen.getByText("Tác nhân và use case")).toBeTruthy();
   });
 
   it("Bước 3 mở rộng ba phần kịch bản đã lưu", () => {
@@ -173,7 +173,7 @@ describe("Giai đoạn 2", () => {
     };
     render(<Harness initial={initial} stage={2} step={3} />);
     // Kịch bản chỉ hiện sau khi mở rộng use case tương ứng.
-    fireEvent.click(screen.getByText("Xem và sửa"));
+    fireEvent.click(screen.getByRole("button", { name: /mở|xem/i }));
     expect(screen.getByText("Luồng chính")).toBeTruthy();
     expect(screen.getByText("Luồng phụ")).toBeTruthy();
     expect(screen.getByText("Ngoại lệ")).toBeTruthy();
@@ -196,10 +196,10 @@ describe("Giai đoạn 3", () => {
   it("sub-stepper hiển thị đúng 4 tên bước", () => {
     render(<Stepper stage={3} step={1} maxUnlockedStep={4} />);
     [
-      "Chỉnh sửa thành phần biểu đồ",
-      "Sinh/cập nhật mã mô tả biểu đồ",
-      "Xem trước và hiển thị",
-      "Xuất biểu đồ",
+      "Đồng bộ SRS và UML",
+      "Chỉnh sửa và cập nhật",
+      "Kiểm tra nhất quán",
+      "Duyệt baseline và xuất",
     ].forEach((n) => expect(screen.getByText(n)).toBeTruthy());
   });
 
