@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_trace_links_snapshot
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot
 from services.plantuml_parser import parse_plantuml
 
 
@@ -158,3 +158,59 @@ def test_baseline_consistency_accepts_story_acceptance_criteria():
     }
 
     assert _check_acceptance_criteria_snapshot(snapshot) == []
+
+
+
+def test_baseline_consistency_detects_requirement_without_use_case_or_exception():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "raw_requirement": [{"id": 1, "technical_notes": ""}],
+            "user_story": [{"id": 2, "requirement_id": 1}],
+            "specification": [{"id": 3, "user_story_id": 2, "type": "functional"}],
+            "use_case": [],
+            "trace_link": [],
+        },
+    }
+
+    issues = _check_requirement_coverage_snapshot(snapshot)
+
+    assert issues == [{
+        "type": "requirement_without_use_case",
+        "requirement_id": 1,
+        "user_story_ids": [2],
+        "specification_ids": [3],
+    }]
+
+
+def test_baseline_consistency_accepts_requirement_covered_by_use_case():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "raw_requirement": [{"id": 1, "technical_notes": ""}],
+            "user_story": [{"id": 2, "requirement_id": 1}],
+            "specification": [{"id": 3, "user_story_id": 2, "type": "functional"}],
+            "use_case": [{"id": 4, "specification_id": 3}],
+            "trace_link": [],
+        },
+    }
+
+    assert _check_requirement_coverage_snapshot(snapshot) == []
+
+
+def test_baseline_consistency_accepts_documented_requirement_exception():
+    snapshot = {
+        "project_id": 1,
+        "entities": {
+            "raw_requirement": [{
+                "id": 1,
+                "technical_notes": "Ngoại lệ: yêu cầu chỉ dùng cho báo cáo pháp lý.",
+            }],
+            "user_story": [],
+            "specification": [],
+            "use_case": [],
+            "trace_link": [],
+        },
+    }
+
+    assert _check_requirement_coverage_snapshot(snapshot) == []
