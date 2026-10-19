@@ -38,7 +38,7 @@ export default function GiaiDoanStepper({
       aria-label="Các giai đoạn của quy trình"
       className="relative z-10 border-b border-emerald-950/5 bg-white/90 backdrop-blur-xl"
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-2 sm:px-6 lg:px-8">
         <ol className="mx-auto flex max-w-4xl items-center gap-1 rounded-full bg-slate-100/90 p-1.5 shadow-inner sm:gap-2">
           {STAGE_ORDER.map((id) => {
             const def = STAGES[id];
@@ -107,7 +107,7 @@ export default function GiaiDoanStepper({
         </ol>
 
         {/* Dòng tiến trình tổng thể của cả 3 giai đoạn. */}
-        <div className="mx-auto mt-3 flex max-w-4xl items-center gap-3 px-3">
+        <div className="mx-auto mt-2 flex max-w-4xl items-center gap-3 px-3">
           <div
             role="progressbar"
             aria-valuenow={percent}
