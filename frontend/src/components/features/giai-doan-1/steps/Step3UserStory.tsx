@@ -37,7 +37,6 @@ export default function Step3UserStory({
   allRequirementsConfirmed,
   generateStoryDrafts,
   changeStoryDraft,
-  confirmAll,
   requirementTitle,
   wrapClass,
   inputClass,
@@ -59,7 +58,6 @@ export default function Step3UserStory({
     const story = storyDrafts[item.id];
     return Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
   }).length;
-  const canConfirm = !busy && !loadingStoryDrafts && allStoryDraftsReady;
   const textWrap = wrapClass || defaultWrapClass;
 
   return (
