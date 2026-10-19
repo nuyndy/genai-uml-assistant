@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Stepper from "./components/common/Stepper";
 import GiaiDoanStepper from "./components/common/GiaiDoanStepper";
 import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
@@ -22,6 +21,7 @@ function App() {
   const [projectsLoadedFor, setProjectsLoadedFor] = useState<number | null>(null);
   const [projectsError, setProjectsError] = useState("");
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   /* Giai đoạn lớn đang mở và bước con tương ứng. */
   const [stage, setStage] = useState<StageId>(1);
@@ -252,93 +252,74 @@ function App() {
       </div>
 
       <div className="relative z-10">
-      <div className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">
-      <div className="border-b border-emerald-200 bg-white/95 backdrop-blur">
-        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-3">
+      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] items-center gap-3 px-3 py-2 sm:gap-5 sm:px-6 lg:px-8">
           <button
             type="button"
             onClick={handleBackHome}
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-violet-600"
+            aria-label="Về trang chủ GenAI UML Assistant"
+            className="flex min-w-0 shrink-0 items-center gap-2 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:gap-3"
           >
-            ← Trang chủ
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-900 text-sm font-bold text-white shadow-sm">U</span>
+            <span className="hidden min-w-0 sm:block">
+              <span className="block max-w-[12rem] truncate text-sm font-bold tracking-tight text-slate-900">GenAI UML Assistant</span>
+              <span className="block max-w-[12rem] truncate text-[11px] text-slate-500">{activeProject.name}</span>
+            </span>
           </button>
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="min-w-0 text-right">
-              <span className="block max-w-[16rem] break-words text-sm font-semibold text-slate-900 [overflow-wrap:anywhere]">
-                {activeProject.name}
-              </span>
-            </div>
-            <div className="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-3">
-              {user.avatar_url && (
-                <img
-                  src={user.avatar_url}
-                  alt=""
-                  className="h-8 w-8 rounded-full"
-                  referrerPolicy="no-referrer"
-                />
+
+          <div className="min-w-0 flex-1">
+            <GiaiDoanStepper
+              stage={stage}
+              maxUnlockedStage={maxUnlockedStage()}
+              completedStages={completedStages}
+              onStageChange={(next) => {
+                setStage(next);
+                setStep(1);
+              }}
+            />
+          </div>
+
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              aria-label="Mở menu tài khoản"
+              aria-expanded={accountMenuOpen}
+              onClick={() => setAccountMenuOpen((open) => !open)}
+              className="flex items-center gap-2 rounded-full p-1.5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-900">
+                  {(user.name || user.email).slice(0, 1).toUpperCase()}
+                </span>
               )}
-              <span className="hidden max-w-35 truncate text-xs text-slate-600 sm:block">
-                {user.name || user.email}
-              </span>
-              <button
-                type="button"
-                onClick={logout}
-                className="inline-flex h-8 items-center whitespace-nowrap rounded-lg px-2 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
-              >
-                Đăng xuất
-              </button>
-            </div>
+              <span className="hidden max-w-36 truncate text-xs font-medium text-slate-700 lg:block">{user.name || user.email}</span>
+              <span aria-hidden="true" className="hidden text-xs text-slate-500 sm:block">⌄</span>
+            </button>
+            {accountMenuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                <div className="border-b border-slate-100 px-3 py-2">
+                  <p className="truncate text-sm font-semibold text-slate-900">{user.name || "Tài khoản"}</p>
+                  <p className="truncate text-xs text-slate-500">{user.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setAccountMenuOpen(false); logout(); }}
+                  className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      <GiaiDoanStepper
-        stage={stage}
-        maxUnlockedStage={maxUnlockedStage()}
-        completedStages={completedStages}
-        onStageChange={(next) => {
-          setStage(next);
-          setStep(1);
-        }}
-      />
+      </header>
       {stageLockReason() && (
-        <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 sm:px-6 lg:px-8">
+        <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 sm:px-6 lg:px-8">
           {stageLockReason()}
         </div>
       )}
-
-      <Stepper
-        stage={stage}
-        step={step}
-        maxUnlockedStep={maxUnlockedStep()}
-        completedSteps={stage === 1
-          ? [
-              ...(workflow.requirementId ? [1] : []),
-              ...(workflow.analysis ? [2] : []),
-              ...(workflow.userStoryId ? [3] : []),
-              ...(workflow.specs.length > 0 ? [4, 5] : []),
-            ]
-          : stage === 2
-            ? [
-                ...(workflow.actors.length > 0 && workflow.usecases.length > 0 ? [1] : []),
-                ...(workflow.useCaseDiagramUrl ? [2] : []),
-                ...(workflow.usecases.length > 0 &&
-                workflow.usecases.every((useCase) => Boolean(workflow.scenarios[useCase.id]))
-                  ? [3]
-                  : []),
-                ...(workflow.usecases.some((useCase) =>
-                  workflow.interactions.some(
-                    (diagram) => diagram.usecaseId === useCase.id && Boolean(diagram.imageUrl),
-                  ),
-                )
-                  ? [4]
-                  : []),
-                ...(workflow.classDiagramUrl ? [5] : []),
-              ]
-          : undefined}
-        onStepChange={setStep}
-      />
-      </div>
 
       <ErrorBoundary>
       <main>
