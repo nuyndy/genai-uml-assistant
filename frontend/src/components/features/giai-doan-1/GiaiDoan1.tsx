@@ -836,6 +836,7 @@ export default function GiaiDoan1({
     <Step3UserStory
       projectId={projectId}
       draftRequirements={draftRequirements}
+      confirmedRequirementsCount={requirements.filter((item) => item.status === "confirmed").length}
       requirementValues={requirementValues}
       storyDrafts={storyDrafts}
       loadingStoryDrafts={loadingStoryDrafts}
