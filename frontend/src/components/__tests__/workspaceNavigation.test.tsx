@@ -111,12 +111,12 @@ describe("Chuyển giai đoạn lớn trong workspace", () => {
   it("nhấn sang Giai đoạn 2 hiện nội dung Bước 1, không trắng màn", async () => {
     render(<Workspace />);
 
-    const stage2 = screen.getByRole("button", { name: /Mô hình hóa UML/ });
+    const stage2 = screen.getByRole("button", { name: /Mô hình UML/ });
     expect(stage2).not.toBeDisabled();
     fireEvent.click(stage2);
 
     // Chờ request nạp dữ liệu UML xong rồi mới khẳng định nội dung hiện ra.
-    expect(await screen.findByText("Trích xuất tác nhân và use case")).toBeTruthy();
+    expect(await screen.findByText("Tác nhân và use case")).toBeTruthy();
     expect(screen.getByText("Tiếp tục sang Bước 2")).toBeTruthy();
   });
 
