@@ -39,7 +39,6 @@ import {
   Notice,
   PrimaryButton,
   SoftButton,
-  StepHeading,
   inputClass,
   wrapClass,
 } from "../../common/ui/primitives";
@@ -232,7 +231,6 @@ export default function GiaiDoan2({
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
   const [, setClassDrafts] = useState<Record<number, ClassDraft>>({});
 
-  const def = STAGES[2].steps[step - 1] ?? STAGES[2].steps[0];
 
   const scenarios = useMemo(
     () => state.usecases.filter((useCase) => state.scenarios[useCase.id]?.mainFlow.length),
@@ -722,7 +720,6 @@ export default function GiaiDoan2({
         />
       )}
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <StepHeading step={`Bước ${step} / 5`} title={def.label} icon={def.icon} />
         {specificationError && <Notice tone="warn">{specificationError}</Notice>}
         {error && <Notice tone="danger">{error}</Notice>}
         {step === 1 && step1}
