@@ -77,7 +77,7 @@ def test_score_output_checks_class_names_for_uml_case():
     case = _case("UML-001")
     output = json.dumps({
         "classes": [{"name": "SinhVien"}, {"name": "LichHoc"}],
-        "relationships": [],
+        "relations": [],
     })
 
     result = score_output(case, output)
