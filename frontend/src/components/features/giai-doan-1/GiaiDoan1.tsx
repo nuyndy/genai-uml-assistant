@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  analyzeProjectRequirementsBatch,
   approveSpecification,
   checkProjectRequirementCoverage,
   confirmProjectRequirementsBatch,
@@ -18,7 +17,6 @@ import {
   updateSpecification,
   type FunctionalSpecification,
   type NonFunctionalSpecification,
-  type RequirementAnalysis,
   type RequirementCoverageAnalysis,
   type RequirementCoverageSuggestion,
   type RequirementPayload,
@@ -143,13 +141,11 @@ export default function GiaiDoan1({
   onStepChange,
 }: Props) {
   const [busy, setBusy] = useState(false);
-  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [error, setError] = useState("");
   const [aiTaskLabel, setAiTaskLabel] = useState("");
   const [loaded, setLoaded] = useState(!projectId);
   const [requirements, setRequirements] = useState<RequirementRecord[]>([]);
   const [requirementValues, setRequirementValues] = useState<Record<number, RawRequirement>>({});
-  const [analyses, setAnalyses] = useState<Record<number, RequirementAnalysis>>({});
   const [coverageAnalysis, setCoverageAnalysis] = useState<RequirementCoverageAnalysis | null>(null);
   const [selectedCoverageSuggestions, setSelectedCoverageSuggestions] =
     useState<Record<number, boolean>>({});
@@ -194,7 +190,6 @@ export default function GiaiDoan1({
   const [srsSpecDrafts, setSrsSpecDrafts] = useState<
     Record<number, FunctionalSpecification | NonFunctionalSpecification>
   >({});
-  const batchAnalysisKey = useRef("");
   const storyPreviewKey = useRef("");
   const autoGenerationAttempts = useRef(new Set<string>());
   const generationInFlight = useRef(new Set<string>());
@@ -313,26 +308,6 @@ export default function GiaiDoan1({
       cancelled = true;
     };
   }, [projectId, syncSpecifications, setState]);
-
-  const runBatchAnalysis = useCallback(async () => {
-    if (!projectId || draftRequirements.length === 0) {
-      setAnalyses({});
-      return;
-    }
-    setLoadingAnalysis(true);
-    setAiTaskLabel("Đang phân tích yêu cầu...");
-    setError("");
-    try {
-      const result = await analyzeProjectRequirementsBatch(projectId);
-      setAnalyses(Object.fromEntries(result.results.map((item) => [item.requirement_id, item])));
-    } catch (reason) {
-      setError(`Không thể phân tích các yêu cầu: ${formatError(reason)}`);
-    } finally {
-      setLoadingAnalysis(false);
-      setAiTaskLabel("");
-    }
-  }, [draftRequirements.length, projectId]);
-
 
 
   const changeNewField = (field: RequirementTextField, value: string) => {
