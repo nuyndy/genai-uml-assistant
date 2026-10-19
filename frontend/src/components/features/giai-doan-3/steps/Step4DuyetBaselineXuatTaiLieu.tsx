@@ -145,9 +145,7 @@ export default function Step4DuyetBaselineXuatTaiLieu({
       </Card>
 
       <div className="flex flex-wrap justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(3)}>
-          ← Quay lại sửa mã
-        </GhostButton>
+        
       </div>
     </div>
   );
