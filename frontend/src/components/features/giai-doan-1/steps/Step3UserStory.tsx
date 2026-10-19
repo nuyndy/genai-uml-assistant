@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
 import type { UserStory, UserStoryDraft } from "../../../../services/requirementService";
@@ -41,6 +42,8 @@ export default function Step3UserStory({
   wrapClass,
   inputClass,
 }: Props) {
+  const [activeDraftIndex, setActiveDraftIndex] = useState(0);
+  const orderedDrafts = [...draftRequirements].reverse();
   const total = draftRequirements.length;
   const generatedCount = draftRequirements.filter((item) => Boolean(storyDrafts[item.id])).length;
   const readyCount = draftRequirements.filter((item) => {
@@ -109,7 +112,7 @@ export default function Step3UserStory({
       ) : (
         <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
           <SoftButton disabled={busy || loadingStoryDrafts} onClick={() => void generateStoryDrafts()}>
-            {loadingStoryDrafts ? "Đang tạo bản nháp..." : "Tạo lại bằng AI"}
+            {loadingStoryDrafts ? "Đang tạo bản nháp..." : "Yêu cầu AI hoàn thiện US"}
           </SoftButton>
         }>
           {loadingStoryDrafts ? (
@@ -119,7 +122,7 @@ export default function Step3UserStory({
             </div>
           ) : (
             <div className="space-y-3">
-              {[...draftRequirements].reverse().map((item, index) => {
+              {(orderedDrafts[activeDraftIndex] ? [orderedDrafts[activeDraftIndex]] : []).map((item, index) => {
                 const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
                 const story = storyDrafts[item.id];
                 const storyReady = Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
@@ -183,8 +186,9 @@ export default function Step3UserStory({
             </div>
           )}
           <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>AI chỉ tạo bản nháp; bạn chịu trách nhiệm rà soát nội dung trước khi lưu xác nhận.</p>
-            <PrimaryButton disabled={!canConfirm} onClick={() => void confirmAll()}>{busy ? "Đang xác nhận..." : "Xác nhận yêu cầu & User Story"} <span aria-hidden="true">→</span></PrimaryButton>
+            <SoftButton disabled={activeDraftIndex === 0 || busy} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
+            <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>Nút lưu sẽ xác nhận tất cả User Story đang chờ duyệt.</p>
+            <div className="flex flex-col gap-2 sm:flex-row"><PrimaryButton disabled={!canConfirm} onClick={() => void confirmAll()}>{busy ? "Đang lưu..." : "Lưu US & xác nhận tất cả"} <span aria-hidden="true">→</span></PrimaryButton><SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton></div>
           </div>
           {!allStoryDraftsReady && !loadingStoryDrafts && <p className="mt-3 text-right text-sm text-amber-800">Cần hoàn thiện đủ 4 trường cho mọi User Story trước khi xác nhận.</p>}
         </Card>
