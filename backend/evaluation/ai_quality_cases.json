@@ -1,0 +1,55 @@
+[
+  {
+    "id": "REQ-001",
+    "task": "requirement_analysis",
+    "input": "Sinh viên đăng nhập bằng email và mật khẩu để xem lịch học của mình.",
+    "expected": {
+      "required_fields": [
+        "actor",
+        "action",
+        "target_object",
+        "purpose"
+      ],
+      "must_not_invent": true
+    },
+    "checks": [
+      "schema_fields_present",
+      "actor_action_specific"
+    ]
+  },
+  {
+    "id": "US-001",
+    "task": "user_story",
+    "input": "Sinh viên muốn xem lịch học của mình sau khi đăng nhập.",
+    "expected": {
+      "required_fields": [
+        "name",
+        "description",
+        "acceptance_criteria"
+      ],
+      "minimum_acceptance_criteria": 1
+    },
+    "checks": [
+      "schema_fields_present",
+      "acceptance_criteria_nonempty"
+    ]
+  },
+  {
+    "id": "UC-001",
+    "task": "use_case_scenario",
+    "input": "Sinh viên xem lịch học; cần có luồng chính và luồng ngoại lệ khi chưa đăng nhập.",
+    "expected": {
+      "required_fields": [
+        "name",
+        "main_flow",
+        "alt_flow",
+        "exception_flow"
+      ],
+      "minimum_main_flow_steps": 1
+    },
+    "checks": [
+      "schema_fields_present",
+      "main_flow_nonempty"
+    ]
+  }
+]
