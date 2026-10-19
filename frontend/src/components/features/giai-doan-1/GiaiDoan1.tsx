@@ -837,6 +837,7 @@ export default function GiaiDoan1({
       projectId={projectId}
       draftRequirements={draftRequirements}
       confirmedRequirementsCount={requirements.filter((item) => item.status === "confirmed").length}
+      savedStories={stories}
       requirementValues={requirementValues}
       storyDrafts={storyDrafts}
       loadingStoryDrafts={loadingStoryDrafts}
