@@ -166,11 +166,12 @@ export default function GiaiDoan1({
       ? []
       : state.specs.map((item) => ({
           id: item.id,
-          user_story_id: item.userStoryId ?? 0,
+          user_story_id: item.userStoryId ?? null,
           feature: item.feature,
           type: item.type,
           content: item.content,
           version: item.version ?? 1,
+          approval_status: item.approved ? "approved" : "draft",
         })),
   );
   const [specDrafts, setSpecDrafts] = useState<
@@ -178,7 +179,7 @@ export default function GiaiDoan1({
   >({});
   const [expandedFunctionalSpecifications, setExpandedFunctionalSpecifications] = useState<number[]>([]);
   const [functionalSpecificationTabs, setFunctionalSpecificationTabs] =
-    useState<Record<number, string>>({});
+    useState<Record<number, "overview" | "flows" | "business-data">>({});
   const [generatingStories, setGeneratingStories] = useState<Record<number, boolean>>({});
   const [generatingNonFunctional, setGeneratingNonFunctional] = useState(false);
   const [srsMarkdown, setSrsMarkdown] = useState("");
