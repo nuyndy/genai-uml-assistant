@@ -91,15 +91,15 @@ describe("GiaiDoanStepper", () => {
     const { container } = render(
       <GiaiDoanStepper stage={3} maxUnlockedStage={3} completedStages={[1, 2]} />,
     );
-    // Giai đoạn 1 và 2 đã hoàn thành -> vòng tròn màu emerald.
-    expect(container.querySelectorAll(".bg-emerald-500").length).toBe(2);
+    // Giai đoạn 1 và 2 đã hoàn thành -> huy hiệu hoàn thành màu emerald nhạt.
+    expect(container.querySelectorAll(".bg-emerald-100").length).toBe(2);
   });
 
   it("không tô xanh giai đoạn chưa hoàn thành dù đang đứng ở giai đoạn sau", () => {
     const { container } = render(
       <GiaiDoanStepper stage={2} maxUnlockedStage={2} completedStages={[]} />,
     );
-    expect(container.querySelectorAll(".bg-emerald-500").length).toBe(0);
+    expect(container.querySelectorAll(".bg-emerald-100").length).toBe(0);
   });
 });
 
