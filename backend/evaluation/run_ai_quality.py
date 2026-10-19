@@ -86,10 +86,26 @@ def score_output(case: dict[str, Any], raw_output: str) -> dict[str, Any]:
         record("required_class_names", not missing_names,
                "Thiếu lớp UML bắt buộc: " + ", ".join(missing_names))
     if "minimum_messages" in expected:
-        messages = payload.get("messages")
-        record("minimum_messages",
-               isinstance(messages, list) and len(messages) >= expected["minimum_messages"],
-               f'messages phải có ít nhất {expected["minimum_messages"]} phần tử.')
+        if case["task"] == "uml_sequence_rendering":
+            source = payload.get("source_code")
+            count = sum(1 for line in source.splitlines() if " -> " in line or " <-- " in line) if isinstance(source, str) else 0
+            record("minimum_messages", count >= expected["minimum_messages"],
+                   f"source_code phải có ít nhất {expected['minimum_messages']} thông điệp.")
+        else:
+            messages = payload.get("messages")
+            record("minimum_messages",
+                   isinstance(messages, list) and len(messages) >= expected["minimum_messages"],
+                   f'messages phải có ít nhất {expected["minimum_messages"]} phần tử.')
+    if "required_source_fragments" in expected:
+        source = payload.get("source_code")
+        missing_fragments = [fragment for fragment in expected["required_source_fragments"] if not isinstance(source, str) or fragment not in source]
+        record("required_source_fragments", not missing_fragments,
+               "Mã PlantUML thiếu nội dung bắt buộc: " + ", ".join(missing_fragments))
+    if case["task"] == "uml_sequence_rendering":
+        source = payload.get("source_code")
+        record("plantuml_wrapper",
+               isinstance(source, str) and source.strip().startswith("@startuml") and source.strip().endswith("@enduml"),
+               "source_code phải có @startuml và @enduml.")
     if "expected_ids" in expected:
         ids_present = all(_contains_id(payload, item) for item in expected["expected_ids"])
         record("traceability_ids_present", ids_present,
@@ -124,6 +140,12 @@ def build_prompt(case: dict[str, Any]) -> str:
         return build_class_diagram_prompt(
             case["input"]["use_case_context"],
             case["input"]["specification_context"],
+        )
+
+    if case["task"] == "uml_sequence_rendering":
+        return (
+            "Đầu ra được dựng bằng hàm production build_sequence_diagram_source, "
+            "không dùng LLM. Kiểm tra mã PlantUML tuần tự từ dữ liệu input."
         )
 
     fields = case["expected"]["required_fields"]
@@ -167,6 +189,18 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         prompt = build_prompt(case)
         output_source = "saved_output"
         raw_output = supplied.get(case["id"])
+        if raw_output is None and case["task"] == "uml_sequence_rendering":
+            from services.sequence_diagram import build_sequence_diagram_source
+            source_code = build_sequence_diagram_source(
+                case["input"]["actor_name"],
+                case["input"]["project_name"],
+                case["input"]["use_case_name"],
+                case["input"]["main_flow"],
+                case["input"]["alt_flow"],
+                case["input"]["exception_flow"],
+            )
+            raw_output = json.dumps({"source_code": source_code}, ensure_ascii=False)
+            output_source = "production_deterministic_builder"
         if raw_output is None and run_ollama:
             from services.ollama import generate_content
             raw_output = generate_content(prompt, json_response=True)
@@ -179,7 +213,9 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
         scored = score_output(case, raw_output)
         scored["output_source"] = output_source
         scored["prompt_source"] = (
-            "production_prompt_builder"
+            "production_deterministic_builder"
+            if case["task"] == "uml_sequence_rendering"
+            else "production_prompt_builder"
             if case["task"] in {"user_story", "use_case_scenario", "uml_class_model"}
             else "generic_benchmark_prompt"
         )
@@ -212,12 +248,12 @@ def run_benchmark(outputs_path: Path | None, run_ollama: bool) -> dict[str, Any]
             "ollama_model": model_name if run_ollama else None,
             "temperature": os.getenv("OLLAMA_TEMPERATURE", "0") if run_ollama else None,
             "seed": 0 if run_ollama else None,
-            "prompt_mode": "task_specific_production_and_generic_prompts",
+            "prompt_mode": "production_builders_and_generic_prompts",
         },
         "limitations": [
             "Chỉ số là kiểm tra cấu trúc và quy tắc xác định, không đo độ đúng ngữ nghĩa.",
             "Nhận diện ID/lớp và đếm phần tử không chứng minh liên kết truy vết hay UML đúng về nghiệp vụ.",
-            "User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint sản phẩm; các tác vụ còn lại vẫn dùng prompt benchmark chung và chưa gọi trực tiếp pipeline của endpoint.",
+            "User Story, kịch bản Use Case và mô hình lớp UML dùng chung prompt builder với endpoint; biểu đồ tuần tự dùng bộ dựng PlantUML xác định của endpoint; các tác vụ còn lại vẫn dùng prompt benchmark chung.",
             "Chưa tự động đo tính bịa bằng đánh giá ngữ nghĩa; cần rà soát chuyên gia hoặc LLM-as-a-judge.",
             "Báo cáo lưu prompt và đầu ra thô để phục vụ kiểm tra lỗi; cần xem xét dữ liệu nhạy cảm trước khi chia sẻ báo cáo.",
         ],

@@ -118,18 +118,42 @@
   {
     "id": "UML-002",
     "phase": 2,
-    "task": "uml_sequence_model",
-    "input": "Kịch bản: Sinh viên yêu cầu xem lịch học; giao diện gửi yêu cầu đến dịch vụ lịch học; dịch vụ lấy dữ liệu từ kho dữ liệu và trả lịch học cho giao diện.",
+    "task": "uml_sequence_rendering",
+    "input": {
+      "actor_name": "Sinh viên",
+      "project_name": "Hệ thống lịch học",
+      "use_case_name": "Xem lịch học",
+      "main_flow": [
+        "Sinh viên yêu cầu xem lịch học",
+        "Giao diện gửi yêu cầu đến dịch vụ lịch học",
+        "Dịch vụ lấy dữ liệu từ kho dữ liệu",
+        "Dịch vụ trả lịch học cho giao diện"
+      ],
+      "alt_flow": [
+        "Không có lịch học"
+      ],
+      "exception_flow": [
+        "Người dùng chưa đăng nhập"
+      ]
+    },
     "expected": {
       "required_fields": [
-        "lifelines",
-        "messages"
+        "source_code"
       ],
-      "minimum_messages": 3
+      "minimum_messages": 3,
+      "required_source_fragments": [
+        "@startuml",
+        "@enduml",
+        "actor",
+        "participant",
+        "Sinh viên",
+        "Xem lịch học"
+      ]
     },
     "checks": [
-      "schema_fields_present",
-      "minimum_messages"
+      "plantuml_wrapper",
+      "minimum_messages",
+      "required_source_fragments"
     ]
   },
   {

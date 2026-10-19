@@ -187,3 +187,22 @@ def test_class_uml_benchmark_uses_production_prompt_builder():
         case["input"]["specification_context"],
     )
     assert '"relations":[' in build_prompt(case)
+
+
+def test_sequence_diagram_benchmark_uses_deterministic_production_builder():
+    from services.sequence_diagram import build_sequence_diagram_source
+    case = _case("UML-002")
+    source = build_sequence_diagram_source(
+        case["input"]["actor_name"],
+        case["input"]["project_name"],
+        case["input"]["use_case_name"],
+        case["input"]["main_flow"],
+        case["input"]["alt_flow"],
+        case["input"]["exception_flow"],
+    )
+    output = json.dumps({"source_code": source}, ensure_ascii=False)
+    result = score_output(case, output)
+
+    assert result["passed"] is True
+    assert "activate SYS" in source
+    assert "@enduml" in source

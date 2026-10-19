@@ -1851,45 +1851,31 @@ def generate_interaction_diagram(
         raise HTTPException(status_code=500, detail="Không thể đọc dự án.") from exc
     if project is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy dự án của use case.")
-    alias = "A1"
-    lines = ["@startuml"]
     if data.diagram_type == "sequence":
-        lines.extend(
-            [
-                f'actor "{_quoted(actor_name)}" as {alias}',
-                f'participant "{_quoted(project.name)}" as SYS',
-            ]
+        from services.sequence_diagram import build_sequence_diagram_source
+
+        source_code = build_sequence_diagram_source(
+            actor_name,
+            project.name,
+            use_case.name,
+            main_flow,
+            alt_flow,
+            _decode_lines(use_case.exception_flow),
         )
-        for index, item in enumerate(main_flow, start=1):
-            lines.append(f'{alias} -> SYS : {_quoted(f"{index}. {item}")}')
-            lines.append(f"activate SYS")
-            lines.append(f'{alias} <-- SYS : Hoàn tất bước {index}')
-            lines.append("deactivate SYS")
-        for index, item in enumerate(alt_flow, start=1):
-            lines.append(f"alt Luồng phụ {index}: {_quoted(item)}")
-            lines.append(f'{alias} -> SYS : Thực hiện luồng phụ {index}')
-            lines.append(f"{alias} <-- SYS : Kết quả luồng phụ {index}")
-            lines.append("end")
-        exceptions = _decode_lines(use_case.exception_flow)
-        if exceptions:
-            lines.append("note over SYS")
-            lines.extend(_quoted(item) for item in exceptions)
-            lines.append("end note")
     else:
-        lines.extend(
-            [
-                f'object "{_quoted(actor_name)}" as {alias}',
-                f'object "{_quoted(project.name)}" as SYS',
-            ]
-        )
+        lines = [
+            "@startuml",
+            f'object "{_quoted(actor_name)}" as A1',
+            f'object "{_quoted(project.name)}" as SYS',
+        ]
         for index, item in enumerate(main_flow, start=1):
-            lines.append(f'{alias} -> SYS : {index}. {_quoted(item)}')
+            lines.append(f'A1 -> SYS : {index}. {_quoted(item)}')
         for index, item in enumerate(alt_flow, start=1):
-            lines.append(f'{alias} ..> SYS : Luồng phụ {index}: {_quoted(item)}')
+            lines.append(f'A1 ..> SYS : Luồng phụ {index}: {_quoted(item)}')
         for index, item in enumerate(_decode_lines(use_case.exception_flow), start=1):
-            lines.append(f'SYS ..> {alias} : Ngoại lệ {index}: {_quoted(item)}')
-    lines.extend([f'title {_quoted(use_case.name)}', "@enduml"])
-    source_code = "\n".join(lines)
+            lines.append(f'SYS ..> A1 : Ngoại lệ {index}: {_quoted(item)}')
+        lines.extend([f'title {_quoted(use_case.name)}', "@enduml"])
+        source_code = "\n".join(lines)
     diagram = _render_and_save_diagram(
         db,
         project_id,
