@@ -10,6 +10,7 @@ from database.models import (
     Project,
     RawRequirement,
     Specification,
+    SpecificationApproval,
     UcActorRelation,
     UseCase,
     User,
@@ -110,7 +111,27 @@ def _project_with_specification(db_session):
         content="Khách hàng xem sản phẩm, đặt hàng và nhận xác nhận.",
         version=1,
     )
-    db_session.add(specification)
+    nonfunctional_specification = Specification(
+        project_id=project.id,
+        user_story_id=None,
+        type="non_functional",
+        content=json.dumps({"items": []}, ensure_ascii=False),
+        version=1,
+    )
+    db_session.add_all([specification, nonfunctional_specification])
+    db_session.flush()
+    db_session.add_all([
+        SpecificationApproval(
+            specification_id=specification.id,
+            status="approved",
+            approved_by=user.id,
+        ),
+        SpecificationApproval(
+            specification_id=nonfunctional_specification.id,
+            status="approved",
+            approved_by=user.id,
+        ),
+    ])
     db_session.commit()
     db_session.refresh(project)
     db_session.refresh(specification)
