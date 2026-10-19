@@ -35,10 +35,12 @@ function Metric({ label, value, detail, tone = "neutral" }: {
     warn: "border-amber-200 bg-amber-50 text-amber-900",
   };
   return (
-    <div className={`rounded-xl border p-4 ${styles[tone]}`}>
-      <p className="text-sm opacity-80">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-1 text-xs opacity-75">{detail}</p>
+    <div className={`flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3 ${styles[tone]}`}>
+      <p className="shrink-0 text-3xl font-bold leading-none tracking-tight sm:text-4xl">{value}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold leading-tight">{label}</p>
+        <p className="mt-0.5 text-xs leading-tight opacity-70">{detail}</p>
+      </div>
     </div>
   );
 }
@@ -66,7 +68,7 @@ export default function Step2PhanTichYeuCau({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Yêu cầu cần rà soát" value={draftRequirements.length} detail="Yêu cầu chưa xác nhận" />
         <Metric label="Đã phân tích" value={analyzedCount} detail="Tổng yêu cầu đã xác nhận và chưa xác nhận" />
         <Metric label="Đủ thông tin" value={confirmedCount} detail="Yêu cầu đã xác nhận" tone="success" />
