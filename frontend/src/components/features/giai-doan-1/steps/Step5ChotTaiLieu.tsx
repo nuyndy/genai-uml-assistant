@@ -118,7 +118,7 @@ export default function Step5ChotTaiLieu({
       </Card>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         <div><p className="text-sm font-semibold text-slate-900">Chưa chốt tài liệu</p><p className="mt-1 text-xs text-slate-700">Bước này chỉ rà soát và đồng bộ bản nháp. Việc duyệt baseline và xuất file chính thức thuộc Giai đoạn 3.</p></div>
-        <GhostButton onClick={() => onStepChange(4)}>Quay lại Bước 4</GhostButton>
+        
       </div>
     </div>
   );
