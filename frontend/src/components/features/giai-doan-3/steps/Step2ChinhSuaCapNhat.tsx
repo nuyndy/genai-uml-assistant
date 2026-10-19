@@ -1,6 +1,6 @@
 import EditorModule from "react-simple-code-editor";
 import type { ComponentType } from "react";
-import { Card, SoftButton, GhostButton, PrimaryButton } from "../../../common/ui/primitives";
+import { Card, SoftButton } from "../../../common/ui/primitives";
 
 const CodeEditor = (
   (
@@ -29,7 +29,6 @@ interface Props {
 export default function Step2ChinhSuaCapNhat({
   state,
   setState,
-  onStepChange,
   wrapClass,
   singleLineClass,
   nextRelationId,
