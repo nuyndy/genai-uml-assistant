@@ -73,6 +73,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     const initial = emptyWorkflow();
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.actorsUseCasesConfirmed = true;
     render(<Harness initial={initial} />);
 
     const step2 = screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ });
@@ -85,6 +86,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     const initial = emptyWorkflow();
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.actorsUseCasesConfirmed = true;
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 2" }));
     expect(screen.getByText("Biểu đồ use case tổng quát")).toBeTruthy();
@@ -120,6 +122,10 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.scenarios = { 1: { mainFlow: ["Bước 1"], altFlows: [], exceptions: [] } };
+    initial.useCaseDiagramCode = "@startuml\\n@enduml";
+    initial.useCaseDiagramUrl = "https://example.com/use-case.png";
+    initial.useCaseDiagramConfirmed = true;
+    initial.scenariosConfirmed = true;
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ }));
     const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
@@ -135,6 +141,17 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.scenarios = { 1: { mainFlow: ["Bước 1"], altFlows: [], exceptions: [] } };
+    initial.useCaseDiagramCode = "@startuml\\n@enduml";
+    initial.useCaseDiagramUrl = "https://example.com/use-case.png";
+    initial.useCaseDiagramConfirmed = true;
+    initial.scenariosConfirmed = true;
+    initial.interactions = [{
+      usecaseId: 1,
+      type: "sequence",
+      imageUrl: "https://example.com/sequence.png",
+      sourceCode: "@startuml\\n@enduml",
+    }];
+    initial.interactionsConfirmed = true;
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ }));
     await waitFor(() =>
