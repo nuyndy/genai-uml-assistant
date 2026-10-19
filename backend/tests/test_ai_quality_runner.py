@@ -6,7 +6,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from evaluation.run_ai_quality import score_output
+from evaluation.run_ai_quality import run_benchmark, score_output
 
 
 def _case(case_id):
@@ -107,3 +107,24 @@ def test_evaluation_dataset_covers_three_project_phases():
 
     assert {case["phase"] for case in cases} == {1, 2, 3}
     assert len(cases) >= 6
+
+
+
+def test_benchmark_report_keeps_prompt_and_raw_output_for_reproduction(tmp_path):
+    case = _case("US-001")
+    output = json.dumps({
+        "name": "Xem lịch học",
+        "description": "Sinh viên xem lịch học sau khi đăng nhập.",
+        "acceptance_criteria": ["Sinh viên đã đăng nhập có thể xem lịch học."],
+    })
+    outputs_path = tmp_path / "outputs.json"
+    outputs_path.write_text(json.dumps({"US-001": output}), encoding="utf-8")
+
+    report = run_benchmark(outputs_path=outputs_path, run_ollama=False)
+    result = next(item for item in report["results"] if item["id"] == "US-001")
+
+    assert result["raw_output"] == output
+    assert "Cấu trúc tối thiểu mong đợi" in result["prompt"]
+    assert result["output_source"] == "saved_output"
+    assert report["generation_config"]["prompt_mode"] == "generic_benchmark_prompt"
+    assert any("chưa gọi trực tiếp prompt/pipeline" in item for item in report["limitations"])
