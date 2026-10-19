@@ -34,10 +34,10 @@ export function StageBackdrop() {
     >
       <div className="absolute inset-0 bg-gradient-to-br from-[#EAF3EF] via-[#F5FAF7] to-[#C8DDD7]/70" />
       <div
-        className="absolute inset-0 opacity-55"
+        className="absolute inset-0 opacity-75"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(35,101,84,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(44,133,120,0.08) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(24,79,71,0.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(24,79,71,0.24) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       />
