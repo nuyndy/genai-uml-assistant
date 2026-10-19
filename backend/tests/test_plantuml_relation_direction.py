@@ -19,8 +19,8 @@ def _snapshot(relation: str) -> dict:
         "project_id": 1,
         "entities": {
             "class_entity": [
-                {"id": 10, "name": "DonHang"},
-                {"id": 20, "name": "SanPham"},
+                {"id": 10, "name": "DonHang", "attributes": [], "methods": ["+xacNhan()"]},
+                {"id": 20, "name": "SanPham", "attributes": [], "methods": ["+kiemTraTonKho()"]},
             ],
             "class_relation": [
                 {
@@ -290,3 +290,19 @@ def test_baseline_consistency_accepts_waived_issue_with_reason():
 
     assert unresolved == []
     assert len(accepted) == 1
+
+
+
+def test_baseline_consistency_detects_class_member_mismatch():
+    snapshot = _snapshot("C1 --|> C2 : inheritance")
+    snapshot["entities"]["class_entity"][0]["methods"] = ["+xacNhan()", "+huyDon()"]
+
+    issues = _check_class_diagram_snapshot(snapshot)
+
+    mismatch = next(issue for issue in issues if issue["type"] == "class_members_mismatch")
+    assert mismatch["mismatches"] == [{
+        "class_name": "DonHang",
+        "member_type": "methods",
+        "missing_in_snapshot": [],
+        "missing_in_diagram": ["+huyDon()"],
+    }]
