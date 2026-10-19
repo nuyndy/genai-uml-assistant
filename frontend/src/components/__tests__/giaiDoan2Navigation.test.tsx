@@ -83,6 +83,8 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
 
   it("nút ở cuối Bước 1 chuyển sang Bước 2", () => {
     const initial = emptyWorkflow();
+    initial.actors = [{ id: 1, name: "Khách hàng" }];
+    initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 2" }));
     expect(screen.getByText("Biểu đồ use case tổng quát")).toBeTruthy();
@@ -107,7 +109,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     render(<Harness initial={initial} />);
-    fireEvent.click(screen.getByRole("button", { name: /Sinh biểu đồ UC tổng quát/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ }));
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 3" }));
     const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
     expect(toStep4).toBeDisabled();
@@ -119,7 +121,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.scenarios = { 1: { mainFlow: ["Bước 1"], altFlows: [], exceptions: [] } };
     render(<Harness initial={initial} />);
-    fireEvent.click(screen.getByRole("button", { name: /Sinh kịch bản use case chi tiết/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ }));
     const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
     expect(toStep4).not.toBeDisabled();
     fireEvent.click(toStep4);
