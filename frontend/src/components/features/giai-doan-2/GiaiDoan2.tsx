@@ -11,7 +11,6 @@ import {
   writeUmlConfirmations,
   type UmlConfirmationState,
 } from "./umlConfirmationStorage";
-import { STAGES } from "../../../stages";
 import {
   deleteClass,
   extractProjectActorsUseCasesBatch,
