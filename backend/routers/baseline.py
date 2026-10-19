@@ -644,6 +644,49 @@ def _check_class_diagram_snapshot(snapshot: dict[str, Any]) -> list[dict[str, An
             "message": str(exc),
         }]
 
+    def normalize_members(value: Any) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if isinstance(value, str):
+            try:
+                decoded = json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                decoded = None
+            if isinstance(decoded, list):
+                return [str(item).strip() for item in decoded if str(item).strip()]
+            return [line.strip() for line in value.splitlines() if line.strip()]
+        return []
+
+    saved_classes_by_name = {
+        str(item.get("name", "")).strip().casefold(): item
+        for item in classes
+        if isinstance(item, dict) and str(item.get("name", "")).strip()
+    }
+    member_mismatches = []
+    for parsed_class in parsed.get("classes", []):
+        class_name = str(parsed_class.get("name", "")).strip()
+        saved_class = saved_classes_by_name.get(class_name.casefold())
+        if saved_class is None:
+            continue
+        for member_type in ("attributes", "methods"):
+            diagram_members = normalize_members(parsed_class.get(member_type))
+            saved_members = normalize_members(saved_class.get(member_type))
+            if diagram_members != saved_members:
+                member_mismatches.append({
+                    "class_name": class_name,
+                    "member_type": member_type,
+                    "missing_in_snapshot": sorted(set(diagram_members) - set(saved_members)),
+                    "missing_in_diagram": sorted(set(saved_members) - set(diagram_members)),
+                })
+    if member_mismatches:
+        issues.append({
+            "type": "class_members_mismatch",
+            "diagram_id": diagram.get("id"),
+            "mismatches": member_mismatches,
+        })
+
     parsed_classes = {
         str(item.get("name", "")).strip().casefold()
         for item in parsed.get("classes", [])
