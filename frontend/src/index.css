@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
-/* Ultra-light pastel system: bright white canvas, airy mint, sky and lavender; dark colors are reserved for readable text. */
+/* Deep Forest design system: distinct forest surfaces, teal actions, lime status accents. */
 :root {
-  --bg: #FFFFFF;
+  --bg: #F5FAF7;
   --surface: #FFFFFF;
-  --surface-alt: #F8FBFF;
-  --border: #E5EDF5;
+  --surface-alt: #EAF3EF;
+  --border: #C8DDD7;
 
-  --text: #243746;
-  --text-muted: #64798A;
-  --heading: #365F78;
+  --text: #123F3A;
+  --text-muted: #52736B;
+  --heading: #184F47;
 
-  --primary: #65BDA7;
-  --primary-hover: #4BA88F;
-  --secondary: #A5E0D1;
+  --primary: #236554;
+  --primary-hover: #2C8578;
+  --secondary: #C8DDD7;
 
-  --accent: #C9D4FF;
-  --accent-text: #596DAA;
+  --accent: #B6CF66;
+  --accent-text: #123F3A;
 
-  --success: #6CC6A7;
-  --warning: #B77936;
-  --danger: #C35E78;
+  --success: #4F9E16;
+  --warning: #886B22;
+  --danger: #B54747;
 
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
@@ -35,63 +35,95 @@
 }
 
 @theme {
-  --color-slate-50: #FBFDFF;
-  --color-slate-100: #F4F8FC;
-  --color-slate-200: #E5EDF5;
-  --color-slate-300: #D4E1EC;
-  --color-slate-400: #8CA1B1;
-  --color-slate-500: #64798A;
-  --color-slate-600: #4B6273;
-  --color-slate-700: #344B5B;
-  --color-slate-800: #243746;
-  --color-slate-900: #1B303E;
-  --color-slate-950: #122530;
+  --color-slate-50: #F5FAF7;
+  --color-slate-100: #EAF3EF;
+  --color-slate-200: #C8DDD7;
+  --color-slate-300: #A8C7BE;
+  --color-slate-400: #789A90;
+  --color-slate-500: #52736B;
+  --color-slate-600: #3C6259;
+  --color-slate-700: #28564E;
+  --color-slate-800: #184F47;
+  --color-slate-900: #123F3A;
+  --color-slate-950: #0A2C28;
 
-  --color-violet-50: #FAFAFF;
-  --color-violet-100: #F0F2FF;
-  --color-violet-200: #E2E7FF;
-  --color-violet-300: #D0D9FF;
-  --color-violet-400: #BAC8FF;
-  --color-violet-500: #9CAFEF;
-  --color-violet-600: #7D94DA;
-  --color-violet-700: #536DB7;
-  --color-violet-800: #405A9F;
-  --color-violet-900: #344B86;
-  --color-violet-950: #293B6B;
+  --color-emerald-50: #F0F7F3;
+  --color-emerald-100: #DDECE5;
+  --color-emerald-200: #C8DDD7;
+  --color-emerald-300: #B6CF66;
+  --color-emerald-400: #88A731;
+  --color-emerald-500: #4F9E16;
+  --color-emerald-600: #2C8578;
+  --color-emerald-700: #236554;
+  --color-emerald-800: #184F47;
+  --color-emerald-900: #123F3A;
 
-  --color-emerald-50: #F4FFFB;
-  --color-emerald-100: #E5FBF4;
-  --color-emerald-200: #CFF3E7;
-  --color-emerald-300: #B0E9D7;
-  --color-emerald-400: #8ED8C1;
-  --color-emerald-500: #67C6A8;
-  --color-emerald-600: #49AD8D;
-  --color-emerald-700: #368F75;
-  --color-emerald-800: #2F765F;
-  --color-emerald-900: #285D4D
+  --color-green-50: #F0F7F3;
+  --color-green-100: #DDECE5;
+  --color-green-200: #C8DDD7;
+  --color-green-300: #B6CF66;
+  --color-green-400: #88A731;
+  --color-green-500: #4F9E16;
+  --color-green-600: #2C8578;
+  --color-green-700: #236554;
+  --color-green-800: #184F47;
+  --color-green-900: #123F3A;
 
-  /* Replace old amber/cream utilities with a clean pastel sky-blue scale. */
-  --color-amber-50: #F2F8FF;
-  --color-amber-100: #E2F0FF;
-  --color-amber-200: #C8E2FA;
-  --color-amber-300: #A7D0F0;
-  --color-amber-400: #7EB5DE;
-  --color-amber-500: #5D9BCB;
-  --color-amber-600: #477FAE;
-  --color-amber-700: #37658F;
-  --color-amber-800: #2C5275;
-  --color-amber-900: #24425E;
+  --color-teal-50: #F0F7F3;
+  --color-teal-100: #DDECE5;
+  --color-teal-200: #C8DDD7;
+  --color-teal-300: #B6CFCC;
+  --color-teal-400: #6CB8AA;
+  --color-teal-500: #2C8578;
+  --color-teal-600: #236554;
+  --color-teal-700: #184F47;
+  --color-teal-800: #123F3A;
+  --color-teal-900: #0A2C28;
 
-  --color-rose-50: #FFF4F7;
-  --color-rose-100: #FFE4EB;
-  --color-rose-200: #F8C8D5;
-  --color-rose-300: #EFA5B9;
-  --color-rose-400: #E1849E;
-  --color-rose-500: #D66D8B;
-  --color-rose-600: #C35E78;
-  --color-rose-700: #A94A65;
-  --color-rose-800: #8D3D55;
-  --color-rose-900: #733448;
+  --color-violet-50: #F0F7F3;
+  --color-violet-100: #DDECE5;
+  --color-violet-200: #C8DDD7;
+  --color-violet-300: #A8C7BE;
+  --color-violet-400: #789A90;
+  --color-violet-500: #52736B;
+  --color-violet-600: #3C6259;
+  --color-violet-700: #28564E;
+  --color-violet-800: #184F47;
+  --color-violet-900: #123F3A;
+  --color-violet-950: #0A2C28;
+
+  --color-sky-50: #F5FAF7;
+  --color-sky-100: #EAF3EF;
+  --color-sky-200: #C8DDD7;
+  --color-sky-300: #A8C7BE;
+  --color-sky-400: #789A90;
+  --color-sky-500: #52736B;
+  --color-sky-600: #3C6259;
+  --color-sky-700: #28564E;
+  --color-sky-800: #184F47;
+  --color-sky-900: #123F3A;
+
+  --color-amber-50: #F7F8ED;
+  --color-amber-100: #EBEED0;
+  --color-amber-200: #D7E0A1;
+  --color-amber-300: #B6CF66;
+  --color-amber-400: #88A731;
+  --color-amber-500: #748B28;
+  --color-amber-600: #647720;
+  --color-amber-700: #4E5F1C;
+  --color-amber-800: #3C4A19;
+  --color-amber-900: #2A3514;
+
+  --color-rose-50: #FFF5F3;
+  --color-rose-100: #FBE4DF;
+  --color-rose-200: #F1C7BE;
+  --color-rose-300: #E49A8B;
+  --color-rose-400: #D66F61;
+  --color-rose-500: #C75245;
+  --color-rose-600: #B54747;
+  --color-rose-700: #963B3B;
+  --color-rose-800: #7B3030;
+  --color-rose-900: #642828;
 }
 
 #root {
@@ -131,7 +163,7 @@ code,
   bottom: 0;
   z-index: 50;
   border-radius: 0.9rem 0.9rem 0 0;
-  border-top: 1px solid rgb(191 230 217 / 80%);
+  border-top: 1px solid #C8DDD7;\n  background: #123F3A;\n  color: #F5FAF7;\n  box-shadow: 0 -8px 28px rgb(18 63 58 / 12%);
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
@@ -143,12 +175,12 @@ main { padding-bottom: 6.5rem; }
   .workflow-action-bar button { max-width: 100%; white-space: normal; }
 }
 
-::selection { color: #1B303E; background: #BFE6D9; }
+::selection { color: #123F3A; background: #B6CF66; }
 
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 3px solid rgb(117 185 168 / 45%);
+  outline: 3px solid rgb(44 133 120 / 55%);
   outline-offset: 2px;
 }
 
@@ -163,7 +195,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   tab-size: 2;
 }
 
-.uml-code-panel::selection { color: #244052; background: #CFF3E7; }
+.uml-code-panel::selection { color: #123F3A; background: #B6CF66; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
