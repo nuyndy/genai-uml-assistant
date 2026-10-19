@@ -97,6 +97,7 @@ const mocked = vi.hoisted(() => {
           ].map((group) => ({ group, criteria: "Tiêu chí", requirement: "Yêu cầu" })),
         }),
         version: 1,
+        approval_status: "draft",
       };
       state.records = [...state.records.filter((item) => item.id !== record.id), record];
       return Promise.resolve(record);
