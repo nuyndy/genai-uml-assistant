@@ -333,10 +333,8 @@ export default function Step4DacTa({
       </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton onClick={() => onStepChange(3)}>Quay lại Bước 3</GhostButton>
-        <PrimaryButton disabled={!canContinue} onClick={() => onStepChange(5)}>
-          Tiếp tục sang Bước 5
-        </PrimaryButton>
+        
+        
           {!canContinue && <p className="max-w-sm text-right text-xs text-amber-800">Cần tạo đặc tả chức năng cho mọi User Story và đặc tả phi chức năng trước khi tiếp tục.</p>}
       </div>
     </div>
