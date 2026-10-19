@@ -1,4 +1,4 @@
-from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot
+from routers.baseline import _check_acceptance_criteria_snapshot, _check_class_diagram_snapshot, _check_requirement_coverage_snapshot, _check_trace_links_snapshot, _check_use_case_scenarios_snapshot, _partition_baseline_issues
 from services.plantuml_parser import parse_plantuml
 
 
@@ -258,3 +258,35 @@ def test_baseline_consistency_accepts_use_case_with_scenario_and_functional_spec
     }
 
     assert _check_use_case_scenarios_snapshot(snapshot) == []
+
+
+
+def test_baseline_consistency_requires_reason_for_accepted_discrepancy():
+    unresolved, accepted = _partition_baseline_issues([
+        {"type": "term_mismatch", "status": "accepted"},
+        {
+            "type": "known_limitation",
+            "status": "waived",
+            "acceptance_reason": "Ngoại lệ được chủ dự án chấp nhận.",
+        },
+    ])
+
+    assert unresolved == [{"type": "term_mismatch", "status": "accepted"}]
+    assert accepted == [{
+        "type": "known_limitation",
+        "status": "waived",
+        "acceptance_reason": "Ngoại lệ được chủ dự án chấp nhận.",
+    }]
+
+
+def test_baseline_consistency_accepts_waived_issue_with_reason():
+    unresolved, accepted = _partition_baseline_issues([
+        {
+            "type": "known_limitation",
+            "status": "accepted",
+            "reason": "Được xác nhận là nằm ngoài phạm vi phiên bản này.",
+        },
+    ])
+
+    assert unresolved == []
+    assert len(accepted) == 1
