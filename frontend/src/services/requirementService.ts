@@ -199,6 +199,13 @@ export function updateRequirement(
   });
 }
 
+export function saveRequirementUserStory(requirementId: number, payload: UserStoryDraft): Promise<UserStory> {
+  return apiFetch(`/api/requirements/${requirementId}/user-story`, {
+    method: "POST",
+    body: JSON.stringify({ role: payload.role, feature: payload.feature, benefit: payload.benefit, acceptance_criteria: payload.acceptance_criteria }),
+  });
+}
+
 export function confirmRequirement(id: number): Promise<UserStory> {
   return apiFetch(`/api/requirements/${id}/confirm`, { method: "POST" });
 }
