@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Card, SoftButton, PrimaryButton, EmptyState, StatusBadge, wrapClass } from "../../../common/ui/primitives";
+import { Card, SoftButton, EmptyState, StatusBadge, wrapClass } from "../../../common/ui/primitives";
 import type {
   RequirementAnalysis,
   RequirementRecord,
@@ -64,7 +64,6 @@ export default function Step2PhanTichYeuCau({
   loadingAnalysis,
   busy,
   runBatchAnalysis,
-  onStepChange,
   requirementTitle,
   wrapClass: inheritedWrapClass,
 }: Props) {
@@ -73,7 +72,6 @@ export default function Step2PhanTichYeuCau({
   const analyzedCount = draftRequirements.filter((item) => Boolean(analyses[item.id])).length;
   const missingCount = analyzedCount - completeCount;
   const pendingCount = draftRequirements.length - analyzedCount;
-  const canContinue = !busy && !loadingAnalysis;
 
   return (
     <div className="space-y-6">
