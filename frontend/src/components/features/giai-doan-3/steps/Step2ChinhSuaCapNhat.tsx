@@ -125,7 +125,7 @@ export default function Step2ChinhSuaCapNhat({
           <div className="py-8 text-center text-sm text-slate-500">Chưa có use case nào</div>
         ) : (
           <div className="space-y-2">
-            {state.usecases.map((uc, index) => (
+            {state.usecases.map((uc) => (
               <div key={uc.id} className="flex items-center gap-2">
                 <input
                   value={uc.name}
@@ -160,7 +160,7 @@ export default function Step2ChinhSuaCapNhat({
           <div className="py-8 text-center text-sm text-slate-500">Chưa có lớp nào</div>
         ) : (
           <div className="space-y-4">
-            {state.umlClasses.map((umlClass, index) => (
+            {state.umlClasses.map((umlClass) => (
               <div key={umlClass.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <input
@@ -189,7 +189,7 @@ export default function Step2ChinhSuaCapNhat({
                   <div>
                     <div className="text-xs font-semibold text-slate-700 mb-1">Thuộc tính</div>
                     <div className="space-y-1">
-                      {umlClass.attributes.map((attr, i) => (
+                      {umlClass.attributes.map((attr: string, i: number) => (
                         <div key={i} className="flex items-center gap-1">
                           <input
                             value={attr}
@@ -225,7 +225,7 @@ export default function Step2ChinhSuaCapNhat({
                   <div>
                     <div className="text-xs font-semibold text-slate-700 mb-1">Phương thức</div>
                     <div className="space-y-1">
-                      {umlClass.methods.map((method, i) => (
+                      {umlClass.methods.map((method: string, i: number) => (
                         <div key={i} className="flex items-center gap-1">
                           <input
                             value={method}
