@@ -61,7 +61,7 @@ function Harness({ initial, stage, step }: {
     <>
       <GiaiDoanStepper stage={stage} maxUnlockedStage={3} completedStages={[]} />
       <Stepper stage={stage} step={step} maxUnlockedStep={5} />
-      <Panel state={state} setState={setState} step={step} onStepChange={noop} />
+      <Panel projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
     </>
   );
 }
