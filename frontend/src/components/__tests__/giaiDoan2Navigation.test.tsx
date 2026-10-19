@@ -74,12 +74,15 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.actorsUseCasesConfirmed = true;
+    initial.useCaseDiagramCode = "@startuml\\n@enduml";
+    initial.useCaseDiagramUrl = "https://example.com/use-case.png";
+    initial.useCaseDiagramConfirmed = true;
     render(<Harness initial={initial} />);
 
     const step2 = screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ });
     expect(step2).not.toBeDisabled();
     fireEvent.click(step2);
-    expect(screen.getByText("Biểu đồ use case tổng quát")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Biểu đồ use Case tổng quát/i })).toBeTruthy();
   });
 
   it("nút ở cuối Bước 1 chuyển sang Bước 2", () => {
@@ -103,16 +106,18 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     const step3 = screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ });
     expect(step3).not.toBeDisabled();
     fireEvent.click(step3);
-    expect(screen.getByText("Sinh kịch bản use case")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Sinh kịch bản use case/i })).toBeTruthy();
   });
 
   it("Bước 3 sang Bước 4 bị chặn khi chưa có kịch bản nào", () => {
     const initial = emptyWorkflow();
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
+    initial.useCaseDiagramCode = "@startuml\\n@enduml";
+    initial.useCaseDiagramUrl = "https://example.com/use-case.png";
+    initial.useCaseDiagramConfirmed = true;
     render(<Harness initial={initial} />);
-    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 3" }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ }));
     const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
     expect(toStep4).toBeDisabled();
   });
@@ -158,6 +163,6 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
       expect(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" })).toBeTruthy(),
     );
     fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" }));
-    expect(screen.getByText("Mô hình lớp suy luận")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Mô hình lớp/i })).toBeTruthy();
   });
 });
