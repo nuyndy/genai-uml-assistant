@@ -135,3 +135,54 @@ code,
 .progress-indeterminate {
   animation: progress-indeterminate 1.4s ease-in-out infinite alternate;
 }
+
+
+/* Polished workspace: fewer outlines, clearer hierarchy and readable code panels. */
+::selection {
+  color: #f8faf9;
+  background: #2e6b4f;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgb(78 143 111 / 35%);
+  outline-offset: 2px;
+}
+
+.uml-code-panel {
+  color: #d5e8dc;
+  background: #102d24;
+  border-color: rgb(255 255 255 / 8%);
+  border-radius: 0 0 1rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  tab-size: 2;
+}
+
+.uml-code-panel::selection {
+  color: #fff;
+  background: #39785a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
