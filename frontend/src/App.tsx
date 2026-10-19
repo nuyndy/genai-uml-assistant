@@ -244,7 +244,7 @@ function App() {
             aria-label="Về trang chủ GenAI UML Assistant"
             className="flex min-w-0 shrink-0 items-center gap-2 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:gap-3"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-900 text-sm font-bold text-white shadow-sm">U</span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-sm font-bold text-white shadow-sm">U</span>
             <span className="hidden min-w-0 sm:block">
               <span className="block max-w-[12rem] truncate text-sm font-bold tracking-tight text-slate-900">GenAI UML Assistant</span>
               <span className="block max-w-[12rem] truncate text-[11px] text-slate-500">{activeProject.name}</span>
@@ -300,7 +300,7 @@ function App() {
         </div>
       </header>
       {stageLockReason() && (
-        <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 sm:px-6 lg:px-8">
+        <div role="status" className="border-b border-amber-200 bg-sky-50 px-4 py-2 text-xs text-sky-800 sm:px-6 lg:px-8">
           {stageLockReason()}
         </div>
       )}
@@ -365,7 +365,7 @@ function App() {
                     onClick={() => setStep(item.id)}
                     className={`flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold transition sm:px-3 sm:text-sm lg:px-4 ${
                       step === item.id
-                        ? "bg-emerald-800 text-white shadow-sm"
+                        ? "bg-emerald-600 text-white shadow-sm"
                         : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800"
                     }`}
                   >
@@ -382,7 +382,7 @@ function App() {
             title="Bước tiếp"
             disabled={step >= STAGES[stage].steps.length}
             onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))}
-            className="shrink-0 rounded-xl bg-emerald-800 px-2.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
+            className="shrink-0 rounded-xl bg-emerald-600 px-2.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
           >
             <span className="hidden xl:inline">Bước tiếp</span> →
           </button>
