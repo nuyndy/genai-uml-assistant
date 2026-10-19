@@ -137,6 +137,33 @@ code,
 }
 
 
+/* Persistent workflow chrome: stage navigation stays at the top and primary actions stay visible. */
+.workflow-action-bar {
+  position: fixed !important;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  border-radius: 0.9rem 0.9rem 0 0;
+  border-top: 1px solid rgb(183 208 189 / 75%);
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+main {
+  padding-bottom: 6.5rem;
+}
+@media (max-width: 640px) {
+  main {
+    padding-bottom: 7.5rem;
+  }
+  .workflow-action-bar {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+  .workflow-action-bar button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
 /* Polished workspace: fewer outlines, clearer hierarchy and readable code panels. */
 ::selection {
   color: #f8faf9;
