@@ -23,7 +23,6 @@ interface Props {
   onCheckCoverage: () => void;
   onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
   onAddSelectedCoverage: () => void;
-  onStepChange: (step: number) => void;
   requirementTitle: (raw: RawRequirement) => string;
 }
 
@@ -32,7 +31,7 @@ export default function Step1NhapYeuCau({
   coverageAnalysis, loadingCoverage, addedCoverageSuggestions, selectedCoverageSuggestions,
   selectedCoverageIndexes, onChangeNewField, onChangeNewList, onAddRequirement,
   onRemoveRequirement, onCheckCoverage, onToggleCoverageSuggestion, onAddSelectedCoverage,
-  onStepChange, requirementTitle,
+  requirementTitle,
 }: Props) {
   const draftCount = requirements.filter((item) => item.status === "draft").length;
   const confirmedCount = requirements.length - draftCount;
@@ -83,7 +82,6 @@ export default function Step1NhapYeuCau({
             </div> : <EmptyState title="Không có gợi ý bổ sung" hint="AI chưa phát hiện chức năng thiết yếu nào khác trong lần kiểm tra này." />}
           </div>
         )}
-        <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-slate-500">Bạn vẫn có thể quay lại chỉnh sửa danh sách ở bất kỳ lúc nào.</p><PrimaryButton disabled={busy || !loaded || !coverageAnalysis || selectedCoverageIndexes.length > 0} onClick={() => onStepChange(2)}>Tiếp tục sang Bước 2</PrimaryButton></div>
       </Card>}
     </div>
   );
