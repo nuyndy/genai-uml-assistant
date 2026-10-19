@@ -10,7 +10,7 @@ import {
   listProjects,
   type Project,
 } from "./components/home/projectStore";
-import { STAGES, type StageId } from "./stages";
+import { type StageId } from "./stages";
 import { StageBackdrop } from "./components/common/ui/primitives";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { emptyWorkflow, type WorkflowState } from "./types/workflow";
