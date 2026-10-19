@@ -1,4 +1,4 @@
-import { Card, GhostButton, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
+import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
 import type { UserStoryDraft } from "../../../../services/requirementService";
 
@@ -33,7 +33,6 @@ export default function Step3UserStory({
   generateStoryDrafts,
   changeStoryDraft,
   confirmAll,
-  onStepChange,
   requirementTitle,
   wrapClass,
   inputClass,
