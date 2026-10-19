@@ -85,13 +85,13 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     expect(screen.getByRole("heading", { name: /Biểu đồ use Case tổng quát/i })).toBeTruthy();
   });
 
-  it("nút ở cuối Bước 1 chuyển sang Bước 2", () => {
+  it("chuyển từ Bước 1 sang Bước 2 bằng sub-stepper", () => {
     const initial = emptyWorkflow();
     initial.actors = [{ id: 1, name: "Khách hàng" }];
     initial.usecases = [{ id: 1, name: "Đặt hàng", description: "" }];
     initial.actorsUseCasesConfirmed = true;
     render(<Harness initial={initial} />);
-    fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 2" }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ Use Case/ }));
     expect(screen.getByText("Biểu đồ use case tổng quát")).toBeTruthy();
   });
 
@@ -118,7 +118,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.useCaseDiagramConfirmed = true;
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ }));
-    const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
+    const toStep4 = screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ });
     expect(toStep4).toBeDisabled();
   });
 
@@ -133,7 +133,7 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     initial.scenariosConfirmed = true;
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: /Xác nhận kịch bản Use Case/ }));
-    const toStep4 = screen.getByRole("button", { name: "Tiếp tục sang Bước 4" });
+    const toStep4 = screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ });
     expect(toStep4).not.toBeDisabled();
     fireEvent.click(toStep4);
     // Tên bước xuất hiện cả trên sub-stepper lẫn tiêu đề card.
@@ -189,9 +189,9 @@ describe("Chuyển bước ở Giai đoạn 2", () => {
     render(<Harness initial={initial} />);
     fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ tương tác/ }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" })).toBeTruthy(),
+      expect(screen.getByRole("button", { name: /Xác nhận biểu đồ lớp/ })).toBeTruthy(),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Tiếp tục sang Bước 5" }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận biểu đồ lớp/ }));
     expect(screen.getByRole("heading", { name: /Mô hình lớp/i })).toBeTruthy();
   });
 });
