@@ -720,6 +720,8 @@ def get_specification_document(
         "baseline_version": (
             baseline.version if baseline is not None else None
         ),
+        "baseline_status": baseline.status if baseline is not None else "preview",
+        "is_official": baseline is not None and baseline.status == "approved",
         "updated_at": (
             (baseline.approved_at or baseline.created_at)
             if baseline is not None
