@@ -43,14 +43,13 @@ export default function Step3UserStory({
   inputClass,
 }: Props) {
   const [activeDraftIndex, setActiveDraftIndex] = useState(0);
-  const orderedDrafts = [...draftRequirements].reverse();
-  const [activeDraftIndex, setActiveDraftIndex] = useState(0);
   const [activeSavedIndex, setActiveSavedIndex] = useState(0);
   const [savedEdits, setSavedEdits] = useState<Record<number, UserStory>>({});
   const [saving, setSaving] = useState(false);
   const [improving, setImproving] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
   const orderedDrafts = [...draftRequirements].reverse();
+  const activeDraftRequirement = orderedDrafts[activeDraftIndex];
   const orderedSavedStories = [...savedStories].sort((a, b) => b.id - a.id);
   const activeSavedStoryBase = orderedSavedStories[activeSavedIndex];
   const activeSavedStory = activeSavedStoryBase ? (savedEdits[activeSavedStoryBase.id] ?? activeSavedStoryBase) : undefined;
@@ -93,7 +92,7 @@ export default function Step3UserStory({
                 <h3 className={"mt-1 break-words text-base font-semibold leading-6 text-slate-900 " + textWrap}>{activeSavedStory.feature}</h3>
                 <div className="mt-2"><StatusBadge tone="success">Đã lưu</StatusBadge></div>
               </div>
-              <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Yêu cầu AI hoàn thiện US"}</SoftButton>
+              <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Tạo lại bản nháp bằng AI"}</SoftButton>
             </div>
             <div className="grid gap-3 p-4 sm:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700">Vai trò *<input value={activeSavedStory.role ?? ""} onChange={(e) => { setSavedEdits((prev) => ({ ...prev, [activeSavedStory.id]: { ...activeSavedStory, role: e.target.value } })); setActionMessage(""); }} className={inputClass + " mt-1.5 bg-white"} /></label>
@@ -202,9 +201,13 @@ export default function Step3UserStory({
           )}
           <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
             <SoftButton disabled={activeDraftIndex === 0 || busy} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
-            <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>Nút lưu sẽ xác nhận tất cả User Story đang chờ duyệt.</p>
-            <div className="flex flex-col gap-2 sm:flex-row"><PrimaryButton disabled={!canConfirm} onClick={() => void confirmAll()}>{busy ? "Đang lưu..." : "Lưu US & xác nhận tất cả"} <span aria-hidden="true">→</span></PrimaryButton><SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton></div>
+            <p className={`text-xs leading-5 text-slate-500 ${textWrap}`}>Lưu riêng User Story đang mở và xác nhận yêu cầu tương ứng.</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <PrimaryButton disabled={!activeDraftRequirement || !storyDrafts[activeDraftRequirement.id] || ![storyDrafts[activeDraftRequirement.id]?.role, storyDrafts[activeDraftRequirement.id]?.feature, storyDrafts[activeDraftRequirement.id]?.benefit, storyDrafts[activeDraftRequirement.id]?.acceptance_criteria].every((v) => Boolean(v?.trim())) || busy || saving} onClick={() => void (async () => { if (!activeDraftRequirement) return; setSaving(true); setActionMessage(""); try { const saved = await saveRequirementUserStory(activeDraftRequirement.id, storyDrafts[activeDraftRequirement.id]); setActionMessage("Đã lưu US-" + String(saved.id).padStart(3, "0") + ". Đang đồng bộ..."); window.location.reload(); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
+              <SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton>
+            </div>
           </div>
+          {actionMessage && <p role="status" className="mt-3 text-sm text-slate-600">{actionMessage}</p>}
           {!allStoryDraftsReady && !loadingStoryDrafts && <p className="mt-3 text-right text-sm text-amber-800">Cần hoàn thiện đủ 4 trường cho mọi User Story trước khi xác nhận.</p>}
         </Card>
       )}
