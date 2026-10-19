@@ -1,5 +1,4 @@
-import type { ReactNode } from "react";
-import { Card, SoftButton, EmptyState, StatusBadge, wrapClass } from "../../../common/ui/primitives";
+import { Card, SoftButton, EmptyState } from "../../../common/ui/primitives";
 import type { RequirementCoverageAnalysis, RequirementCoverageSuggestion, RequirementRecord } from "../../../../services/requirementService";
 import type { RawRequirement } from "../../../../types/workflow";
 
@@ -22,22 +21,6 @@ interface Props {
   onStepChange: (step: number) => void;
   requirementTitle: (raw: RawRequirement) => string;
   wrapClass: string;
-}
-
-type BadgeTone = "success" | "warn" | "muted";
-
-const BADGE_COLORS: Record<BadgeTone, string> = {
-  success: "bg-emerald-100 text-emerald-800",
-  warn: "bg-amber-100 text-amber-800",
-  muted: "bg-slate-100 text-slate-600",
-};
-
-function StatusBadgeLocal({ tone, children }: { tone: BadgeTone; children: ReactNode }) {
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${BADGE_COLORS[tone]}`}>
-      {children}
-    </span>
-  );
 }
 
 function Metric({ label, value, detail, tone = "neutral" }: {
