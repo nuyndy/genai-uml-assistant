@@ -26,10 +26,17 @@ function App() {
   /* Giai đoạn lớn đang mở và bước con tương ứng. */
   const [stage, setStage] = useState<StageId>(1);
   const [step, setStep] = useState(1);
+  const stepNavRef = useRef<HTMLElement | null>(null);
   const activeStepButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    activeStepButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const nav = stepNavRef.current;
+    if (!nav) return;
+    if (step >= STAGES[stage].steps.length) {
+      nav.scrollTo({ left: nav.scrollWidth, behavior: "smooth" });
+    } else {
+      activeStepButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
   }, [stage, step]);
 
   /** Dữ liệu đang dùng ở các giai đoạn; Giai đoạn 1 luôn đọc và ghi qua API. */
@@ -346,11 +353,12 @@ function App() {
           >
             ← <span className="hidden xl:inline">Bước trước</span>
           </button>
-          <nav aria-label="Điều hướng bước" className="min-w-0 flex-1 overflow-x-auto">
-            <ol className="flex w-max min-w-full items-center justify-start gap-1 py-0.5 sm:justify-center sm:gap-2">
+          <nav ref={stepNavRef} aria-label="Điều hướng bước" className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <ol className="flex w-max min-w-full items-center justify-center gap-1 py-0.5 sm:gap-2">
               {STAGES[stage].steps.map((item) => (
                 <li key={item.id} className="shrink-0">
                   <button
+                    ref={step === item.id ? activeStepButtonRef : undefined}
                     type="button"
                     aria-current={step === item.id ? "step" : undefined}
                     title={item.label}
