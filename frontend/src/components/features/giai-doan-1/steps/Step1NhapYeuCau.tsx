@@ -55,7 +55,7 @@ export default function Step1NhapYeuCau({
                 const rawValue = requirementValues[item.id];
                 return <li key={item.id} className="flex min-w-0 items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:bg-slate-50">
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">{String(item.id).padStart(2, "0")}</span>
-                  <div className="min-w-0 flex-1"><p className={`break-words text-sm font-medium text-slate-900 ${wrapClass}`}>{rawValue ? requirementTitle(rawValue) : `Yêu cầu ${item.id}`}</p><div className="mt-2"><StatusBadge tone={item.status === "draft" ? "warn" : "success"}>{item.status === "draft" ? "Bản nháp" : "Đã xác nhận"}</StatusBadge></div></div>
+                  <div className="min-w-0 flex-1"><p className={`break-words text-sm font-medium text-slate-900 ${wrapClass}`}>{rawValue ? requirementTitle(rawValue) : `Yêu cầu ${item.id}`}</p></div>
                   {item.status === "draft" && <RemoveButton label={`Xóa yêu cầu ${item.id}`} disabled={busy} onClick={() => onRemoveRequirement(item.id)} />}
                 </li>;
               })}
