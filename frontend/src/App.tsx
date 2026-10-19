@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GiaiDoanStepper from "./components/common/GiaiDoanStepper";
 import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
@@ -26,6 +26,11 @@ function App() {
   /* Giai đoạn lớn đang mở và bước con tương ứng. */
   const [stage, setStage] = useState<StageId>(1);
   const [step, setStep] = useState(1);
+  const activeStepButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    activeStepButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [stage, step]);
 
   /** Dữ liệu đang dùng ở các giai đoạn; Giai đoạn 1 luôn đọc và ghi qua API. */
   const [workflow, setWorkflow] = useState<WorkflowState>(emptyWorkflow);
