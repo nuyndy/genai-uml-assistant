@@ -230,7 +230,7 @@ function App() {
 
   // 2) Workspace: 3 GIAI ĐOẠN lớn, mỗi giai đoạn có sub-stepper riêng.
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
+    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50">
       <div className="fixed inset-0 z-0">
         <StageBackdrop />
       </div>
