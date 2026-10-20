@@ -42,10 +42,10 @@ function ArrayEditor({
       {title}
       <textarea
         aria-label={title}
-        rows={Math.min(18, Math.max(5, value.reduce((total, line) => total + Math.ceil(Math.max(line.length, 1) / 72), 0) + 1))}
+        rows={Math.min(12, Math.max(3, value.reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 72)), 0)))}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 block h-auto min-h-[8rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+        className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
       />
     </label>
   );
@@ -70,7 +70,7 @@ export function FunctionalSpecificationEditor({
       {multiline ? (
         <textarea
           aria-label={label}
-          rows={3}
+          rows={Math.min(8, Math.max(2, Math.ceil(value[key].length / 72)))}
           value={value[key]}
           onChange={(event) => onChange({ ...value, [key]: event.target.value })}
           className={`${inputClass} mt-1 w-full min-w-0 resize-y whitespace-pre-wrap`}
@@ -287,21 +287,21 @@ export function NonFunctionalSpecificationEditor({
             Tiêu chí
             <textarea
               aria-label={`Tiêu chí ${item.group}`}
-              rows={3}
+              rows={Math.min(8, Math.max(2, Math.ceil(item.criteria.length / 72)))}
               value={item.criteria}
               onChange={(event) => {
                 const items = [...value.items];
                 items[index] = { ...item, criteria: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 block h-auto min-h-[7rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+              className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
             Yêu cầu
             <textarea
               aria-label={`Yêu cầu ${item.group}`}
-              rows={3}
+              rows={Math.min(8, Math.max(2, Math.ceil(item.requirement.length / 72)))}
               value={item.requirement}
               onChange={(event) => {
                 const items = [...value.items];
