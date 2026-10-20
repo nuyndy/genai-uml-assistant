@@ -42,10 +42,10 @@ function ArrayEditor({
       {title}
       <textarea
         aria-label={title}
-        rows={Math.min(6, Math.max(2, value.length))}
+        rows={Math.min(14, Math.max(4, value.length + 1))}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-36 overflow-y-auto resize-y`}
+        className={`${inputClass} mt-1 w-full min-w-0 resize-y whitespace-pre-wrap`}
       />
     </label>
   );
@@ -73,7 +73,7 @@ export function FunctionalSpecificationEditor({
           rows={3}
           value={value[key]}
           onChange={(event) => onChange({ ...value, [key]: event.target.value })}
-          className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-28 overflow-y-auto resize-y`}
+          className={`${inputClass} mt-1 w-full min-w-0 resize-y whitespace-pre-wrap`}
         />
       ) : (
         <input
@@ -287,7 +287,7 @@ export function NonFunctionalSpecificationEditor({
                 items[index] = { ...item, criteria: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-28 overflow-y-auto resize-y`}
+              className={`${inputClass} mt-1 min-w-[12rem] max-w-full w-full min-w-0 resize-y whitespace-pre-wrap`}
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
