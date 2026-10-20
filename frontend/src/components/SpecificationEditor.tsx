@@ -186,6 +186,13 @@ export function FunctionalSpecificationEditor({
             </div>
             <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200">
               <table className="w-full min-w-[58rem] table-fixed border-collapse text-left text-sm">
+                <colgroup>
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "14%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "48%" }} />
+                  <col style={{ width: "10%" }} />
+                </colgroup>
                 <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
                   <tr>
                     <th className="w-[16%] px-3 py-2">Tên trường</th>
@@ -244,7 +251,7 @@ function FieldMappingRow({
           placeholder="Tên trường"
           value={field.field_name}
           onChange={(event) => onChange({ ...field, field_name: event.target.value })}
-          className={inputClass}
+          className={`${inputClass} w-full min-w-0`}
         />
       </td>
       <td className="px-3 py-2">
@@ -256,7 +263,7 @@ function FieldMappingRow({
           className={inputClass}
         />
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 align-top">
         <label className="flex items-center gap-2 whitespace-nowrap text-sm text-slate-700">
           <input
             type="checkbox"
