@@ -263,8 +263,8 @@ function FieldMappingRow({
           className={`${inputClass} w-full min-w-0`}
         />
       </td>
-      <td className="px-3 py-2 align-top">
-        <label className="flex items-center gap-2 whitespace-nowrap pt-2 text-sm text-slate-700">
+      <td className="px-3 py-2 align-middle">
+        <label className="flex items-center gap-2 whitespace-nowrap text-sm text-slate-700">
           <input
             type="checkbox"
             checked={field.required}
@@ -274,18 +274,18 @@ function FieldMappingRow({
           Bắt buộc
         </label>
       </td>
-      <td className="min-w-0 px-3 py-2 align-top">
+      <td className="min-w-0 px-3 py-2 align-middle">
         <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
-          rows={Math.max(2, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 48))}
+          rows={Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 70))}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
-          style={{ height: `${Math.max(2, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 48)) * 1.5 + 0.75}rem` }}
+          className={`${inputClass} block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
+          style={{ height: `${Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 70)) * 1.25 + 0.5}rem` }}
         />
       </td>
-      <td className="whitespace-nowrap px-3 py-2 text-right">
+      <td className="whitespace-nowrap px-3 py-2 text-right align-middle">
         <button type="button" onClick={onRemove} className="text-sm text-rose-700 hover:text-rose-900">
           Xóa
         </button>
