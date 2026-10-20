@@ -278,11 +278,11 @@ function FieldMappingRow({
         <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
-          rows={Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 52))}
+          rows={1}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
-          style={{ height: `${Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 70)) * 1.25 + 0.5}rem` }}
+          className={`${inputClass} block h-[2.25rem] min-h-[2.25rem] w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
+          style={{ height: `${Math.max(2.25, Math.max(field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 52)) * 1.25 + 0.5)}rem` }}
         />
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-right align-middle">
