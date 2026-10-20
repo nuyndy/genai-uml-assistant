@@ -26,7 +26,8 @@ def build_functional_spec_prompt(user_story: UserStoryPrompt, uc_code: str) -> s
     fr_code = f"FR-{user_story.id:03d}"
     return f"""Từ User Story: "Là {user_story.role or ''}, tôi muốn {user_story.feature}, để {user_story.benefit or ''}."
 Tiêu chí chấp nhận đã có: {acceptance_criteria}
-Mã Use Case tham chiếu: {uc_code}\nMã đặc tả chức năng phải theo định dạng FR-{getattr(user_story, "id", 0):03d}; không dùng mã UC làm function_code.
+Mã Use Case tham chiếu: {uc_code}
+Mã đặc tả chức năng phải là {fr_code}; không dùng mã UC làm function_code.
 
 Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả về CHỈ JSON hợp lệ theo ĐÚNG cấu trúc sau, không thêm markdown hay văn bản ngoài JSON:
 {{
@@ -46,7 +47,6 @@ Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả v�
   ]
 }}
 priority phải là một trong Must, Should, Could, Won't. Các trường danh sách không có dữ liệu dùng mảng rỗng."""
-
 
 def build_nonfunctional_spec_prompt(project_context: list[str]) -> str:
     context = json.dumps(project_context, ensure_ascii=False)
