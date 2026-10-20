@@ -268,12 +268,13 @@ function FieldMappingRow({
         </label>
       </td>
       <td className="w-[28%] min-w-0 px-3 py-2">
-        <input
+        <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
+          rows={Math.min(6, Math.max(2, Math.ceil(field.validation_rule.length / 36)))}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} w-full min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]`}
+          className={`${inputClass} block w-full min-w-0 resize-y whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
         />
       </td>
       <td className="px-3 py-2">
