@@ -24,11 +24,11 @@ def build_functional_spec_prompt(user_story: UserStoryPrompt, uc_code: str) -> s
     )
     return f"""Từ User Story: "Là {user_story.role or ''}, tôi muốn {user_story.feature}, để {user_story.benefit or ''}."
 Tiêu chí chấp nhận đã có: {acceptance_criteria}
-Mã định danh chức năng: {uc_code}
+Mã Use Case tham chiếu: {uc_code}\nMã đặc tả chức năng phải theo định dạng FR-{getattr(user_story, "id", 0):03d}; không dùng mã UC làm function_code.
 
 Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả về CHỈ JSON hợp lệ theo ĐÚNG cấu trúc sau, không thêm markdown hay văn bản ngoài JSON:
 {{
-  "function_code": "{uc_code}",
+  "function_code": "FR-{getattr(user_story, "id", 0):03d}",
   "function_name": "Tên chức năng",
   "description": "Mô tả ngắn",
   "actors": ["Tác nhân 1"],
