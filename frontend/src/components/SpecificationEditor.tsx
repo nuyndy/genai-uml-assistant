@@ -45,9 +45,8 @@ function ArrayEditor({
         rows={Math.min(6, Math.max(2, value.length))}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 max-h-36 overflow-y-auto resize-y`}
+        className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-36 overflow-y-auto resize-y`}
       />
-      <span className="mt-1 block text-xs font-normal text-slate-500">Mỗi dòng là một mục.</span>
     </label>
   );
 }
@@ -74,7 +73,7 @@ export function FunctionalSpecificationEditor({
           rows={3}
           value={value[key]}
           onChange={(event) => onChange({ ...value, [key]: event.target.value })}
-          className={`${inputClass} mt-1 max-h-28 overflow-y-auto resize-y`}
+          className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-28 overflow-y-auto resize-y`}
         />
       ) : (
         <input
@@ -275,8 +274,8 @@ export function NonFunctionalSpecificationEditor({
   return (
     <div className="space-y-4">
       {value.items.map((item, index) => (
-        <section key={item.group} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-2">
-          <h4 className="font-semibold text-slate-800 md:col-span-2">{item.group}</h4>
+        <section key={item.group} className="grid gap-2.5 rounded-xl border border-violet-100 bg-violet-50/30 p-3 sm:p-3.5 md:grid-cols-2">
+          <div className="flex items-center gap-2 md:col-span-2"><span className="h-5 w-1 rounded-full bg-violet-500" /><h4 className="text-sm font-semibold text-slate-800">{item.group}</h4></div>
           <label className="text-sm font-medium text-slate-700">
             Tiêu chí
             <textarea
@@ -288,7 +287,7 @@ export function NonFunctionalSpecificationEditor({
                 items[index] = { ...item, criteria: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 max-h-28 overflow-y-auto resize-y`}
+              className={`${inputClass} mt-1 min-w-[12rem] max-w-full max-h-28 overflow-y-auto resize-y`}
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
