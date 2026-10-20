@@ -33,21 +33,23 @@ function ArrayEditor({
   value,
   onChange,
   rows,
+  fillHeight = false,
 }: {
   title: string;
   value: string[];
   onChange: (value: string[]) => void;
   rows?: number;
+  fillHeight?: boolean;
 }) {
   return (
-    <label className="block min-w-0 text-sm font-medium text-slate-700">
+    <label className={`${fillHeight ? "flex h-full min-h-0 flex-1 flex-col" : "block"} min-w-0 text-sm font-medium text-slate-700`}>
       {title}
       <textarea
         aria-label={title}
         rows={rows ?? Math.min(12, Math.max(3, value.reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 72)), 0)) )}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+        className={`${inputClass} mt-1 block ${fillHeight ? "h-full min-h-0 flex-1" : "h-auto"} w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
       />
     </label>
   );
@@ -133,22 +135,23 @@ export function FunctionalSpecificationEditor({
         </div>
       )}
       {activeTab === "flows" && (
-        <div className="grid min-w-0 items-start gap-4 xl:grid-cols-2">
-          <div className="min-w-0 space-y-4">
+        <div className="grid min-w-0 items-stretch gap-4 xl:grid-cols-2">
+          <div className="flex min-w-0 flex-col gap-4">
             {flowArrays.filter(({ key }) => key === "pre_conditions").map(({ key, label }) => (
               <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
             ))}
             {flowArrays.filter(({ key }) => key === "main_flow").map(({ key, label }) => (
-              <ArrayEditor
-                key={key}
-                title={label}
-                value={value[key] as string[]}
-                onChange={(items) => onChange({ ...value, [key]: items })}
-                rows={Math.min(12, Math.max(3, value.post_conditions.reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 72)), 0)))}
-              />
+              <div key={key} className="flex min-h-0 flex-1 flex-col">
+                <ArrayEditor
+                  title={label}
+                  value={value[key] as string[]}
+                  onChange={(items) => onChange({ ...value, [key]: items })}
+                  fillHeight
+                />
+              </div>
             ))}
           </div>
-          <div className="min-w-0 space-y-4">
+          <div className="flex min-w-0 flex-col gap-4">
             {flowArrays.filter(({ key }) => key !== "pre_conditions" && key !== "main_flow").map(({ key, label }) => (
               <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
             ))}
