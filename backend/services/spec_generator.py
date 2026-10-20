@@ -12,6 +12,7 @@ NONFUNCTIONAL_GROUPS = (
 
 
 class UserStoryPrompt(Protocol):
+    id: int
     role: str | None
     feature: str
     benefit: str | None
@@ -22,13 +23,14 @@ def build_functional_spec_prompt(user_story: UserStoryPrompt, uc_code: str) -> s
     acceptance_criteria = (
         user_story.acceptance_criteria or "chưa có, hãy tự đề xuất"
     )
+    fr_code = f"FR-{user_story.id:03d}"
     return f"""Từ User Story: "Là {user_story.role or ''}, tôi muốn {user_story.feature}, để {user_story.benefit or ''}."
 Tiêu chí chấp nhận đã có: {acceptance_criteria}
 Mã Use Case tham chiếu: {uc_code}\nMã đặc tả chức năng phải theo định dạng FR-{getattr(user_story, "id", 0):03d}; không dùng mã UC làm function_code.
 
 Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả về CHỈ JSON hợp lệ theo ĐÚNG cấu trúc sau, không thêm markdown hay văn bản ngoài JSON:
 {{
-  "function_code": "FR-{getattr(user_story, "id", 0):03d}",
+  "function_code": "{fr_code}",
   "function_name": "Tên chức năng",
   "description": "Mô tả ngắn",
   "actors": ["Tác nhân 1"],
