@@ -1,24 +1,21 @@
-import type { Dispatch, ReactNode, SetStateAction } from "react";
-import {
-  Card,
-  PrimaryButton,
-  EmptyState,
-  SoftButton,
-} from "../../../common/ui/primitives";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { Card, EmptyState, PrimaryButton, SoftButton, StatusBadge } from "../../../common/ui/primitives";
 import {
   FunctionalSpecificationEditor,
   NonFunctionalSpecificationEditor,
   emptyFunctionalSpecification,
   emptyNonFunctionalSpecification,
 } from "../../../SpecificationEditor";
-import type {
-  FunctionalSpecification,
-  NonFunctionalSpecification,
-  SpecificationRecord,
-  UserStory,
+import {
+  deleteSpecification,
+  type FunctionalSpecification,
+  type NonFunctionalSpecification,
+  type SpecificationRecord,
+  type UserStory,
 } from "../../../../services/requirementService";
 
 type SpecDraft = FunctionalSpecification | NonFunctionalSpecification;
+type SpecKind = "functional" | "non_functional";
 
 interface Props {
   projectId?: number;
@@ -57,27 +54,10 @@ function parseSpecification<T>(content: string, fallback: T): T {
   }
 }
 
-type BadgeTone = "danger" | "info";
-
-const BADGE_COLORS: Record<BadgeTone, string> = {
-  danger: "bg-rose-100 text-rose-700",
-  info: "bg-blue-100 text-blue-700",
-};
-
-function PriorityBadge({ tone, children }: { tone: BadgeTone; children: ReactNode }) {
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[tone]}`}>
-      {children}
-    </span>
-  );
-}
-
 export default function Step4DacTa({
   projectId,
   stories,
   specifications,
-  expandedFunctionalSpecifications,
-  setExpandedFunctionalSpecifications,
   functionalSpecificationTabs,
   setFunctionalSpecificationTabs,
   specDrafts,
@@ -90,240 +70,203 @@ export default function Step4DacTa({
   saveSpecification,
   approveSpecification,
   createNonFunctionalSpecification,
+  onStepChange,
   wrapClass,
 }: Props) {
-  const nonFunctionalSpecification = specifications.find(
-    (item) => item.type === "non_functional",
-  );
+  const [kind, setKind] = useState<SpecKind>("functional");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
 
-  const allFunctionalReady =
-    stories.length > 0 &&
-    stories.every((story) =>
-      specifications.some(
-        (item) => item.user_story_id === story.id && item.type === "functional",
-      ),
-    );
-  const canContinue = allFunctionalReady && Boolean(nonFunctionalSpecification) && !busy;
+  const functionalItems = useMemo(
+    () => stories.map((story) => ({
+      story,
+      specification: specifications.find((item) => item.user_story_id === story.id && item.type === "functional"),
+    })),
+    [stories, specifications],
+  );
+  const nonFunctionalSpecification = specifications.find((item) => item.type === "non_functional");
+  const activeFunctional = functionalItems[activeIndex];
+  const activeStory = activeFunctional?.story;
+  const activeSpecification = kind === "functional" ? activeFunctional?.specification : nonFunctionalSpecification;
+  const activeFunctionalValue: FunctionalSpecification = activeFunctional?.specification
+    ? (specDrafts[activeFunctional.specification.id] as FunctionalSpecification | undefined)
+      ?? parseSpecification(activeFunctional.specification.content, emptyFunctionalSpecification())
+    : emptyFunctionalSpecification();
+  const activeNonFunctionalValue: NonFunctionalSpecification = nonFunctionalSpecification
+    ? (specDrafts[nonFunctionalSpecification.id] as NonFunctionalSpecification | undefined)
+      ?? parseSpecification(nonFunctionalSpecification.content, emptyNonFunctionalSpecification())
+    : emptyNonFunctionalSpecification();
+  const activeTab = activeStory ? functionalSpecificationTabs[activeStory.id] ?? "overview" : "overview";
+  const itemCount = kind === "functional" ? functionalItems.length : (nonFunctionalSpecification ? 1 : 0);
+  const canContinue = stories.length > 0
+    && functionalItems.every((item) => Boolean(item.specification))
+    && Boolean(nonFunctionalSpecification)
+    && !busy;
+
+  useEffect(() => {
+    if (activeIndex >= Math.max(functionalItems.length, 1)) setActiveIndex(Math.max(functionalItems.length - 1, 0));
+  }, [activeIndex, functionalItems.length]);
+
+  const chooseKind = (nextKind: SpecKind) => {
+    setKind(nextKind);
+    setActiveIndex(0);
+    setActionMessage("");
+  };
+
+  const removeActiveSpecification = async () => {
+    if (!activeSpecification || deleting || busy) return;
+    const label = kind === "functional" ? "đặc tả chức năng" : "đặc tả phi chức năng";
+    if (!window.confirm(`Bạn có chắc muốn xóa ${label} này không? Thao tác này không thể hoàn tác.`)) return;
+    setDeleting(true);
+    setActionMessage("");
+    try {
+      await deleteSpecification(activeSpecification.id);
+      setSpecDrafts((previous) => {
+        const next = { ...previous };
+        delete next[activeSpecification.id];
+        return next;
+      });
+      setActionMessage("Đã xóa đặc tả. Đang tải lại danh sách...");
+      window.location.reload();
+    } catch (reason) {
+      setActionMessage(reason instanceof Error ? reason.message : "Không thể xóa đặc tả.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="w-full min-w-0 space-y-5">
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-      <Card tone="emerald" title="Đặc tả chức năng">
-        {stories.length === 0 ? (
-          <EmptyState title="Chưa có user story" hint="Xác nhận yêu cầu ở Bước 3 trước." />
-        ) : (
-          <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
-            {stories.map((story) => {
-              const specification = specifications.find(
-                (item) => item.user_story_id === story.id && item.type === "functional",
-              );
-              const isExpanded = expandedFunctionalSpecifications.includes(story.id);
-              const functionalValue: FunctionalSpecification = specification
-                ? ((specDrafts[specification.id] as FunctionalSpecification | undefined) ??
-                  parseSpecification(specification.content, emptyFunctionalSpecification()))
-                : emptyFunctionalSpecification();
-              const code =
-                functionalValue.function_code || `UC${String(story.id).padStart(2, "0")}`;
-              const activeTab = functionalSpecificationTabs[story.id] ?? "overview";
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="h-fit rounded-2xl border border-[#C8DDD7] bg-white p-3 shadow-sm lg:sticky lg:top-4">
+          <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Loại đặc tả</p>
+          <button type="button" onClick={() => chooseKind("functional")} aria-pressed={kind === "functional"}
+            className={`mb-2 flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "functional" ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
+            <span><span className="block text-sm font-bold">FR</span><span className="mt-0.5 block text-xs opacity-75">Chức năng</span></span>
+            <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{functionalItems.length}</span>
+          </button>
+          {kind === "functional" && (
+            <div className="mb-3 space-y-1 border-l-2 border-emerald-200 pl-2">
+              {functionalItems.length === 0 ? <p className="px-2 py-2 text-xs text-slate-500">Chưa có User Story</p> : functionalItems.map(({ story, specification }, index) => (
+                <button key={story.id} type="button" onClick={() => { setActiveIndex(index); setActionMessage(""); }}
+                  aria-current={activeIndex === index ? "true" : undefined}
+                  className={`w-full rounded-lg px-2.5 py-2 text-left text-sm transition ${activeIndex === index ? "bg-emerald-100 font-semibold text-emerald-950" : "text-slate-600 hover:bg-slate-50"}`}>
+                  <span className="block text-[10px] font-bold uppercase tracking-wide opacity-70">{specification?.feature || `FR · US-${String(story.id).padStart(3, "0")}`}</span>
+                  <span className={`mt-0.5 block ${wrapClass}`}>{story.feature || "Chức năng chưa đặt tên"}</span>
+                  <span className="mt-1 block text-[11px] text-slate-500">{specification ? `Phiên bản ${specification.version}` : "Chưa có đặc tả"}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <button type="button" onClick={() => chooseKind("non_functional")} aria-pressed={kind === "non_functional"}
+            className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "non_functional" ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
+            <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
+            <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{nonFunctionalSpecification ? 1 : 0}</span>
+          </button>
+          {kind === "non_functional" && (
+            <div className="mt-2 border-l-2 border-violet-200 pl-2">
+              <button type="button" onClick={() => setActionMessage("")} className="w-full rounded-lg bg-violet-100 px-2.5 py-2 text-left text-sm font-semibold text-violet-950">
+                Đặc tả phi chức năng
+                <span className="mt-1 block text-[11px] font-normal text-slate-500">{nonFunctionalSpecification ? `Phiên bản ${nonFunctionalSpecification.version}` : "Chưa có đặc tả"}</span>
+              </button>
+            </div>
+          )}
+        </aside>
 
-              return (
-                <section
-                  key={story.id}
-                  className="min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
-                >
-                  <button
-                    type="button"
-                    aria-expanded={isExpanded}
-                    aria-label={`${isExpanded ? "Thu gọn" : "Mở"} đặc tả ${code}`}
-                    onClick={() =>
-                      setExpandedFunctionalSpecifications((previous) =>
-                        isExpanded
-                          ? previous.filter((id) => id !== story.id)
-                          : [...previous, story.id],
-                      )
-                    }
-                    className="flex w-full min-w-0 items-center gap-3 p-4 text-left transition hover:bg-slate-50"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span
-                        className={`block text-xs font-semibold uppercase tracking-wide text-emerald-800 ${wrapClass}`}
-                      >
-                        {code}
-                      </span>
-                      <span className={`mt-1 block font-semibold text-slate-900 ${wrapClass}`}>
-                        {functionalValue.function_name || story.feature}
-                      </span>
-                    </span>
-                    {functionalValue.priority && (
-                      <PriorityBadge tone={functionalValue.priority === "Must" ? "danger" : "info"}>
-                        {functionalValue.priority}
-                      </PriorityBadge>
-                    )}
-                    <span aria-hidden="true" className="shrink-0 text-lg text-slate-500">
-                      {isExpanded ? "⌃" : "⌄"}
-                    </span>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="min-w-0 border-t border-slate-200">
-                      {specification ? (
-                        <>
-                          <div
-                            className="flex max-w-full gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-3"
-                            role="tablist"
-                            aria-label={`Các phần đặc tả ${code}`}
-                          >
-                            {TABS.map(([tab, label]) => (
-                              <button
-                                key={tab}
-                                type="button"
-                                role="tab"
-                                aria-selected={activeTab === tab}
-                                onClick={() =>
-                                  setFunctionalSpecificationTabs((previous) => ({
-                                    ...previous,
-                                    [story.id]: tab,
-                                  }))
-                                }
-                                className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition ${
-                                  activeTab === tab
-                                    ? "border-emerald-700 text-emerald-900"
-                                    : "border-transparent text-slate-600 hover:bg-emerald-50 hover:text-emerald-900"
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="min-w-0 p-5" role="tabpanel">
-                            <FunctionalSpecificationEditor
-                              value={functionalValue}
-                              activeTab={activeTab}
-                              onChange={(value) =>
-                                setSpecDrafts((previous) => ({
-                                  ...previous,
-                                  [specification.id]: value,
-                                }))
-                              }
-                            />
-                            <div className="mt-5 flex flex-wrap justify-end gap-2">
-                              <SoftButton
-                                disabled={busy}
-                                onClick={() => void generateFunctionalSpecification(story, true)}
-                              >
-                                Tạo lại bằng AI
-                              </SoftButton>
-                              <PrimaryButton
-                                disabled={busy}
-                                onClick={() => void saveSpecification(specification, functionalValue)}
-                              >
-                                Lưu thay đổi
-                              </PrimaryButton>
-                              <SoftButton
-                                disabled={busy || specification.approval_status === "approved"}
-                                onClick={() => void approveSpecification(specification)}
-                              >
-                                {specification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}
-                              </SoftButton>
-                            </div>
-                            <p className="mt-2 text-right text-xs text-slate-500">
-                              Phiên bản {specification.version}. Có thể sửa trực tiếp các trường.
-                            </p>
-                          </div>
-                        </>
-                      ) : generatingStories[story.id] ? (
-                        <p role="status" className="p-5 text-sm font-medium text-violet-700">
-                          AI đang sinh đặc tả chức năng...
-                        </p>
-                      ) : (
-                        <div className="p-5">
-                          <SoftButton
-                            disabled={busy || !projectId}
-                            onClick={() => void generateFunctionalSpecification(story)}
-                          >
-                            Thử sinh bằng AI
-                          </SoftButton>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      <Card tone="emerald" title="Đặc tả phi chức năng">
-        {!nonFunctionalSpecification ? (
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              Tạo một lần theo 5 nhóm cố định. Sau đó có thể chỉnh sửa thủ công.
-            </p>
-            {generatingNonFunctional ? (
-              <p role="status" className="text-sm font-medium text-violet-700">
-                AI đang sinh đặc tả phi chức năng...
-              </p>
+        <section className="min-w-0">
+          {kind === "functional" ? (
+            !activeStory ? (
+              <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
             ) : (
-              <SoftButton
-                disabled={busy || !projectId}
-                onClick={() => void createNonFunctionalSpecification()}
-              >
-                Thử sinh bằng AI
-              </SoftButton>
-            )}
-          </div>
-        ) : (
-          (() => {
-            const nonFunctionalValue: NonFunctionalSpecification =
-              (specDrafts[nonFunctionalSpecification.id] as NonFunctionalSpecification | undefined) ??
-              parseSpecification(
-                nonFunctionalSpecification.content,
-                emptyNonFunctionalSpecification(),
-              );
-            return (
-              <>
-                <NonFunctionalSpecificationEditor
-                  value={nonFunctionalValue}
-                  onChange={(value) =>
-                    setSpecDrafts((previous) => ({
-                      ...previous,
-                      [nonFunctionalSpecification.id]: value,
-                    }))
-                  }
-                />
-                <div className="mt-4 flex flex-wrap justify-end gap-2">
-                  <SoftButton
-                    disabled={busy}
-                    onClick={() => void createNonFunctionalSpecification(true)}
-                  >
-                    Tạo lại bằng AI
-                  </SoftButton>
-                  <PrimaryButton
-                    disabled={busy}
-                    onClick={() =>
-                      void saveSpecification(nonFunctionalSpecification, nonFunctionalValue)
-                    }
-                  >
-                    Lưu thay đổi
-                  </PrimaryButton>
-                  <SoftButton
-                    disabled={busy || nonFunctionalSpecification.approval_status === "approved"}
-                    onClick={() => void approveSpecification(nonFunctionalSpecification)}
-                  >
-                    {nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}
-                  </SoftButton>
+              <article className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+                <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-bold uppercase tracking-wide text-emerald-800 ${wrapClass}`}>FR · US-{String(activeStory.id).padStart(3, "0")}{activeSpecification ? ` · SPEC-${String(activeSpecification.id).padStart(3, "0")}` : ""}</p>
+                    <h2 className={`mt-1 text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={activeSpecification ? "success" : "warn"}>{activeSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
+                      {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
+                      {activeSpecification && <StatusBadge tone="neutral">Phiên bản {activeSpecification.version}</StatusBadge>}
+                    </div>
+                  </div>
+                  {activeFunctionalValue.priority && <span className={`rounded-full px-3 py-1 text-xs font-semibold ${activeFunctionalValue.priority === "Must" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>{activeFunctionalValue.priority}</span>}
+                </header>
+                {!activeSpecification ? (
+                  <div className="p-5">
+                    {generatingStories[activeStory.id] ? <p role="status" className="text-sm font-medium text-violet-700">AI đang sinh đặc tả chức năng...</p> : <p className="mb-3 text-sm text-slate-600">Chưa có nội dung FR cho User Story này.</p>}
+                    <SoftButton disabled={busy || !projectId || Boolean(generatingStories[activeStory.id])} onClick={() => void generateFunctionalSpecification(activeStory)}>Tạo FR bằng AI</SoftButton>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex max-w-full gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3" role="tablist" aria-label="Các phần đặc tả chức năng">
+                      {TABS.map(([tab, label]) => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} onClick={() => setFunctionalSpecificationTabs((previous) => ({ ...previous, [activeStory.id]: tab }))} className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition ${activeTab === tab ? "border-emerald-700 text-emerald-900" : "border-transparent text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
+                    </div>
+                    <div className="min-w-0 p-4 sm:p-5" role="tabpanel">
+                      <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
+                      <div className="mt-5 flex flex-wrap justify-end gap-2">
+                        <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
+                        <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu thay đổi</PrimaryButton>
+                        <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}</SoftButton>
+                      </div>
+                    </div>
+                  </>
+                )}
+                <footer className="flex flex-col gap-2 border-t border-slate-200 bg-emerald-100/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                  <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <SoftButton disabled={!activeSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
+                    <PrimaryButton disabled={!activeSpecification || busy} onClick={() => activeSpecification && void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu FR</PrimaryButton>
+                    <SoftButton disabled={activeIndex >= functionalItems.length - 1 || busy} onClick={() => { setActiveIndex((index) => Math.min(functionalItems.length - 1, index + 1)); setActionMessage(""); }}>Sau →</SoftButton>
+                  </div>
+                </footer>
+                {actionMessage && <p role="status" className="px-4 py-3 text-sm text-slate-600">{actionMessage}</p>}
+              </article>
+            )
+          ) : (
+            <article className="overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
+              <header className="border-b border-slate-200 bg-violet-50/70 px-4 py-4">
+                <p className="text-sm font-bold uppercase tracking-wide text-violet-800">NFR · ĐẶC TẢ PHI CHỨC NĂNG</p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">Yêu cầu chất lượng hệ thống</h2>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <StatusBadge tone={nonFunctionalSpecification ? "success" : "warn"}>{nonFunctionalSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
+                  {nonFunctionalSpecification && <StatusBadge tone={nonFunctionalSpecification.approval_status === "approved" ? "success" : "warn"}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
+                  {nonFunctionalSpecification && <StatusBadge tone="neutral">Phiên bản {nonFunctionalSpecification.version}</StatusBadge>}
                 </div>
-              </>
-            );
-          })()
-        )}
-      </Card>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        
-        
-          {!canContinue && <p className="max-w-sm text-right text-xs text-amber-800">Cần tạo đặc tả chức năng cho mọi User Story và đặc tả phi chức năng trước khi tiếp tục.</p>}
+              </header>
+              {!nonFunctionalSpecification ? (
+                <div className="p-5">
+                  <p className="mb-3 text-sm text-slate-600">Tạo đặc tả phi chức năng theo các nhóm hiện có của hệ thống, sau đó có thể chỉnh sửa và lưu.</p>
+                  {generatingNonFunctional ? <p role="status" className="mb-3 text-sm font-medium text-violet-700">AI đang sinh đặc tả phi chức năng...</p> : <SoftButton disabled={busy || !projectId} onClick={() => void createNonFunctionalSpecification()}>Tạo NFR bằng AI</SoftButton>}
+                </div>
+              ) : (
+                <div className="min-w-0 p-4 sm:p-5">
+                  <NonFunctionalSpecificationEditor value={activeNonFunctionalValue} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [nonFunctionalSpecification.id]: value }))} />
+                  <div className="mt-5 flex flex-wrap justify-end gap-2">
+                    <SoftButton disabled={busy} onClick={() => void createNonFunctionalSpecification(true)}>Tạo lại bằng AI</SoftButton>
+                    <PrimaryButton disabled={busy} onClick={() => void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu thay đổi</PrimaryButton>
+                    <SoftButton disabled={busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}</SoftButton>
+                  </div>
+                </div>
+              )}
+              <footer className="flex flex-col gap-2 border-t border-slate-200 bg-violet-100/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <SoftButton disabled={!nonFunctionalSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa NFR"}</SoftButton>
+                  <PrimaryButton disabled={!nonFunctionalSpecification || busy} onClick={() => nonFunctionalSpecification && void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu NFR</PrimaryButton>
+                  <SoftButton disabled={!canContinue} onClick={() => onStepChange(5)}>Sau →</SoftButton>
+                </div>
+              </footer>
+              {actionMessage && <p role="status" className="px-4 py-3 text-sm text-slate-600">{actionMessage}</p>}
+            </article>
+          )}
+        </section>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+        <SoftButton disabled={busy} onClick={() => onStepChange(3)}>← Quay lại Bước 3</SoftButton>
+        <p className="text-xs text-slate-500">Đang xem {kind === "functional" ? `FR ${Math.min(activeIndex + 1, Math.max(itemCount, 1))}/${itemCount}` : "NFR"}</p>
+        <PrimaryButton disabled={!canContinue} onClick={() => onStepChange(5)}>Lưu và sang Bước 5 →</PrimaryButton>
       </div>
     </div>
   );
