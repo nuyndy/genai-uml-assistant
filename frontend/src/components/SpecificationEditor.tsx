@@ -188,11 +188,11 @@ export function FunctionalSpecificationEditor({
               <table className="w-full min-w-[58rem] table-fixed border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
                   <tr>
-                    <th className="w-[19%] px-3 py-2">Tên trường</th>
-                    <th className="w-[18%] px-3 py-2">Kiểu dữ liệu</th>
-                    <th className="w-[16%] px-3 py-2">Bắt buộc</th>
+                    <th className="w-[18%] px-3 py-2">Tên trường</th>
+                    <th className="w-[17%] px-3 py-2">Kiểu dữ liệu</th>
+                    <th className="w-[14%] px-3 py-2">Bắt buộc</th>
                     <th className="w-[39%] px-3 py-2">Quy tắc kiểm tra</th>
-                    <th className="w-[8rem] px-3 py-2 text-right">Thao tác</th>
+                    <th className="w-[12%] px-3 py-2 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
