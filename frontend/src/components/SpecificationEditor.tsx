@@ -287,7 +287,7 @@ export function NonFunctionalSpecificationEditor({
             Tiêu chí
             <textarea
               aria-label={`Tiêu chí ${item.group}`}
-              rows={Math.min(8, Math.max(2, Math.ceil(item.criteria.length / 72)))}
+              rows={Math.min(8, Math.max(2, Math.ceil(Math.max(item.criteria.length, item.requirement.length) / 72)))}
               value={item.criteria}
               onChange={(event) => {
                 const items = [...value.items];
@@ -308,7 +308,7 @@ export function NonFunctionalSpecificationEditor({
                 items[index] = { ...item, requirement: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 block h-auto min-h-[7rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+              className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
             />
           </label>
         </section>
