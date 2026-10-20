@@ -185,7 +185,7 @@ export function FunctionalSpecificationEditor({
               </button>
             </div>
             <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full min-w-[68rem] border-collapse text-left text-sm">
+              <table className="w-full min-w-[54rem] table-fixed border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
                   <tr>
                     <th className="px-3 py-2">Tên trường</th>
@@ -267,13 +267,13 @@ function FieldMappingRow({
           Bắt buộc
         </label>
       </td>
-      <td className="w-[28rem] min-w-[28rem] px-3 py-2">
+      <td className="w-[28%] min-w-0 px-3 py-2">
         <input
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} w-full min-w-[26rem]`}
+          className={`${inputClass} w-full min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]`}
         />
       </td>
       <td className="px-3 py-2">
