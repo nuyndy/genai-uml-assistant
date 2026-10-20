@@ -169,7 +169,6 @@ export default function Step4DacTa({
                       {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
                       {activeSpecification && <StatusBadge tone="neutral">Phiên bản {activeSpecification.version}</StatusBadge>}
                     </div>
-                    {activeFunctionalValue.priority && <span className={`rounded-full px-3 py-1 text-xs font-semibold ${activeFunctionalValue.priority === "Must" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>{activeFunctionalValue.priority}</span>}
                   </div>
                 </header>
                 {!activeSpecification ? (
@@ -184,19 +183,20 @@ export default function Step4DacTa({
                     </div>
                     <div className="min-w-0 p-4 sm:p-5" role="tabpanel">
                       <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
-                      <div className="mt-4 flex flex-row flex-wrap items-center justify-end gap-2">
-                        <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
-                        <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
-                        <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
-                      </div>
                     </div>
                   </>
                 )}
-                <footer className="flex flex-col gap-2 border-t border-slate-200 bg-emerald-100/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-                  <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
+                <footer className="flex flex-row flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-emerald-100/80 px-3 py-2">
+                  <div className="flex flex-row flex-wrap items-center gap-2">
+                    <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
                     <SoftButton disabled={!activeSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
-                    <PrimaryButton disabled={!activeSpecification || busy} onClick={() => activeSpecification && void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu FR</PrimaryButton>
+                  </div>
+                  <div className="flex flex-row flex-wrap items-center gap-2">
+                    {activeSpecification && <>
+                      <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
+                      <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
+                      <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
+                    </>}
                     <SoftButton disabled={activeIndex >= functionalItems.length - 1 || busy} onClick={() => { setActiveIndex((index) => Math.min(functionalItems.length - 1, index + 1)); setActionMessage(""); }}>Sau →</SoftButton>
                   </div>
                 </footer>
