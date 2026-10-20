@@ -161,16 +161,16 @@ export default function Step4DacTa({
             ) : (
               <article className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
                 <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
                     <p className={`text-sm font-bold uppercase tracking-wide text-emerald-800 ${wrapClass}`}>FR · US-{String(activeStory.id).padStart(3, "0")}{activeSpecification ? ` · SPEC-${String(activeSpecification.id).padStart(3, "0")}` : ""}</p>
-                    <h2 className={`mt-1 text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <h2 className={`text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <StatusBadge tone={activeSpecification ? "success" : "warn"}>{activeSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
                       {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
                       {activeSpecification && <StatusBadge tone="neutral">Phiên bản {activeSpecification.version}</StatusBadge>}
                     </div>
+                    {activeFunctionalValue.priority && <span className={`rounded-full px-3 py-1 text-xs font-semibold ${activeFunctionalValue.priority === "Must" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>{activeFunctionalValue.priority}</span>}
                   </div>
-                  {activeFunctionalValue.priority && <span className={`rounded-full px-3 py-1 text-xs font-semibold ${activeFunctionalValue.priority === "Must" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>{activeFunctionalValue.priority}</span>}
                 </header>
                 {!activeSpecification ? (
                   <div className="p-5">
@@ -184,10 +184,10 @@ export default function Step4DacTa({
                     </div>
                     <div className="min-w-0 p-4 sm:p-5" role="tabpanel">
                       <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
-                      <div className="mt-5 flex flex-wrap justify-end gap-2">
+                      <div className="mt-4 flex flex-row flex-wrap items-center justify-end gap-2">
                         <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
-                        <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu thay đổi</PrimaryButton>
-                        <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}</SoftButton>
+                        <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
+                        <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
                       </div>
                     </div>
                   </>
@@ -206,12 +206,14 @@ export default function Step4DacTa({
           ) : (
             <article className="overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
               <header className="border-b border-slate-200 bg-violet-50/70 px-4 py-4">
-                <p className="text-sm font-bold uppercase tracking-wide text-violet-800">NFR · ĐẶC TẢ PHI CHỨC NĂNG</p>
-                <h2 className="mt-1 text-lg font-semibold text-slate-900">Yêu cầu chất lượng hệ thống</h2>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <StatusBadge tone={nonFunctionalSpecification ? "success" : "warn"}>{nonFunctionalSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
-                  {nonFunctionalSpecification && <StatusBadge tone={nonFunctionalSpecification.approval_status === "approved" ? "success" : "warn"}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
-                  {nonFunctionalSpecification && <StatusBadge tone="neutral">Phiên bản {nonFunctionalSpecification.version}</StatusBadge>}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <p className="text-sm font-bold uppercase tracking-wide text-violet-800">NFR · ĐẶC TẢ PHI CHỨC NĂNG</p>
+                  <h2 className="text-lg font-semibold text-slate-900">Yêu cầu chất lượng hệ thống</h2>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusBadge tone={nonFunctionalSpecification ? "success" : "warn"}>{nonFunctionalSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
+                    {nonFunctionalSpecification && <StatusBadge tone={nonFunctionalSpecification.approval_status === "approved" ? "success" : "warn"}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
+                    {nonFunctionalSpecification && <StatusBadge tone="neutral">Phiên bản {nonFunctionalSpecification.version}</StatusBadge>}
+                  </div>
                 </div>
               </header>
               {!nonFunctionalSpecification ? (
