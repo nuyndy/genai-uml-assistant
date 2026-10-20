@@ -37,16 +37,16 @@ Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả v�
   "actors": ["Tác nhân 1"],
   "priority": "Must",
   "pre_conditions": ["..."],
-  "main_flow": ["1. ..."],
-  "alternative_flows": ["..."],
-  "exception_flows": ["..."],
+  "main_flow": ["1. ...", "2. ..."],
+  "alternative_flows": ["A1 — Tại bước 2 — Điều kiện: ... — Xử lý: ... — Tiếp tục/quay lại: ...", "A2 — Tại bước 2 — Điều kiện: ... — Xử lý: ... — Tiếp tục/quay lại: ..."],
+  "exception_flows": ["E1 — Tại bước 2 — Lỗi: ... — Hệ thống xử lý: ... — Kết thúc/tiếp tục: ...", "E2 — Tại bước 2 — Lỗi: ... — Hệ thống xử lý: ... — Kết thúc/tiếp tục: ..."],
   "post_conditions": ["..."],
   "business_rules": ["..."],
   "field_mapping": [
     {{"field_name": "Email", "data_type": "String", "required": true, "validation_rule": "..."}}
   ]
 }}
-priority phải là một trong Must, Should, Could, Won't. Các trường danh sách không có dữ liệu dùng mảng rỗng."""
+priority phải là một trong Must, Should, Could, Won't. Quy tắc luồng: main_flow chỉ đánh số bước chính 1, 2, 3...; mỗi nhánh thay thế có mã duy nhất A1, A2, A3...; mỗi ngoại lệ có mã duy nhất E1, E2, E3.... Một bước chính có thể có nhiều nhánh. Mỗi nhánh phải ghi rõ bước bắt đầu, điều kiện, xử lý và kết quả (quay lại bước nào hoặc kết thúc). Không đánh số A/E như bước chính. Các trường danh sách không có dữ liệu dùng mảng rỗng."""
 
 def build_nonfunctional_spec_prompt(project_context: list[str]) -> str:
     context = json.dumps(project_context, ensure_ascii=False)
