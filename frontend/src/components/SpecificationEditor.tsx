@@ -278,7 +278,7 @@ function FieldMappingRow({
         <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
-          rows={Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 70))}
+          rows={Math.max(1, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 52))}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
           className={`${inputClass} block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
