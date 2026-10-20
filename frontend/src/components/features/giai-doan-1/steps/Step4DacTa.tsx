@@ -147,32 +147,11 @@ export default function Step4DacTa({
             <span><span className="block text-sm font-bold">FR</span><span className="mt-0.5 block text-xs opacity-75">Chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{functionalItems.length}</span>
           </button>
-          {kind === "functional" && (
-            <div className="mb-3 space-y-1 border-l-2 border-emerald-200 pl-2">
-              {functionalItems.length === 0 ? <p className="px-2 py-2 text-xs text-slate-500">Chưa có User Story</p> : functionalItems.map(({ story, specification }, index) => (
-                <button key={story.id} type="button" onClick={() => { setActiveIndex(index); setActionMessage(""); }}
-                  aria-current={activeIndex === index ? "true" : undefined}
-                  className={`w-full rounded-lg px-2.5 py-2 text-left text-sm transition ${activeIndex === index ? "bg-emerald-100 font-semibold text-emerald-950" : "text-slate-600 hover:bg-slate-50"}`}>
-                  <span className="block text-[10px] font-bold uppercase tracking-wide opacity-70">{specification?.feature || `FR · US-${String(story.id).padStart(3, "0")}`}</span>
-                  <span className={`mt-0.5 block ${wrapClass}`}>{story.feature || "Chức năng chưa đặt tên"}</span>
-                  <span className="mt-1 block text-[11px] text-slate-500">{specification ? `Phiên bản ${specification.version}` : "Chưa có đặc tả"}</span>
-                </button>
-              ))}
-            </div>
-          )}
           <button type="button" onClick={() => chooseKind("non_functional")} aria-pressed={kind === "non_functional"}
             className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "non_functional" ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{nonFunctionalSpecification ? 1 : 0}</span>
           </button>
-          {kind === "non_functional" && (
-            <div className="mt-2 border-l-2 border-violet-200 pl-2">
-              <button type="button" onClick={() => setActionMessage("")} className="w-full rounded-lg bg-violet-100 px-2.5 py-2 text-left text-sm font-semibold text-violet-950">
-                Đặc tả phi chức năng
-                <span className="mt-1 block text-[11px] font-normal text-slate-500">{nonFunctionalSpecification ? `Phiên bản ${nonFunctionalSpecification.version}` : "Chưa có đặc tả"}</span>
-              </button>
-            </div>
-          )}
         </aside>
 
         <section className="min-w-0">
