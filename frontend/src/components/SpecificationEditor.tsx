@@ -185,14 +185,14 @@ export function FunctionalSpecificationEditor({
               </button>
             </div>
             <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full min-w-0 table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-[58rem] table-fixed border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Tên trường</th>
-                    <th className="px-3 py-2">Kiểu dữ liệu</th>
-                    <th className="px-3 py-2">Bắt buộc</th>
-                    <th className="px-3 py-2">Quy tắc kiểm tra</th>
-                    <th className="px-3 py-2">Thao tác</th>
+                    <th className="w-[19%] px-3 py-2">Tên trường</th>
+                    <th className="w-[18%] px-3 py-2">Kiểu dữ liệu</th>
+                    <th className="w-[16%] px-3 py-2">Bắt buộc</th>
+                    <th className="w-[39%] px-3 py-2">Quy tắc kiểm tra</th>
+                    <th className="w-[8rem] px-3 py-2 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,7 +238,7 @@ function FieldMappingRow({
 }) {
   return (
     <>
-      <td className="min-w-48 px-3 py-2">
+      <td className="px-3 py-2">
         <input
           aria-label="Tên trường"
           placeholder="Tên trường"
@@ -247,7 +247,7 @@ function FieldMappingRow({
           className={inputClass}
         />
       </td>
-      <td className="min-w-40 px-3 py-2">
+      <td className="px-3 py-2">
         <input
           aria-label="Kiểu dữ liệu"
           placeholder="Kiểu dữ liệu"
@@ -267,7 +267,7 @@ function FieldMappingRow({
           Bắt buộc
         </label>
       </td>
-      <td className="w-[38%] min-w-0 px-3 py-2 align-top">
+      <td className="min-w-0 px-3 py-2 align-top">
         <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
@@ -278,7 +278,7 @@ function FieldMappingRow({
           style={{ height: `${Math.max(2, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 48)) * 1.5 + 0.75}rem` }}
         />
       </td>
-      <td className="px-3 py-2">
+      <td className="whitespace-nowrap px-3 py-2 text-right">
         <button type="button" onClick={onRemove} className="text-sm text-rose-700 hover:text-rose-900">
           Xóa
         </button>
