@@ -224,18 +224,18 @@ export default function Step4DacTa({
               ) : (
                 <div className="min-w-0 p-4 sm:p-5">
                   <NonFunctionalSpecificationEditor value={activeNonFunctionalValue} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [nonFunctionalSpecification.id]: value }))} />
-                  <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                    <SoftButton disabled={busy} onClick={() => void createNonFunctionalSpecification(true)}>Tạo lại bằng AI</SoftButton>
-                    <PrimaryButton disabled={busy} onClick={() => void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu</PrimaryButton>
-                    <SoftButton disabled={busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
-                  </div>
+
                 </div>
               )}
-              <footer className="flex flex-row flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-violet-100/80 px-3 py-2">
-                <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
-                <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+              <footer className="flex flex-row flex-nowrap items-center justify-between gap-2 border-t border-slate-200 bg-violet-100/80 px-3 py-2">
+                <div className="flex flex-row flex-nowrap items-center gap-2">
+                  <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
                   <SoftButton disabled={!nonFunctionalSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa NFR"}</SoftButton>
-                  <PrimaryButton disabled={!nonFunctionalSpecification || busy} onClick={() => nonFunctionalSpecification && void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu NFR</PrimaryButton>
+                </div>
+                <div className="flex flex-row flex-nowrap items-center gap-2">
+                  <SoftButton disabled={busy || !nonFunctionalSpecification} onClick={() => void createNonFunctionalSpecification(true)}>Tạo lại bằng AI</SoftButton>
+                  <PrimaryButton disabled={!nonFunctionalSpecification || busy} onClick={() => nonFunctionalSpecification && void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu</PrimaryButton>
+                  <SoftButton disabled={!nonFunctionalSpecification || busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => nonFunctionalSpecification && void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification?.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
                   <SoftButton disabled={!canContinue} onClick={() => onStepChange(5)}>Sau →</SoftButton>
                 </div>
               </footer>
