@@ -260,11 +260,11 @@ function FieldMappingRow({
           placeholder="Kiểu dữ liệu"
           value={field.data_type}
           onChange={(event) => onChange({ ...field, data_type: event.target.value })}
-          className={inputClass}
+          className={`${inputClass} w-full min-w-0`}
         />
       </td>
       <td className="px-3 py-2 align-top">
-        <label className="flex items-center gap-2 whitespace-nowrap text-sm text-slate-700">
+        <label className="flex items-center gap-2 whitespace-nowrap pt-2 text-sm text-slate-700">
           <input
             type="checkbox"
             checked={field.required}
