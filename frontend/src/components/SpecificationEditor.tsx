@@ -301,7 +301,7 @@ export function NonFunctionalSpecificationEditor({
             Yêu cầu
             <textarea
               aria-label={`Yêu cầu ${item.group}`}
-              rows={Math.min(8, Math.max(2, Math.ceil(item.requirement.length / 72)))}
+              rows={Math.min(8, Math.max(2, Math.ceil(item.criteria.length / 72)))}
               value={item.requirement}
               onChange={(event) => {
                 const items = [...value.items];
