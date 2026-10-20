@@ -42,10 +42,10 @@ function ArrayEditor({
       {title}
       <textarea
         aria-label={title}
-        rows={Math.min(14, Math.max(4, value.length + 1))}
+        rows={Math.min(18, Math.max(5, value.reduce((total, line) => total + Math.ceil(Math.max(line.length, 1) / 72), 0) + 1))}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 w-full min-w-0 resize-y whitespace-pre-wrap`}
+        className={`${inputClass} mt-1 block h-auto min-h-[8rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
       />
     </label>
   );
@@ -110,8 +110,13 @@ export function FunctionalSpecificationEditor({
               }
               className={`${inputClass} mt-1`}
             >
-              {["Must", "Should", "Could", "Won't"].map((priority) => (
-                <option key={priority}>{priority}</option>
+              {[
+                { value: "Must", label: "Bắt buộc" },
+                { value: "Should", label: "Nên có" },
+                { value: "Could", label: "Có thể có" },
+                { value: "Won't", label: "Không thực hiện trong phạm vi hiện tại" },
+              ].map((priority) => (
+                <option key={priority.value} value={priority.value}>{priority.label}</option>
               ))}
             </select>
           </label>
@@ -126,15 +131,17 @@ export function FunctionalSpecificationEditor({
         </div>
       )}
       {activeTab === "flows" && (
-        <div className="grid min-w-0 gap-4 md:grid-cols-2">
-          {flowArrays.map(({ key, label }) => (
-            <ArrayEditor
-              key={key}
-              title={label}
-              value={value[key] as string[]}
-              onChange={(items) => onChange({ ...value, [key]: items })}
-            />
-          ))}
+        <div className="grid min-w-0 items-start gap-4 xl:grid-cols-2">
+          <div className="min-w-0 space-y-4">
+            {flowArrays.filter(({ key }) => key === "pre_conditions" || key === "main_flow").map(({ key, label }) => (
+              <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
+            ))}
+          </div>
+          <div className="min-w-0 space-y-4">
+            {flowArrays.filter(({ key }) => key !== "pre_conditions" && key !== "main_flow").map(({ key, label }) => (
+              <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
+            ))}
+          </div>
         </div>
       )}
       {activeTab === "business-data" && (
@@ -287,7 +294,7 @@ export function NonFunctionalSpecificationEditor({
                 items[index] = { ...item, criteria: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 min-w-[12rem] max-w-full w-full min-w-0 resize-y whitespace-pre-wrap`}
+              className={`${inputClass} mt-1 block h-auto min-h-[7rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
@@ -301,7 +308,7 @@ export function NonFunctionalSpecificationEditor({
                 items[index] = { ...item, requirement: event.target.value };
                 onChange({ items });
               }}
-              className={`${inputClass} mt-1 max-h-28 overflow-y-auto resize-y`}
+              className={`${inputClass} mt-1 block h-auto min-h-[7rem] w-full min-w-0 resize-y overflow-y-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
             />
           </label>
         </section>
