@@ -185,7 +185,7 @@ export function FunctionalSpecificationEditor({
               </button>
             </div>
             <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full min-w-[54rem] table-fixed border-collapse text-left text-sm">
+              <table className="w-full min-w-0 table-fixed border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
                   <tr>
                     <th className="px-3 py-2">Tên trường</th>
@@ -267,14 +267,15 @@ function FieldMappingRow({
           Bắt buộc
         </label>
       </td>
-      <td className="w-[28%] min-w-0 px-3 py-2">
+      <td className="w-[38%] min-w-0 px-3 py-2 align-top">
         <textarea
           aria-label="Quy tắc kiểm tra"
           placeholder="Quy tắc kiểm tra"
-          rows={Math.min(6, Math.max(2, Math.ceil(field.validation_rule.length / 36)))}
+          rows={Math.max(2, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 48))}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} block w-full min-w-0 resize-y whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+          className={`${inputClass} block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+          style={{ height: `${Math.max(2, field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 48)) * 1.5 + 0.75}rem` }}
         />
       </td>
       <td className="px-3 py-2">
