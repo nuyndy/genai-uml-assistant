@@ -224,10 +224,10 @@ export default function Step4DacTa({
               ) : (
                 <div className="min-w-0 p-4 sm:p-5">
                   <NonFunctionalSpecificationEditor value={activeNonFunctionalValue} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [nonFunctionalSpecification.id]: value }))} />
-                  <div className="mt-5 flex flex-wrap justify-end gap-2">
+                  <div className="mt-4 flex flex-row flex-wrap items-center justify-end gap-2">
                     <SoftButton disabled={busy} onClick={() => void createNonFunctionalSpecification(true)}>Tạo lại bằng AI</SoftButton>
-                    <PrimaryButton disabled={busy} onClick={() => void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu thay đổi</PrimaryButton>
-                    <SoftButton disabled={busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt đặc tả"}</SoftButton>
+                    <PrimaryButton disabled={busy} onClick={() => void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu</PrimaryButton>
+                    <SoftButton disabled={busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
                   </div>
                 </div>
               )}
