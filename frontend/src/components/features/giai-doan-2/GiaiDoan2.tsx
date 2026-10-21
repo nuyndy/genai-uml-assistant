@@ -168,7 +168,7 @@ function hydrateState(saved: ProjectUmlState, previous: WorkflowState): Workflow
 
   return {
     ...previous,
-    actors: actors.map(({ id, name }) => ({ id, name })),
+    actors: actors.map((actor) => ({ id: actor.id, name: actor.name, description: actor.description ?? "", role: actor.role ?? "", mainBusinesses: actor.main_businesses ?? "" })),
     usecases: useCases.map(({ id, name, specification_id }) => ({
       id,
       name,
