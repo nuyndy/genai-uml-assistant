@@ -315,6 +315,12 @@ export function generateNonFunctionalSpecification(
   });
 }
 
+export function generateSrsMetadata(projectId: number): Promise<SrsMetadata> {
+  return apiFetch(`/api/projects/${projectId}/srs-document-meta/generate`, {
+    method: "POST",
+  });
+}
+
 export function saveSrsMetadata(
   projectId: number,
   metadata: SrsMetadata,
