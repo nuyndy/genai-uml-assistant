@@ -310,6 +310,7 @@ function App() {
         {stage === 1 && (
           <GiaiDoan1
             projectId={activeProject.id}
+            projectName={activeProject.name}
             state={workflow}
             setState={setWorkflow}
             step={step}
