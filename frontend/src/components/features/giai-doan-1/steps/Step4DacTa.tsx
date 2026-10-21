@@ -187,20 +187,19 @@ export default function Step4DacTa({
               <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
             ) : (
               <article className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
-                <div className="flex flex-col gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
-                    <span className="text-xs font-medium text-slate-600">FR {functionalItems.length ? activeIndex + 1 : 0}/{functionalItems.length}</span>
                     <SoftButton disabled={activeIndex >= functionalItems.length - 1 || busy} onClick={() => { setActiveIndex((index) => Math.min(functionalItems.length - 1, index + 1)); setActionMessage(""); }}>Sau →</SoftButton>
                   </div>
-                  {activeSpecification && <div className="flex flex-wrap items-center justify-between gap-2 border-t border-emerald-200 pt-2">
-                    <SoftButton disabled={busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
-                    <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {activeSpecification && <>
+                      <SoftButton disabled={busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
                       <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
                       <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
                       <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
-                    </div>
-                  </div>}
+                    </>}
+                  </div>
                 </div>
                 <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
@@ -212,6 +211,7 @@ export default function Step4DacTa({
                       {activeSpecification && <StatusBadge tone="neutral">Phiên bản {activeSpecification.version}</StatusBadge>}
                     </div>
                   </div>
+                  <span className="shrink-0 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">FR {functionalItems.length ? activeIndex + 1 : 0}/{functionalItems.length}</span>
                 </header>
                 {!activeSpecification ? (
                   <div className="p-5">
