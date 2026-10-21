@@ -433,7 +433,7 @@ export default function GiaiDoan2({
       requirements={state.actors}
       requirementValues={state.usecases}
       relations={state.relations}
-      specifications={(specifications ?? []).filter((item) => item.type === 'functional').map(({ id, feature }) => ({ id, feature }))}
+      specifications={(specifications ?? []).filter((item) => item.type === 'functional' && item.user_story_id !== null).map(({ id, feature }) => ({ id, feature }))}
       analyses={suggestions}
       loadingAnalysis={busy}
       busy={busy}
@@ -444,7 +444,7 @@ export default function GiaiDoan2({
       onCreateActor={(name) => runAction(async () => {
         if (!projectId) return;
         const actor = await createProjectActor(projectId, name);
-        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: [...previous.actors, { id: actor.id, name: actor.name }] }));
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.some((item) => item.id === actor.id) ? previous.actors : [...previous.actors, { id: actor.id, name: actor.name }] }));
       }, "Đang thêm tác nhân...")}
       onRenameActor={(id, name) => runAction(async () => {
         const oldName = state.actors.find((item) => item.id === id)?.name;
@@ -458,7 +458,7 @@ export default function GiaiDoan2({
       }, "Đang xóa tác nhân...")}
       onCreateUseCase={(name, specificationId) => runAction(async () => {
         const item = await createSpecificationUseCase(specificationId, name);
-        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, usecases: [...previous.usecases, { id: item.id, name: item.name, description: "", specificationId: item.specification_id }] }));
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, usecases: previous.usecases.some((useCase) => useCase.id === item.id) ? previous.usecases : [...previous.usecases, { id: item.id, name: item.name, description: "", specificationId: item.specification_id }] }));
       }, "Đang thêm Use Case...")}
       onRenameUseCase={(id, name) => runAction(async () => {
         const oldName = state.usecases.find((item) => item.id === id)?.name;
