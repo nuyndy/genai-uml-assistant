@@ -205,18 +205,6 @@ export default function Step4InteractionDiagram({
         )}
       </Card>
 
-      <div className="workflow-action-bar flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl sm:px-5">
-        <p className="text-sm text-slate-700">
-          {allDiagramsReady
-            ? confirmed
-              ? "Các biểu đồ đã được xác nhận."
-              : "Kiểm tra các biểu đồ rồi xác nhận để tiếp tục."
-            : "Cần sinh và render đầy đủ biểu đồ cho từng kịch bản trước khi xác nhận."}
-        </p>
-        <PrimaryButton disabled={busy || !allDiagramsReady} onClick={onConfirm}>
-          Xác nhận biểu đồ tương tác
-        </PrimaryButton>
-      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         
