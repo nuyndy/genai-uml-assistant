@@ -31,10 +31,10 @@ interface Props {
   generatingNonFunctional: boolean;
   busy: boolean;
   error?: string;
-  generateFunctionalSpecification: (story: UserStory, regenerate?: boolean) => Promise<void>;
+  generateFunctionalSpecification: (story: UserStory, regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<void>;
   saveSpecification: (specification: SpecificationRecord, content: SpecDraft) => Promise<void>;
   approveSpecification: (specification: SpecificationRecord) => Promise<void>;
-  createNonFunctionalSpecification: (regenerate?: boolean) => Promise<void>;
+  createNonFunctionalSpecification: (regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<void>;
   onStepChange: (step: number) => void;
   wrapClass: string;
   inputClass?: string;
@@ -122,9 +122,9 @@ export default function Step4DacTa({
     setActionMessage("");
     try {
       for (const story of stories) {
-        await generateFunctionalSpecification(story, true);
+        await generateFunctionalSpecification(story, true, true);
       }
-      await createNonFunctionalSpecification(true);
+      await createNonFunctionalSpecification(true, true);
       setActionMessage("Đã gửi yêu cầu sinh lại toàn bộ FR/NFR.");
     } catch (reason) {
       setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại toàn bộ FR/NFR.");
