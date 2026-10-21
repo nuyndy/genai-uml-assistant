@@ -100,7 +100,7 @@ function ReviewRow({ label, ok }: { label: string; ok: boolean }) {
     <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2">
       <span>{label}</span>
       <span className={ok ? "font-medium text-emerald-700" : "font-medium text-amber-700"}>
-        {ok ? "Đã xác nhận" : "Chưa hoàn tất"}
+        {ok ? "Đã có dữ liệu" : "Còn thiếu"}
       </span>
     </div>
   );
