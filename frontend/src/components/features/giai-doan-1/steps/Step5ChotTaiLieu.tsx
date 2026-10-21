@@ -20,6 +20,7 @@ type FunctionalRow = SpecificationRecord & { value: FunctionalSpecification };
 type NonFunctionalRow = SpecificationRecord & { value: NonFunctionalSpecification };
 
 interface Props {
+  projectName: string;
   srsMetadataDirty: boolean;
   srsMetadata: SrsMetadata;
   srsMarkdown: string;
@@ -38,6 +39,7 @@ interface Props {
 const SAVE_DEBOUNCE_MS = 800;
 
 export default function Step5ChotTaiLieu({
+  projectName,
   srsMetadataDirty,
   srsMetadata,
   srsMarkdown,
@@ -162,7 +164,7 @@ export default function Step5ChotTaiLieu({
               <p className="mt-1.5 shrink-0 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
             <div ref={editorRootRef} className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
-              <SrsWordEditor metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
+              <SrsWordEditor projectName={projectName} metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
                 onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} />
             </div>
           </div>
