@@ -28,7 +28,7 @@ from schemas.specification import (
     SpecificationDocumentExportInput,
     SpecificationRecord,
 )
-from services.ollama import AIServiceError, generate_json
+from services.ollama import AIServiceError, generate_content, strip_code_fence
 from services.spec_generator import build_nonfunctional_spec_prompt
 from services.srs_export import markdown_to_docx
 
@@ -277,7 +277,8 @@ Ngữ cảnh dự án:
 {json.dumps(context, ensure_ascii=False, default=str)}
 """
     try:
-        generated = generate_json(prompt)
+        generated_text = generate_content(prompt, json_response=True)
+        generated = json.loads(strip_code_fence(generated_text))
         if not isinstance(generated, dict):
             raise ValueError("AI response must be a JSON object")
         fields = ("intro_purpose", "intro_scope", "intro_definitions",
