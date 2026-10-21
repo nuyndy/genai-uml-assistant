@@ -422,17 +422,8 @@ export default function GiaiDoan2({
     }
   }
 
-  function regenerate(label: string, title: string, hasExisting: boolean, run: () => void) {
-    if (!hasExisting) {
-      run();
-      return;
-    }
-    setPendingRegenerate(() => () => {
-      setPendingRegenerate(null);
-      run();
-    });
-    setRegenerateTitle(title);
-    setRegenerateLabel(label);
+  function regenerate(_label: string, _title: string, _hasExisting: boolean, run: () => void) {
+    run();
   }
 
   function updateScenario(useCaseId: number, field: keyof Scenario, lines: string[]) {
@@ -790,58 +781,34 @@ export default function GiaiDoan2({
   return (
     <div className="relative">
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
-      {pendingRegenerate && (
-        <OverwriteConfirm
-          title={regenerateTitle}
-          detail="Kết quả hiện tại sẽ bị thay bằng kết quả mới từ AI. Phần bạn đã sửa tay (nếu có) tại bước này sẽ mất."
-          confirmLabel={regenerateLabel}
-          onConfirm={pendingRegenerate}
-          onCancel={() => setPendingRegenerate(null)}
-        />
-      )}
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {specificationError && <Notice tone="warn">{specificationError}</Notice>}
         {error && <Notice tone="danger">{error}</Notice>}
-        {step === 1 && (
-          <>
-            {step1}
-            <div className="pt-2">{step2}</div>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            {step3}
-            <div className="pt-2">{step4}</div>
-          </>
-        )}
-        {step === 3 && step5}
-        {step === 4 && (
-          <Card title="Kiểm tra và xác nhận bộ mô hình UML">
+        {step === 1 && step1}
+        {step === 2 && step3}
+        {step === 3 && step2}
+        {step === 4 && step5}
+        {step === 5 && step4}
+        {step === 6 && (
+          <Card title="Trạng thái và kiểm tra bộ mô hình UML">
             <p className="mb-4 text-sm text-slate-600">
-              Rà soát các sản phẩm đã tạo trước khi chuyển sang Giai đoạn 3. Hệ thống kiểm tra sự hiện diện của Actor, Use Case, kịch bản, biểu đồ tương tác và biểu đồ lớp.
+              Rà soát tính đầy đủ của các sản phẩm. Mỗi sản phẩm được lưu ở bước tạo hoặc chỉnh sửa; không cần xác nhận toàn bộ để chuyển bước.
             </p>
             <div className="space-y-2 text-sm">
-              <ReviewRow label="Actor và Use Case" ok={state.actors.length > 0 && state.usecases.length > 0 && state.actorsUseCasesConfirmed} />
-              <ReviewRow label="Biểu đồ Use Case" ok={Boolean(state.useCaseDiagramUrl && state.useCaseDiagramCode?.trim() && state.useCaseDiagramConfirmed)} />
-              <ReviewRow label="Kịch bản cho tất cả Use Case" ok={allScenariosReady(state.usecases, state.scenarios) && state.scenariosConfirmed} />
-              <ReviewRow label="Biểu đồ tương tác cho tất cả Use Case" ok={allInteractionsReady(state.usecases, state.interactions) && state.interactionsConfirmed} />
-              <ReviewRow label="Class Diagram và danh sách lớp" ok={state.umlClasses.length > 0 && Boolean(state.classDiagramUrl && state.classDiagramCode?.trim()) && state.classDiagramConfirmed} />
+              <ReviewRow label={`Actor và Use Case (${state.actors.length} tác nhân, ${state.usecases.length} use case)`} ok={state.actors.length > 0 && state.usecases.length > 0} />
+              <ReviewRow label="Biểu đồ Use Case có mã và ảnh" ok={Boolean(state.useCaseDiagramUrl && state.useCaseDiagramCode?.trim())} />
+              <ReviewRow label={`Kịch bản Use Case (${state.usecases.filter((uc) => { const sc = state.scenarios[uc.id]; return Boolean(sc && (sc.mainFlow.length || sc.altFlows.length || sc.exceptions.length)); }).length}/${state.usecases.length})`} ok={allScenariosReady(state.usecases, state.scenarios)} />
+              <ReviewRow label={`Biểu đồ tương tác (${state.usecases.filter((uc) => state.interactions.some((d) => d.usecaseId === uc.id && Boolean(d.imageUrl) && Boolean(d.sourceCode?.trim()))).length}/${state.usecases.length})`} ok={allInteractionsReady(state.usecases, state.interactions)} />
+              <ReviewRow label={`Domain Model và Class Diagram (${state.umlClasses.length} lớp)`} ok={state.umlClasses.length > 0 && Boolean(state.classDiagramUrl && state.classDiagramCode?.trim())} />
             </div>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <PrimaryButton
-                disabled={!(state.actors.length > 0 && state.usecases.length > 0 && state.actorsUseCasesConfirmed && state.useCaseDiagramUrl && state.useCaseDiagramCode?.trim() && state.useCaseDiagramConfirmed && allScenariosReady(state.usecases, state.scenarios) && state.scenariosConfirmed && allInteractionsReady(state.usecases, state.interactions) && state.interactionsConfirmed && state.umlClasses.length > 0 && state.classDiagramUrl && state.classDiagramCode?.trim() && state.classDiagramConfirmed)}
-                onClick={() => setState((previous) => ({
-                  ...previous,
-                  actorsUseCasesConfirmed: true,
-                  useCaseDiagramConfirmed: true,
-                  scenariosConfirmed: true,
-                  interactionsConfirmed: true,
-                  classDiagramConfirmed: true,
-                }))}
-              >
-                Xác nhận bộ mô hình UML
-              </PrimaryButton>
-              <span className="text-xs text-slate-500">Chỉ xác nhận khi các sản phẩm đã được kiểm tra và xác nhận ở từng phần.</span>
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-sm font-semibold text-slate-900">Kết quả rà soát</h3>
+              {(!state.actors.length || !state.usecases.length || !state.useCaseDiagramUrl || !state.useCaseDiagramCode?.trim() || !allScenariosReady(state.usecases, state.scenarios) || !allInteractionsReady(state.usecases, state.interactions) || !state.umlClasses.length || !state.classDiagramUrl || !state.classDiagramCode?.trim()) ? (
+                <p className="mt-1 text-sm text-slate-600">Còn sản phẩm chưa hoàn tất. Quay lại đúng bước qua thanh điều hướng để bổ sung; dữ liệu đã lưu ở các bước khác vẫn được giữ nguyên.</p>
+              ) : (
+                <p className="mt-1 text-sm text-emerald-700">Đã có đủ các sản phẩm UML chính. Có thể chuyển sang Giai đoạn 3 để đồng bộ SRS và UML.</p>
+              )}
+              <p className="mt-2 text-xs text-slate-500">State Machine có thể bổ sung khi hệ thống có đối tượng với vòng đời trạng thái rõ ràng; không bắt buộc với mọi use case.</p>
             </div>
           </Card>
         )}
