@@ -1236,14 +1236,21 @@ def update_actor(
             raise HTTPException(status_code=404, detail="Không tìm thấy tác nhân.")
         _require_project(db, actor.project_id)
         _require_approved_specifications(db, actor.project_id)
-        duplicate = db.query(Actor.id).filter(
-            Actor.project_id == actor.project_id,
-            func.lower(Actor.name) == data.name.lower(),
-            Actor.id != actor_id,
-        ).first()
-        if duplicate:
-            raise HTTPException(status_code=409, detail="Tên tác nhân đã tồn tại trong dự án.")
-        actor.name = data.name
+        if data.name is not None:
+            duplicate = db.query(Actor.id).filter(
+                Actor.project_id == actor.project_id,
+                func.lower(Actor.name) == data.name.lower(),
+                Actor.id != actor_id,
+            ).first()
+            if duplicate:
+                raise HTTPException(status_code=409, detail="Tên tác nhân đã tồn tại trong dự án.")
+            actor.name = data.name
+        if data.description is not None:
+            actor.description = data.description
+        if data.role is not None:
+            actor.role = data.role
+        if data.main_businesses is not None:
+            actor.main_businesses = data.main_businesses
         db.commit()
         db.refresh(actor)
     except HTTPException:
