@@ -230,12 +230,12 @@ function App() {
 
   // 2) Workspace: 3 GIAI ĐOẠN lớn, mỗi giai đoạn có sub-stepper riêng.
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-emerald-50 via-white to-sky-50">
+    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50">
       <div className="fixed inset-0 z-0">
         <StageBackdrop />
       </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10">
       <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] items-center gap-3 px-3 py-2 sm:gap-5 sm:px-6 lg:px-8">
           <button
@@ -306,7 +306,7 @@ function App() {
       )}
 
       <ErrorBoundary>
-      <main className="flex-1">
+      <main className="pb-4">
         {stage === 1 && (
           <GiaiDoan1
             projectId={activeProject.id}
@@ -341,7 +341,7 @@ function App() {
       </main>
       </ErrorBoundary>
 
-      <footer className="sticky bottom-0 z-50 mt-auto border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
+      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1600px] items-center gap-1.5 px-2 py-2 sm:gap-3 sm:px-6 lg:px-8">
           <button
             type="button"
