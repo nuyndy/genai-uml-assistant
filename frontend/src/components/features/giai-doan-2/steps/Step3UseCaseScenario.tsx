@@ -53,6 +53,7 @@ export default function Step3UseCaseScenario({
   projectId,
   wrapClass,
 }: Props) {
+  void confirmAll;
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
 
   const toggle = (id: number) =>
@@ -60,7 +61,6 @@ export default function Step3UseCaseScenario({
       previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id],
     );
 
-  const anyScenario = useCases.some((useCase) => hasMainFlow(scenarios[useCase.id]));
 
   return (
     <div className="space-y-5">
