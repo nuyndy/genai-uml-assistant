@@ -37,7 +37,7 @@ interface Props {
 }
 
 const inputClass = "w-full min-w-0 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-slate-800 outline-none hover:border-slate-200 focus:border-emerald-500 focus:bg-white";
-const textareaClass = "w-full min-w-0 resize-y rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-slate-700 outline-none hover:border-slate-200 focus:border-emerald-500 focus:bg-white";
+const textareaClass = "block w-full min-w-0 resize-none overflow-hidden rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm leading-5 text-slate-700 outline-none hover:border-slate-200 focus:border-emerald-500 focus:bg-white";
 
 export default function Step1ActorUseCase({
   requirements: actors, requirementValues: useCases, relations, specifications,
@@ -92,12 +92,6 @@ export default function Step1ActorUseCase({
         <SoftButton disabled={busy || loadingAnalysis} onClick={() => void runBatchAnalysis()}>
           {loadingAnalysis ? "Đang phân tích..." : hasSuggestions || actors.length ? "Phân tích lại bằng AI" : "Phân tích bằng AI"}
         </SoftButton>
-        <button type="button" disabled={busy || savingActorDetails} onClick={() => {
-          setSavingActorDetails(true);
-          void onSaveActorDetails(actors.map((actor) => ({ id: actor.id, ...actorValue(actor) }))).finally(() => setSavingActorDetails(false));
-        }} className="h-9 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">
-          {savingActorDetails ? "Đang lưu..." : "Lưu"}
-        </button>
         {hasSuggestions && <SoftButton disabled={busy || loadingAnalysis} onClick={() => void onSaveSuggestions()}>
           Thêm gợi ý ({suggestions.actors.length + suggestions.useCases.length})
         </SoftButton>}
@@ -128,9 +122,9 @@ export default function Step1ActorUseCase({
                     <td className="px-0.5 py-1"><input aria-label="Tên tác nhân" key={`actor-${actor.id}-${actor.name}`} defaultValue={actor.name} disabled={busy} className={inputClass}
                       onBlur={(event) => { const name = event.currentTarget.value.trim(); if (name && name !== actor.name) void onRenameActor(actor.id, name); else if (!name) event.currentTarget.value = actor.name; }}
                       onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") { event.currentTarget.value = actor.name; event.currentTarget.blur(); } }} /></td>
-                    <td className="px-0.5 py-1"><textarea aria-label="Mô tả tác nhân" rows={2} value={detail.description} disabled={busy} onChange={(event) => updateActorField(actor, "description", event.target.value)} placeholder="Mô tả…" className={textareaClass} /></td>
-                    <td className="px-0.5 py-1"><textarea aria-label="Vai trò tác nhân" rows={2} value={detail.role} disabled={busy} onChange={(event) => updateActorField(actor, "role", event.target.value)} placeholder="Vai trò…" className={textareaClass} /></td>
-                    <td className="px-0.5 py-1"><textarea aria-label="Các nghiệp vụ chính" rows={2} value={detail.mainBusinesses} disabled={busy} onChange={(event) => updateActorField(actor, "mainBusinesses", event.target.value)} placeholder="Các nghiệp vụ…" className={textareaClass} /></td>
+                    <td className="px-0.5 py-1"><textarea aria-label="Mô tả tác nhân" rows={1} value={detail.description} disabled={busy} onChange={(event) => { updateActorField(actor, "description", event.target.value); event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`; }} onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Mô tả…" className={textareaClass} /></td>
+                    <td className="px-0.5 py-1"><textarea aria-label="Vai trò tác nhân" rows={1} value={detail.role} disabled={busy} onChange={(event) => { updateActorField(actor, "role", event.target.value); event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`; }} onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Vai trò…" className={textareaClass} /></td>
+                    <td className="px-0.5 py-1"><textarea aria-label="Các nghiệp vụ chính" rows={1} value={detail.mainBusinesses} disabled={busy} onChange={(event) => { updateActorField(actor, "mainBusinesses", event.target.value); event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`; }} onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Các nghiệp vụ…" className={textareaClass} /></td>
                     <td className="px-1 py-1 text-right"><button type="button" title="Xóa tác nhân" aria-label={`Xóa tác nhân ${actor.name}`} disabled={busy} onClick={() => { if (window.confirm(`Xóa tác nhân “${actor.name}” và các liên kết liên quan?`)) void onDeleteActor(actor.id); }} className="rounded-md px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-40">Xóa</button></td>
                   </tr>;
                 })}
