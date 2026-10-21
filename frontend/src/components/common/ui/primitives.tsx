@@ -50,6 +50,7 @@ export function Card({
   actions,
   tone = "plain",
   compact = false,
+  allowOverflow = false,
   children,
 }: {
   title?: string;
@@ -57,6 +58,7 @@ export function Card({
   actions?: ReactNode;
   tone?: "plain" | "emerald" | "amber" | "rose";
   compact?: boolean;
+  allowOverflow?: boolean;
   children: ReactNode;
 }) {
   const accent = {
@@ -68,7 +70,7 @@ export function Card({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl border border-[#C8DDD7] bg-white ${compact ? "p-3.5" : "p-5"} shadow-[0_8px_30px_-18px_rgba(18,63,58,0.28)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-18px_rgba(18,63,58,0.38)] ${accent}`}
+      className={`relative ${allowOverflow ? "overflow-visible" : "overflow-hidden"} rounded-2xl border border-[#C8DDD7] bg-white ${compact ? "p-3.5" : "p-5"} shadow-[0_8px_30px_-18px_rgba(18,63,58,0.28)] transition-shadow duration-200 hover:shadow-[0_12px_36px_-18px_rgba(18,63,58,0.38)] ${accent}`}
     >
       {(title || actions) && (
         <div className={`${compact ? "mb-3" : "mb-5"} flex flex-wrap items-start justify-between gap-3`}>
