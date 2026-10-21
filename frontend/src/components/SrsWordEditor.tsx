@@ -12,6 +12,7 @@ export interface SrsWordSpecEntry<T> extends SpecificationRecord {
 }
 
 interface SrsWordEditorProps {
+  projectName: string;
   metadata: SrsMetadata;
   functional: SrsWordSpecEntry<FunctionalSpecification>[];
   nonFunctional: SrsWordSpecEntry<NonFunctionalSpecification>[];
@@ -180,6 +181,7 @@ function NonFunctionalBlock({
 }
 
 export default function SrsWordEditor({
+  projectName,
   metadata,
   functional,
   nonFunctional,
@@ -203,7 +205,7 @@ export default function SrsWordEditor({
 
         <div className="min-w-0 text-[15px] text-slate-900">
           <SectionHeading>TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)</SectionHeading>
-          <p className="mb-6 text-center text-sm">Tên dự án: GenAI UML Assistant · Phiên bản: 1.0</p>
+          <p className="mb-6 text-center text-sm">Tên dự án: {projectName || "Chưa đặt tên"} · Phiên bản: 1.0</p>
 
           <SectionHeading>1. Giới thiệu</SectionHeading>
           <SubHeading>1.1 Mục đích</SubHeading>
@@ -221,7 +223,7 @@ export default function SrsWordEditor({
 
           <SectionHeading>2. Mô tả tổng thể</SectionHeading>
           <SubHeading>2.1 Góc nhìn sản phẩm</SubHeading>
-          <p className="text-sm leading-6">GenAI UML Assistant hỗ trợ quy trình phân tích yêu cầu, xây dựng mô hình UML và hoàn thiện tài liệu SRS qua các giai đoạn liên kết.</p>
+          <p className="text-sm leading-6">{`Hệ thống ${projectName || "đang được xây dựng"} hỗ trợ quy trình phân tích yêu cầu, xây dựng mô hình UML và hoàn thiện tài liệu SRS qua các giai đoạn liên kết.`}</p>
           <SubHeading>2.2 Chức năng sản phẩm</SubHeading>
           <ul className="list-disc space-y-1 pl-5 text-sm leading-6">
             <li>Thu thập, phân tích và xác nhận yêu cầu; xây dựng user story và đặc tả.</li>
@@ -283,7 +285,7 @@ export default function SrsWordEditor({
           <p className="text-sm leading-6">Các mô hình phân tích UML được quản lý và đồng bộ ở Giai đoạn 2 và Giai đoạn 3.</p>
         </div>
         <footer className="mt-8 flex justify-between border-t border-slate-300 pt-3 text-xs text-slate-500">
-          <span>GenAI UML Assistant</span>
+          <span>{projectName || "Hệ thống"}</span>
           <span>Bản thảo - Trang 1</span>
         </footer>
       </article>
