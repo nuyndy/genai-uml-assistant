@@ -193,83 +193,34 @@ function FunctionalBlock({
   value: FunctionalSpecification;
   onChange: (value: FunctionalSpecification) => void;
 }) {
+  const rows: { label: string; content: ReactNode }[] = [
+    { label: "Mã ca sử dụng", content: <WordField label="" value={value.function_code} onChange={(function_code) => onChange({ ...value, function_code })} /> },
+    { label: "Tên ca sử dụng", content: <WordField label="" value={value.function_name} onChange={(function_name) => onChange({ ...value, function_name })} /> },
+    { label: "Tác nhân", content: <WordField label="" value={value.actors.join("\\n")} onChange={(text) => onChange({ ...value, actors: text.split(/\\r?\\n/) })} /> },
+    { label: "Mô tả", content: <WordField label="" value={value.description} onChange={(description) => onChange({ ...value, description })} /> },
+    { label: "Tiền điều kiện", content: <WordField label="" value={value.pre_conditions.join("\\n")} onChange={(text) => onChange({ ...value, pre_conditions: text.split(/\\r?\\n/) })} /> },
+    { label: "Đảm bảo tối thiểu", content: <WordField label="" value={value.minimal_guarantee ?? ""} onChange={(minimal_guarantee) => onChange({ ...value, minimal_guarantee })} /> },
+    { label: "Hậu điều kiện", content: <WordField label="" value={value.post_conditions.join("\\n")} onChange={(text) => onChange({ ...value, post_conditions: text.split(/\\r?\\n/) })} /> },
+    { label: "Chuỗi sự kiện chính", content: <WordField label="" value={value.main_flow.join("\\n")} onChange={(text) => onChange({ ...value, main_flow: text.split(/\\r?\\n/) })} /> },
+    { label: "Luồng thay thế", content: <WordField label="" value={value.alternative_flows.join("\\n")} onChange={(text) => onChange({ ...value, alternative_flows: text.split(/\\r?\\n/) })} /> },
+    { label: "Ngoại lệ", content: <WordField label="" value={value.exception_flows.join("\\n")} onChange={(text) => onChange({ ...value, exception_flows: text.split(/\\r?\\n/) })} /> },
+    { label: "Quy tắc nghiệp vụ", content: <WordField label="" value={value.business_rules.join("\\n")} onChange={(text) => onChange({ ...value, business_rules: text.split(/\\r?\\n/) })} /> },
+  ];
   return (
-    <article
-      className="mb-6 border-l-2 border-violet-300 pl-4"
-      aria-label={`Đặc tả ${value.function_code || record.feature}`}
-    >
-      <SubHeading>
-        {value.function_code || "UC"} - {value.function_name || record.feature}
-      </SubHeading>
-      <div className="min-w-0 space-y-2">
-        <WordField
-          label="Mã chức năng"
-          value={value.function_code}
-          onChange={(function_code) => onChange({ ...value, function_code })}
-        />
-        <WordField
-          label="Tên chức năng"
-          value={value.function_name}
-          onChange={(function_name) => onChange({ ...value, function_name })}
-        />
-        <WordField
-          label="Mô tả"
-          value={value.description}
-          onChange={(description) => onChange({ ...value, description })}
-        />
-        <WordField
-          label="Mức ưu tiên"
-          value={value.priority}
-          onChange={(priority) =>
-            onChange({ ...value, priority: priority as FunctionalSpecification["priority"] })
-          }
-        />
-        <WordListField
-          label="Tác nhân"
-          values={value.actors}
-          onChange={(actors) => onChange({ ...value, actors })}
-        />
-        <WordListField
-          label="Điều kiện tiên quyết"
-          values={value.pre_conditions}
-          onChange={(pre_conditions) => onChange({ ...value, pre_conditions })}
-        />
-        <WordListField
-          label="Luồng chính"
-          values={value.main_flow}
-          onChange={(main_flow) => onChange({ ...value, main_flow })}
-        />
-        <WordListField
-          label="Luồng thay thế"
-          values={value.alternative_flows}
-          onChange={(alternative_flows) => onChange({ ...value, alternative_flows })}
-        />
-        <WordListField
-          label="Luồng ngoại lệ"
-          values={value.exception_flows}
-          onChange={(exception_flows) => onChange({ ...value, exception_flows })}
-        />
-        <WordField
-          label="Đảm bảo tối thiểu"
-          value={value.minimal_guarantee ?? ""}
-          onChange={(minimal_guarantee) => onChange({ ...value, minimal_guarantee })}
-        />
-        <WordListField
-          label="Điều kiện sau"
-          values={value.post_conditions}
-          onChange={(post_conditions) => onChange({ ...value, post_conditions })}
-        />
-        <WordListField
-          label="Quy tắc nghiệp vụ"
-          values={value.business_rules}
-          onChange={(business_rules) => onChange({ ...value, business_rules })}
-        />
-        <FieldMappingTable
-          fields={value.field_mapping}
-          onChange={(field_mapping) => onChange({ ...value, field_mapping })}
-        />
-      </div>
-    </article>
+    <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px]" aria-label={`Bảng đặc tả ${value.function_code || record.feature}`}>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.label} className="border-b border-slate-300 align-top">
+            <th scope="row" className="w-[28%] border-r border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold">{row.label}</th>
+            <td className="min-w-0 px-3 py-1.5">{row.content}</td>
+          </tr>
+        ))}
+        <tr className="border-b border-slate-300 align-top">
+          <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold">Ánh xạ trường dữ liệu</th>
+          <td className="min-w-0 px-3 py-1.5"><FieldMappingTable fields={value.field_mapping} onChange={(field_mapping) => onChange({ ...value, field_mapping })} /></td>
+        </tr>
+      </tbody>
+    </table>
   );
 }
 
@@ -399,63 +350,8 @@ export default function SrsWordEditor({
                   <h4 className="mb-2 text-[15px] font-bold text-slate-900">
                     FR {index + 1}: {record.value.function_name || record.feature || "Chức năng chưa đặt tên"}
                   </h4>
-                  <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px]">
-                    <tbody>
-                      <tr className="border-b border-slate-300">
-                        <th scope="row" className="w-[25%] border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mã chức năng</th>
-                        <td className="px-3 py-1.5">
-                          <input aria-label={`Mã FR ${record.id}`} value={record.value.function_code}
-                            onChange={(event) => onChangeSpecification(record, { ...record.value, function_code: event.target.value })}
-                            className="w-full rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
-                        </td>
-                      </tr>
-                      <tr className="border-b border-slate-300">
-                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Tên chức năng</th>
-                        <td className="px-3 py-1.5">
-                          <textarea aria-label={`Tên chức năng ${record.id}`} rows={2} value={record.value.function_name}
-                            onChange={(event) => onChangeSpecification(record, { ...record.value, function_name: event.target.value })}
-                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
-                        </td>
-                      </tr>
-                      <tr className="border-b border-slate-300">
-                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mô tả</th>
-                        <td className="px-3 py-1.5">
-                          <textarea aria-label={`Mô tả chức năng ${record.id}`} rows={3} value={record.value.description}
-                            onChange={(event) => onChangeSpecification(record, { ...record.value, description: event.target.value })}
-                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 leading-6 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
-                        </td>
-                      </tr>
-                      <tr className="border-b border-slate-300">
-                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Tác nhân</th>
-                        <td className="px-3 py-1.5">
-                          <textarea aria-label={`Tác nhân ${record.id}`} rows={2} value={record.value.actors.join("\n")}
-                            onChange={(event) => onChangeSpecification(record, { ...record.value, actors: event.target.value.split("\n") })}
-                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
-                        </td>
-                      </tr>
-                      <tr className="border-b border-slate-300">
-                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mức ưu tiên</th>
-                        <td className="px-3 py-1.5">
-                          <select aria-label={`Mức ưu tiên ${record.id}`} value={record.value.priority}
-                            onChange={(event) => onChangeSpecification(record, { ...record.value, priority: event.target.value as FunctionalSpecification["priority"] })}
-                            className="w-full rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40">
-                            {(["Must", "Should", "Could", "Won't"] as const).map((priority) => <option key={priority} value={priority}>{priority}</option>)}
-                          </select>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colSpan={2} className="p-3">
-                          <details open>
-                            <summary className="cursor-pointer font-semibold text-violet-700 hover:text-violet-900">Các trường chi tiết của ca sử dụng</summary>
-                            <div className="pt-3">
-                              <FunctionalBlock record={record} value={record.value}
-                                onChange={(value) => onChangeSpecification(record, value)} />
-                            </div>
-                          </details>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <FunctionalBlock record={record} value={record.value}
+                    onChange={(value) => onChangeSpecification(record, value)} />
                 </section>
               ))}
             </div>
