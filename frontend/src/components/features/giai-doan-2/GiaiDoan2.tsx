@@ -83,6 +83,30 @@ interface ClassDraft {
 
 const UML_LOAD_TIMEOUT_MS = 15000;
 
+function allScenariosReady(useCases: WorkflowState["usecases"], scenarios: WorkflowState["scenarios"]): boolean {
+  return useCases.length > 0 && useCases.every((useCase) => {
+    const scenario = scenarios[useCase.id];
+    return Boolean(scenario && (scenario.mainFlow.length > 0 || scenario.altFlows.length > 0 || scenario.exceptions.length > 0));
+  });
+}
+
+function allInteractionsReady(useCases: WorkflowState["usecases"], interactions: WorkflowState["interactions"]): boolean {
+  return useCases.length > 0 && useCases.every((useCase) =>
+    interactions.some((diagram) => diagram.usecaseId === useCase.id && Boolean(diagram.imageUrl) && Boolean(diagram.sourceCode?.trim())),
+  );
+}
+
+function ReviewRow({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2">
+      <span>{label}</span>
+      <span className={ok ? "font-medium text-emerald-700" : "font-medium text-amber-700"}>
+        {ok ? "Đã xác nhận" : "Chưa hoàn tất"}
+      </span>
+    </div>
+  );
+}
+
 function explainError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Đã xảy ra lỗi không xác định.";
 }
@@ -778,11 +802,49 @@ export default function GiaiDoan2({
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {specificationError && <Notice tone="warn">{specificationError}</Notice>}
         {error && <Notice tone="danger">{error}</Notice>}
-        {step === 1 && step1}
-        {step === 2 && step2}
-        {step === 3 && step3}
-        {step === 4 && step4}
-        {step === 5 && step5}
+        {step === 1 && (
+          <>
+            {step1}
+            <div className="pt-2">{step2}</div>
+          </>
+        )}
+        {step === 2 && (
+          <>
+            {step3}
+            <div className="pt-2">{step4}</div>
+          </>
+        )}
+        {step === 3 && step5}
+        {step === 4 && (
+          <Card title="Kiểm tra và xác nhận bộ mô hình UML">
+            <p className="mb-4 text-sm text-slate-600">
+              Rà soát các sản phẩm đã tạo trước khi chuyển sang Giai đoạn 3. Hệ thống kiểm tra sự hiện diện của Actor, Use Case, kịch bản, biểu đồ tương tác và biểu đồ lớp.
+            </p>
+            <div className="space-y-2 text-sm">
+              <ReviewRow label="Actor và Use Case" ok={state.actors.length > 0 && state.usecases.length > 0 && state.actorsUseCasesConfirmed} />
+              <ReviewRow label="Biểu đồ Use Case" ok={Boolean(state.useCaseDiagramUrl && state.useCaseDiagramCode?.trim() && state.useCaseDiagramConfirmed)} />
+              <ReviewRow label="Kịch bản cho tất cả Use Case" ok={allScenariosReady(state.usecases, state.scenarios) && state.scenariosConfirmed} />
+              <ReviewRow label="Biểu đồ tương tác cho tất cả Use Case" ok={allInteractionsReady(state.usecases, state.interactions) && state.interactionsConfirmed} />
+              <ReviewRow label="Class Diagram và danh sách lớp" ok={state.umlClasses.length > 0 && Boolean(state.classDiagramUrl && state.classDiagramCode?.trim()) && state.classDiagramConfirmed} />
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <PrimaryButton
+                disabled={!(state.actors.length > 0 && state.usecases.length > 0 && state.actorsUseCasesConfirmed && state.useCaseDiagramUrl && state.useCaseDiagramCode?.trim() && state.useCaseDiagramConfirmed && allScenariosReady(state.usecases, state.scenarios) && state.scenariosConfirmed && allInteractionsReady(state.usecases, state.interactions) && state.interactionsConfirmed && state.umlClasses.length > 0 && state.classDiagramUrl && state.classDiagramCode?.trim() && state.classDiagramConfirmed)}
+                onClick={() => setState((previous) => ({
+                  ...previous,
+                  actorsUseCasesConfirmed: true,
+                  useCaseDiagramConfirmed: true,
+                  scenariosConfirmed: true,
+                  interactionsConfirmed: true,
+                  classDiagramConfirmed: true,
+                }))}
+              >
+                Xác nhận bộ mô hình UML
+              </PrimaryButton>
+              <span className="text-xs text-slate-500">Chỉ xác nhận khi các sản phẩm đã được kiểm tra và xác nhận ở từng phần.</span>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
