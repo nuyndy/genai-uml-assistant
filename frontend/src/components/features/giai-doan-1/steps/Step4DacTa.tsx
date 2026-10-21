@@ -40,8 +40,6 @@ interface Props {
   inputClass?: string;
 }
 
-const TABS = [["overview", "Đặc tả đầy đủ"]] as const;
-
 function parseSpecification<T>(content: string, fallback: T): T {
   try {
     return JSON.parse(content) as T;
@@ -190,6 +188,11 @@ export default function Step4DacTa({
               <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
             ) : (
               <article className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2">
+                  <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
+                  <span className="text-xs font-medium text-slate-600">FR {functionalItems.length ? activeIndex + 1 : 0}/{functionalItems.length}</span>
+                  <SoftButton disabled={activeIndex >= functionalItems.length - 1 || busy} onClick={() => { setActiveIndex((index) => Math.min(functionalItems.length - 1, index + 1)); setActionMessage(""); }}>Sau →</SoftButton>
+                </div>
                 <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
                     <p className={`text-sm font-bold uppercase tracking-wide text-emerald-800 ${wrapClass}`}>FR · US-{String(activeStory.id).padStart(3, "0")}{activeSpecification ? ` · SPEC-${String(activeSpecification.id).padStart(3, "0")}` : ""}</p>
@@ -208,9 +211,6 @@ export default function Step4DacTa({
                   </div>
                 ) : (
                   <>
-                    <div className="flex max-w-full gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3" role="tablist" aria-label="Các phần đặc tả chức năng">
-                      {TABS.map(([tab, label]) => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} onClick={() => setFunctionalSpecificationTabs((previous) => ({ ...previous, [activeStory.id]: tab }))} className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition ${activeTab === tab ? "border-emerald-700 text-emerald-900" : "border-transparent text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
-                    </div>
                     <div className="min-w-0 p-4 sm:p-5" role="tabpanel">
                       <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
                     </div>
@@ -218,7 +218,6 @@ export default function Step4DacTa({
                 )}
                 <footer className="flex flex-row flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-emerald-100/80 px-3 py-2">
                   <div className="flex flex-row flex-wrap items-center gap-2">
-                    <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
                     <SoftButton disabled={!activeSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
                   </div>
                   <div className="flex flex-row flex-wrap items-center gap-2">
@@ -227,7 +226,6 @@ export default function Step4DacTa({
                       <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
                       <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
                     </>}
-                    <SoftButton disabled={activeIndex >= functionalItems.length - 1 || busy} onClick={() => { setActiveIndex((index) => Math.min(functionalItems.length - 1, index + 1)); setActionMessage(""); }}>Sau →</SoftButton>
                   </div>
                 </footer>
                 {actionMessage && <p role="status" className="px-4 py-3 text-sm text-slate-600">{actionMessage}</p>}
@@ -235,6 +233,11 @@ export default function Step4DacTa({
             )
           ) : (
             <article className="overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
+              <div className="flex items-center justify-between gap-2 border-b border-violet-200 bg-violet-50 px-3 py-2">
+                <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
+                <span className="text-xs font-medium text-slate-600">NFR</span>
+                <SoftButton disabled={!canContinue} onClick={() => onStepChange(5)}>Sau →</SoftButton>
+              </div>
               <header className="border-b border-slate-200 bg-violet-50/70 px-4 py-4">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <p className="text-sm font-bold uppercase tracking-wide text-violet-800">NFR · ĐẶC TẢ PHI CHỨC NĂNG</p>
@@ -259,14 +262,12 @@ export default function Step4DacTa({
               )}
               <footer className="flex flex-row flex-nowrap items-center justify-between gap-2 border-t border-slate-200 bg-violet-100/80 px-3 py-2">
                 <div className="flex flex-row flex-nowrap items-center gap-2">
-                  <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
                   <SoftButton disabled={!nonFunctionalSpecification || busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa NFR"}</SoftButton>
                 </div>
                 <div className="flex flex-row flex-nowrap items-center gap-2">
                   <SoftButton disabled={busy || !nonFunctionalSpecification} onClick={() => void createNonFunctionalSpecification(true)}>Tạo lại bằng AI</SoftButton>
                   <PrimaryButton disabled={!nonFunctionalSpecification || busy} onClick={() => nonFunctionalSpecification && void saveSpecification(nonFunctionalSpecification, activeNonFunctionalValue)}>Lưu</PrimaryButton>
                   <SoftButton disabled={!nonFunctionalSpecification || busy || nonFunctionalSpecification.approval_status === "approved"} onClick={() => nonFunctionalSpecification && void approveSpecification(nonFunctionalSpecification)}>{nonFunctionalSpecification?.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
-                  <SoftButton disabled={!canContinue} onClick={() => onStepChange(5)}>Sau →</SoftButton>
                 </div>
               </footer>
               {actionMessage && <p role="status" className="px-4 py-3 text-sm text-slate-600">{actionMessage}</p>}
