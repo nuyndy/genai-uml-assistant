@@ -200,49 +200,57 @@ function NonFunctionalBlock({
               <WordField
                 label="Nhóm yêu cầu"
                 value={item.group ?? ""}
-                onChange={(group) => patch({ group })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Nhóm yêu cầu dòng ${index + 1}`}
               />
               <WordField
                 label="Tiêu chí"
                 value={item.criteria ?? ""}
-                onChange={(criteria) => patch({ criteria })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Tiêu chí dòng ${index + 1}`}
               />
               <WordField
                 label="Yêu cầu cụ thể"
                 value={item.requirement ?? ""}
-                onChange={(requirement) => patch({ requirement })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Yêu cầu cụ thể dòng ${index + 1}`}
               />
               <WordField
                 label="Chỉ tiêu / ngưỡng đo lường"
                 value={item.metric ?? ""}
-                onChange={(metric) => patch({ metric })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Chỉ tiêu dòng ${index + 1}`}
               />
               <WordField
                 label="Điều kiện áp dụng"
                 value={item.conditions ?? ""}
-                onChange={(conditions) => patch({ conditions })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Điều kiện áp dụng dòng ${index + 1}`}
               />
               <WordField
                 label="Phương pháp kiểm chứng"
                 value={item.verification_method ?? ""}
-                onChange={(verification_method) => patch({ verification_method })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Phương pháp kiểm chứng dòng ${index + 1}`}
               />
               <WordField
                 label="Phạm vi áp dụng"
                 value={item.scope ?? ""}
-                onChange={(scope) => patch({ scope })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Phạm vi áp dụng dòng ${index + 1}`}
               />
               <WordField
                 label="Nguồn / căn cứ"
                 value={item.source ?? ""}
-                onChange={(source) => patch({ source })}
+                onChange={() => undefined}
+                readOnly
                 ariaLabel={`Nguồn căn cứ dòng ${index + 1}`}
               />
             </div>
