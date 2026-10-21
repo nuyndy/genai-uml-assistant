@@ -441,6 +441,7 @@ export default function GiaiDoan2({
       error={error}
       runBatchAnalysis={() => runAction(runExtract, "Đang phân tích đặc tả chức năng...")}
       onSaveSuggestions={() => runAction(saveActorUseCaseSuggestions, "Đang lưu Actor và Use Case...")}
+      onSaveActorDetails={(items) => runAction(async () => { for (const item of items) await updateActor(item.id, { description: item.description, role: item.role, main_businesses: item.mainBusinesses }); await refreshSavedState(); }, "Đang lưu thông tin tác nhân...")}
       onCreateActor={(name) => runAction(async () => {
         if (!projectId) return;
         const actor = await createProjectActor(projectId, name);
@@ -448,7 +449,7 @@ export default function GiaiDoan2({
       }, "Đang thêm tác nhân...")}
       onRenameActor={(id, name) => runAction(async () => {
         const oldName = state.actors.find((item) => item.id === id)?.name;
-        const actor = await updateActor(id, name);
+        const actor = await updateActor(id, { name });
         setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.map((item) => item.id === id ? { id: actor.id, name: actor.name } : item), relations: previous.relations.map((item) => oldName && item.from === oldName ? { ...item, from: actor.name } : item) }));
       }, "Đang lưu tác nhân...")}
       onDeleteActor={(id) => runAction(async () => {
