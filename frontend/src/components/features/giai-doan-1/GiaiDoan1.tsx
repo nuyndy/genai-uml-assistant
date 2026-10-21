@@ -15,6 +15,7 @@ import {
   listProjectUserStories,
   previewProjectUserStories,
   saveSrsMetadata,
+  generateSrsMetadata,
   updateSpecification,
   type FunctionalSpecification,
   type NonFunctionalSpecification,
@@ -772,6 +773,26 @@ export default function GiaiDoan1({
     }
   };
 
+  const generateRemainingSrsFields = async () => {
+    if (!projectId) return;
+    setBusy(true);
+    setAiTaskLabel("Đang hoàn thiện các trường SRS còn lại bằng AI...");
+    setError("");
+    try {
+      const generated = await generateSrsMetadata(projectId);
+      setSrsMetadata(generated);
+      await saveSrsMetadata(projectId, generated);
+      setSrsMetadataSaved(generated);
+      await refreshSrsDocument();
+      setSrsMetadata(generated);
+    } catch (reason) {
+      setError(`Không thể hoàn thiện các trường SRS bằng AI: ${formatError(reason)}`);
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
+
   const saveSrsSpecification = async (
     record: SpecificationRecord,
     content: FunctionalSpecification | NonFunctionalSpecification,
@@ -922,6 +943,7 @@ export default function GiaiDoan1({
       busy={busy}
       onStepChange={onStepChange}
       saveSrsMetadataDraft={saveSrsMetadataDraft}
+      onGenerateRemainingFields={generateRemainingSrsFields}
       saveSrsSpecification={saveSrsSpecification}
       setSrsMetadata={setSrsMetadata}
       setSrsSpecDrafts={setSrsSpecDrafts}
