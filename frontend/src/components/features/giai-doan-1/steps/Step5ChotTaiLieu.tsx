@@ -129,6 +129,7 @@ export default function Step5ChotTaiLieu({
   return (
     <div className="w-full min-w-0 space-y-5">
       <Card
+        allowOverflow
         tone="emerald"
         title="Bản xem và chỉnh sửa tài liệu SRS"
         actions={
@@ -138,16 +139,16 @@ export default function Step5ChotTaiLieu({
         }
       >
         {srsMarkdown || specifications.length > 0 ? (
-          <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[245px_minmax(0,1fr)]">
-            <aside aria-label="Mục lục tài liệu SRS" className="z-10 flex max-h-[calc(100vh-2rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-3 xl:sticky xl:top-4">
+          <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
+            <aside aria-label="Mục lục tài liệu SRS" className="z-20 flex h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-slate-900">Mục lục SRS</h3>
+                <h3 className="text-base font-semibold text-slate-900">Mục lục SRS</h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
               </div>
-              <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1" aria-label="Đi đến mục">
+              <nav className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1" aria-label="Đi đến mục">
                 {tocItems.map((item, index) => (
                   <button key={`${item.level}-${item.target}-${index}`} type="button" onClick={() => jumpToTocItem(item.target)} title={item.label}
-                    className={`block w-full rounded-md py-1.5 text-left text-xs leading-5 transition hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-2 focus-visible:outline-emerald-600 ${item.level === 1 ? "mt-2 border-b border-slate-100 px-2 font-bold text-slate-900" : item.level === 2 ? "pl-4 pr-2 font-medium text-slate-700" : "pl-7 pr-2 text-slate-500"}`}>
+                    className={`block w-full rounded-md py-2 text-left text-sm leading-5 transition hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-2 focus-visible:outline-emerald-600 ${item.level === 1 ? "mt-2 border-b border-slate-100 px-2 font-bold text-slate-900" : item.level === 2 ? "pl-4 pr-2 font-medium text-slate-700" : "pl-7 pr-2 text-slate-500"}`}>
                     <span className="mr-1.5 text-[10px] text-slate-400">{item.level === 1 ? "▰" : item.level === 2 ? "•" : "↳"}</span>
                     <span className="break-words">{item.label}</span>
                   </button>
@@ -155,7 +156,7 @@ export default function Step5ChotTaiLieu({
               </nav>
               <p className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
-            <div ref={editorRootRef} className="min-w-0 scroll-mt-4">
+            <div ref={editorRootRef} className="min-w-0 max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
                 onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} />
             </div>
