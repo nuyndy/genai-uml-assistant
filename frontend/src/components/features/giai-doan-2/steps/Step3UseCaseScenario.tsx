@@ -37,6 +37,10 @@ const SCENARIO_PARTS: [keyof Scenario, string][] = [
 
 const EMPTY_SCENARIO: Scenario = { mainFlow: [], altFlows: [], exceptions: [] };
 
+function hasMainFlow(scenario: Scenario | undefined): boolean {
+  return Boolean(scenario?.mainFlow.some((line) => line.trim()));
+}
+
 export default function Step3UseCaseScenario({
   useCases,
   scenarios,
