@@ -96,21 +96,26 @@ export interface FunctionalSpecification {
   function_name: string;
   description: string;
   actors: string[];
-  priority: "Must" | "Should" | "Could" | "Won't";
-  pre_conditions: string[];
-  main_flow: string[];
-  alternative_flows: string[];
-  exception_flows: string[];
-  post_conditions: string[];
-  /** Kết quả tối thiểu phải được bảo toàn khi luồng xử lý thất bại. */
-  minimal_guarantee?: string;
+  process: string[];
+  input_data: string[];
+  processing_rules: string[];
+  output_data: string[];
+  acceptance_criteria: string[];
   business_rules: string[];
   field_mapping: FieldMapping[];
+  priority?: "Must" | "Should" | "Could" | "Won't";
+  pre_conditions?: string[];
+  main_flow?: string[];
+  alternative_flows?: string[];
+  exception_flows?: string[];
+  post_conditions?: string[];
+  minimal_guarantee?: string;
 }
-
-export interface NonFunctionalSpecification {
-  items: { group: string; criteria: string; requirement: string }[];
+export interface NonFunctionalItem {
+  group: string; criteria: string; requirement: string; metric: string;
+  conditions: string; verification_method: string; scope: string; source: string;
 }
+export interface NonFunctionalSpecification { items: NonFunctionalItem[]; }
 
 export interface SrsMetadata {
   intro_purpose: string;
