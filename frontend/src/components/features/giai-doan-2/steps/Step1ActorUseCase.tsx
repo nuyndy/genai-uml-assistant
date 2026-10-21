@@ -115,12 +115,12 @@ export default function Step1ActorUseCase({
           </header>
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
-              <thead className="sticky top-0 z-10 bg-white text-xs text-slate-600"><tr>
-                <th className="w-[23%] border-b px-1 py-3 font-semibold">Tên tác nhân</th>
+              <thead className="sticky top-0 z-10 bg-emerald-700 text-xs text-white"><tr>
+                <th className="w-[23%] border-b border-emerald-600 px-1 py-3 font-semibold">Tên tác nhân</th>
                 <th className="w-[24%] border-b px-1 py-3 font-semibold">Mô tả tác nhân</th>
                 <th className="w-[18%] border-b px-1 py-3 font-semibold">Vai trò</th>
                 <th className="border-b px-1 py-3 font-semibold">Các nghiệp vụ chính</th>
-                <th className="w-16 border-b px-1 py-3"></th>
+                <th className="w-16 border-b border-emerald-600 px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {actors.map((actor, index) => {
@@ -153,8 +153,8 @@ export default function Step1ActorUseCase({
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
               <thead className="sticky top-0 z-10 bg-white text-xs text-slate-600"><tr>
-                <th className="w-9 border-b px-2 py-3"></th>
-                <th className="border-b px-2 py-3 font-semibold">Tên usecase</th>
+                <th className="w-9 border-b border-emerald-600 px-2 py-3"></th>
+                <th className="border-b border-emerald-600 px-2 py-3 font-semibold">Tên usecase</th>
                 <th className="w-[34%] border-b px-2 py-3 font-semibold">Tác nhân</th>
                 <th className="w-16 border-b px-1 py-3"></th>
               </tr></thead>
@@ -189,9 +189,6 @@ export default function Step1ActorUseCase({
               </tbody>
             </table>
           </div>
-          {specifications.length > 1 && <div className="shrink-0 px-3 pt-3"><label className="mb-1 block text-xs text-slate-500">Đặc tả chức năng khi thêm mới</label><select value={newUseCaseSpecification || String(specifications[0]?.id ?? "")} onChange={(event) => setNewUseCaseSpecification(event.target.value)} aria-label="Đặc tả chức năng cho Use Case mới" className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs">
-            {specifications.map((item) => <option key={item.id} value={item.id}>{item.feature}</option>)}
-          </select></div>}
           <form className="flex shrink-0 gap-2 border-t border-slate-200 bg-slate-50/70 p-3" onSubmit={(event) => { event.preventDefault(); void createUseCase(); }}>
             <input value={newUseCase} onChange={(event) => setNewUseCase(event.target.value)} disabled={busy || specifications.length === 0} placeholder="Tên usecase mới…" aria-label="Tên usecase mới" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500" />
             <button type="submit" disabled={busy || !newUseCase.trim() || specifications.length === 0} className="h-9 shrink-0 rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
