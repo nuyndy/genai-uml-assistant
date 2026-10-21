@@ -388,24 +388,71 @@ export default function SrsWordEditor({
           {functional.length === 0 ? (
             <p className="text-[15px] italic text-slate-500">Chưa có đặc tả chức năng.</p>
           ) : (
-            <div className="my-3 overflow-x-auto rounded-lg border border-slate-300">
-              <table className="w-full min-w-[42rem] border-collapse text-left text-[13px]">
-                <thead className="bg-slate-100"><tr className="border-b border-slate-300">
-                  {["Mã FR", "Tên chức năng", "Mô tả", "Tác nhân", "Ưu tiên", "Chi tiết"].map((header) => <th key={header} className="px-2 py-2 font-bold text-slate-800">{header}</th>)}
-                </tr></thead>
-                <tbody>
-                  {functional.map((record) => (
-                    <tr key={record.id} className="border-b border-slate-200 align-top last:border-b-0">
-                      <td className="w-24 px-2 py-2"><input aria-label="Mã FR" value={record.value.function_code} onChange={(event) => onChangeSpecification(record, { ...record.value, function_code: event.target.value })} className="w-full min-w-20 rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" /></td>
-                      <td className="min-w-40 px-2 py-2"><textarea aria-label="Tên chức năng" rows={2} value={record.value.function_name} onChange={(event) => onChangeSpecification(record, { ...record.value, function_name: event.target.value })} className="w-full min-w-36 resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" /></td>
-                      <td className="min-w-52 px-2 py-2"><textarea aria-label="Mô tả chức năng" rows={3} value={record.value.description} onChange={(event) => onChangeSpecification(record, { ...record.value, description: event.target.value })} className="w-full min-w-48 resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" /></td>
-                      <td className="min-w-32 px-2 py-2"><textarea aria-label="Tác nhân" rows={2} value={record.value.actors.join("\n")} onChange={(event) => onChangeSpecification(record, { ...record.value, actors: event.target.value.split("\n") })} className="w-full min-w-28 resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" /></td>
-                      <td className="w-28 px-2 py-2"><select aria-label="Mức ưu tiên" value={record.value.priority} onChange={(event) => onChangeSpecification(record, { ...record.value, priority: event.target.value as FunctionalSpecification["priority"] })} className="w-full rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40">{(["Must", "Should", "Could", "Won't"] as const).map((priority) => <option key={priority} value={priority}>{priority}</option>)}</select></td>
-                      <td className="whitespace-nowrap px-2 py-2"><details><summary className="cursor-pointer font-semibold text-violet-700 hover:text-violet-900">Sửa luồng & dữ liệu</summary><div className="min-w-[34rem] pt-3"><FunctionalBlock record={record} value={record.value} onChange={(value) => onChangeSpecification(record, value)} /></div></details></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-6">
+              {functional.map((record, index) => (
+                <section key={record.id} className="break-inside-avoid">
+                  <h4 className="mb-2 text-[15px] font-bold text-slate-900">
+                    FR {index + 1}: {record.value.function_name || record.feature || "Chức năng chưa đặt tên"}
+                  </h4>
+                  <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px]">
+                    <tbody>
+                      <tr className="border-b border-slate-300">
+                        <th scope="row" className="w-[25%] border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mã chức năng</th>
+                        <td className="px-3 py-1.5">
+                          <input aria-label={`Mã FR ${record.id}`} value={record.value.function_code}
+                            onChange={(event) => onChangeSpecification(record, { ...record.value, function_code: event.target.value })}
+                            className="w-full rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
+                        </td>
+                      </tr>
+                      <tr className="border-b border-slate-300">
+                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Tên chức năng</th>
+                        <td className="px-3 py-1.5">
+                          <textarea aria-label={`Tên chức năng ${record.id}`} rows={2} value={record.value.function_name}
+                            onChange={(event) => onChangeSpecification(record, { ...record.value, function_name: event.target.value })}
+                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
+                        </td>
+                      </tr>
+                      <tr className="border-b border-slate-300">
+                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mô tả</th>
+                        <td className="px-3 py-1.5">
+                          <textarea aria-label={`Mô tả chức năng ${record.id}`} rows={3} value={record.value.description}
+                            onChange={(event) => onChangeSpecification(record, { ...record.value, description: event.target.value })}
+                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 leading-6 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
+                        </td>
+                      </tr>
+                      <tr className="border-b border-slate-300">
+                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Tác nhân</th>
+                        <td className="px-3 py-1.5">
+                          <textarea aria-label={`Tác nhân ${record.id}`} rows={2} value={record.value.actors.join("\n")}
+                            onChange={(event) => onChangeSpecification(record, { ...record.value, actors: event.target.value.split("\n") })}
+                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40" />
+                        </td>
+                      </tr>
+                      <tr className="border-b border-slate-300">
+                        <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 font-bold">Mức ưu tiên</th>
+                        <td className="px-3 py-1.5">
+                          <select aria-label={`Mức ưu tiên ${record.id}`} value={record.value.priority}
+                            onChange={(event) => onChangeSpecification(record, { ...record.value, priority: event.target.value as FunctionalSpecification["priority"] })}
+                            className="w-full rounded border border-transparent bg-transparent px-1 py-1 outline-none focus:border-violet-300 focus:bg-violet-50/40">
+                            {(["Must", "Should", "Could", "Won't"] as const).map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan={2} className="p-3">
+                          <details>
+                            <summary className="cursor-pointer font-semibold text-violet-700 hover:text-violet-900">Mở rộng các trường chi tiết của FR</summary>
+                            <div className="pt-3">
+                              <FunctionalBlock record={record} value={record.value}
+                                onChange={(value) => onChangeSpecification(record, value)} />
+                            </div>
+                          </details>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </section>
+              ))}
             </div>
           )}
 
