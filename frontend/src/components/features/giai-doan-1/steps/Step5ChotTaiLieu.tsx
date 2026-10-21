@@ -51,6 +51,49 @@ export default function Step5ChotTaiLieu({
 }: Props) {
   // Mỗi đặc tả có một bộ đếm riêng: chỉ lưu sau khi người dùng ngừng sửa.
   const saveTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const editorRootRef = useRef<HTMLDivElement | null>(null);
+
+  type TocItem = { label: string; target: string; level: 1 | 2 | 3 };
+  const tocItems: TocItem[] = [
+    { label: "1. Giới thiệu", target: "1. Giới thiệu", level: 1 },
+    { label: "1.1 Mục đích", target: "1.1 Mục đích", level: 2 },
+    { label: "1.2 Phạm vi", target: "1.2 Phạm vi", level: 2 },
+    { label: "1.3 Định nghĩa, thuật ngữ và từ viết tắt", target: "1.3 Định nghĩa, thuật ngữ và từ viết tắt", level: 2 },
+    { label: "2. Mô tả tổng thể", target: "2. Mô tả tổng thể", level: 1 },
+    { label: "2.1 Các lớp người dùng", target: "2.1 Các lớp người dùng", level: 2 },
+    { label: "2.2 Môi trường vận hành", target: "2.2 Môi trường vận hành", level: 2 },
+    { label: "3. Chi tiết yêu cầu", target: "3. Chi tiết yêu cầu", level: 1 },
+    { label: "3.1 Đặc tả chức năng", target: "3.1 Đặc tả chức năng", level: 2 },
+    ...srsFunctionalForEditor.map((record) => ({
+      label: `${record.value.function_code || "UC"} - ${record.value.function_name || record.feature || "Chức năng"}`,
+      target: `${record.value.function_code || "UC"} - ${record.value.function_name || record.feature || "Chức năng"}`,
+      level: 3 as const,
+    })),
+    { label: "3.2 Đặc tả phi chức năng", target: "3.2 Đặc tả phi chức năng", level: 2 },
+    ...srsNonFunctionalForEditor.map((record) => ({
+      label: record.feature || "Đặc tả phi chức năng",
+      target: record.feature || "Đặc tả phi chức năng",
+      level: 3 as const,
+    })),
+    { label: "4. Phụ lục", target: "4. Phụ lục", level: 1 },
+    { label: "Ghi chú", target: "Ghi chú", level: 2 },
+  ];
+
+  const jumpToTocItem = (target: string) => {
+    const root = editorRootRef.current;
+    if (!root) return;
+    const candidates = Array.from(root.querySelectorAll<HTMLElement>("h2, h3, label"));
+    const normalize = (value: string) => value.replace(/\\s+/g, " ").trim();
+    const found = candidates.find((node) => {
+      const text = normalize(node.innerText || node.textContent || "");
+      return text === target || text.startsWith(target);
+    });
+    if (found) {
+      found.scrollIntoView({ behavior: "smooth", block: "start" });
+      found.classList.add("srs-toc-target");
+      window.setTimeout(() => found.classList.remove("srs-toc-target"), 1400);
+    }
+  };
 
   const changeSpecification = (record: SpecificationRecord, content: SpecDraft) => {
     setSrsSpecDrafts((previous) => ({ ...previous, [record.id]: content }));
@@ -87,13 +130,41 @@ export default function Step5ChotTaiLieu({
         actions={<StatusBadge tone="success">{specifications.length} mục</StatusBadge>}
       >
         {srsMarkdown || specifications.length > 0 ? (
-          <SrsWordEditor
-            metadata={srsMetadata}
-            functional={srsFunctionalForEditor}
-            nonFunctional={srsNonFunctionalForEditor}
-            onChangeMetadata={setSrsMetadata}
-            onChangeSpecification={changeSpecification}
-          />
+          <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[245px_minmax(0,1fr)]">
+            <aside
+              aria-label="Mục lục tài liệu SRS"
+              className="h-fit min-w-0 rounded-xl border border-slate-200 bg-white p-3 xl:sticky xl:top-4"
+            >
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-slate-900">Mục lục SRS</h3>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
+              </div>
+              <nav className="max-h-[70vh] space-y-1 overflow-y-auto pr-1" aria-label="Đi đến mục">
+                {tocItems.map((item, index) => (
+                  <button
+                    key={`${item.level}-${item.target}-${index}`}
+                    type="button"
+                    onClick={() => jumpToTocItem(item.target)}
+                    title={item.label}
+                    className={`block w-full rounded-md py-1.5 text-left text-xs leading-5 transition hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-2 focus-visible:outline-emerald-600 ${item.level === 1 ? "mt-2 border-b border-slate-100 px-2 font-bold text-slate-900" : item.level === 2 ? "pl-4 pr-2 font-medium text-slate-700" : "pl-7 pr-2 text-slate-500"}`}
+                  >
+                    <span className="mr-1.5 text-[10px] text-slate-400">{item.level === 1 ? "▰" : item.level === 2 ? "•" : "↳"}</span>
+                    <span className="break-words">{item.label}</span>
+                  </button>
+                ))}
+              </nav>
+              <p className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
+            </aside>
+            <div ref={editorRootRef} className="min-w-0 scroll-mt-4">
+              <SrsWordEditor
+                metadata={srsMetadata}
+                functional={srsFunctionalForEditor}
+                nonFunctional={srsNonFunctionalForEditor}
+                onChangeMetadata={setSrsMetadata}
+                onChangeSpecification={changeSpecification}
+              />
+            </div>
+          </div>
         ) : (
           <EmptyState
             title="Tài liệu chưa có nội dung"
