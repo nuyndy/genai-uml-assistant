@@ -140,7 +140,7 @@ export default function Step5ChotTaiLieu({
       >
         {srsMarkdown || specifications.length > 0 ? (
           <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
-            <aside aria-label="Mục lục tài liệu SRS" className="z-20 flex h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-4">
+            <aside aria-label="Mục lục tài liệu SRS" className="z-30 flex h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-20">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h3 className="text-base font-semibold text-slate-900">Mục lục SRS</h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
