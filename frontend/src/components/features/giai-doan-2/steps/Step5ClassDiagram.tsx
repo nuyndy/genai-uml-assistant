@@ -50,6 +50,7 @@ export default function Step5ClassDiagram({
   projectId,
   wrapClass,
 }: Props) {
+  void onConfirmClassDiagram;
   const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
 
   const startEditing = (item: UmlClass) => {
@@ -162,7 +163,7 @@ export default function Step5ClassDiagram({
         )}
       </Card>
 
-      <Card title="Mô hình UML" subtitle="Kiểm tra biểu đồ lớp rồi xác nhận để sang bước tiếp theo" tone="emerald">
+      <Card title="Mô hình UML" subtitle="Mô hình lớp và mã biểu đồ được lưu khi tạo hoặc chỉnh sửa" tone="emerald">
         <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15rem,0.38fr)]">
           <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
             <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
