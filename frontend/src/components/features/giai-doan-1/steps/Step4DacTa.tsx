@@ -40,11 +40,7 @@ interface Props {
   inputClass?: string;
 }
 
-const TABS = [
-  ["overview", "Tổng quan"],
-  ["flows", "Luồng xử lý"],
-  ["business-data", "Nghiệp vụ & Dữ liệu"],
-] as const;
+const TABS = [["overview", "Đặc tả đầy đủ"]] as const;
 
 function parseSpecification<T>(content: string, fallback: T): T {
   try {
