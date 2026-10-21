@@ -150,13 +150,17 @@ export default function Step5ChotTaiLieu({
                   </button>
                 ))}
               </nav>
-              <div className="mt-3 flex shrink-0 flex-col gap-2 border-t border-slate-100 pt-3">
-                <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
-                  Hoàn thiện các trường còn lại
-                </SoftButton>
-                <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
-                  Lưu tài liệu SRS
-                </SoftButton>
+              <div className="mt-3 flex shrink-0 gap-2 border-t border-slate-100 pt-3">
+                <div className="min-w-0 flex-1">
+                  <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
+                    Hoàn thiện SRS
+                  </SoftButton>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
+                    Lưu SRS
+                  </SoftButton>
+                </div>
               </div>
               <p className="mt-2 shrink-0 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
