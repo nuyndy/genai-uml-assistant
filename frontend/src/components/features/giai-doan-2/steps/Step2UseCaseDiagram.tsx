@@ -84,16 +84,7 @@ export default function Step2UseCaseDiagram({
           </section>
         </div>
       </Card>
-      <div className="workflow-action-bar flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl">
-        <div className="text-sm text-slate-700">
-          {confirmed
-            ? "Đã xác nhận biểu đồ Use Case."
-            : "Kiểm tra ảnh và mã PlantUML trước khi xác nhận."}
-        </div>
-        <PrimaryButton disabled={busy || !imageUrl || !imageCode || hasCodeChanges} onClick={onConfirm}>
-          {confirmed ? "✓ Đã xác nhận biểu đồ" : "Xác nhận biểu đồ Use Case"}
-        </PrimaryButton>
-      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         
         
