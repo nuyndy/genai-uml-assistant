@@ -50,7 +50,6 @@ export default function Step1ActorUseCase({
   const [newUseCaseSpecification, setNewUseCaseSpecification] = useState("");
   const [linkingUseCaseId, setLinkingUseCaseId] = useState<number | null>(null);
   const [linkActorId, setLinkActorId] = useState("");
-  const [savingActorDetails, setSavingActorDetails] = useState(false);
   const [actorDetails, setActorDetails] = useState<Record<number, { description: string; role: string; mainBusinesses: string }>>({});
   const hasSuggestions = suggestions.actors.length > 0 || suggestions.useCases.length > 0;
   const actorIdsByName = useMemo(() => new Map(actors.map((item) => [item.name, item.id])), [actors]);
