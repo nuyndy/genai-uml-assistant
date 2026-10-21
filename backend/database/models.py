@@ -130,6 +130,9 @@ class Actor(Base):
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    role = Column(Text, nullable=True)
+    main_businesses = Column(Text, nullable=True)
 
 
 class UcActorRelation(Base):
