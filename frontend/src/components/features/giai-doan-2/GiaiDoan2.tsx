@@ -25,6 +25,14 @@ import {
   listProjectSpecificationsForUml,
   regenerateUseCaseDiagramFromCode,
   saveProjectActorUseCasesBatch,
+  createProjectActor,
+  updateActor,
+  deleteActor as deleteProjectActor,
+  createSpecificationUseCase,
+  updateUseCaseName,
+  deleteUseCase as deleteProjectUseCase,
+  saveActorRelation,
+  deleteActorRelation,
   updateClass,
   updateDiagram,
   updateUseCaseScenario,
@@ -424,6 +432,8 @@ export default function GiaiDoan2({
       projectId={projectId}
       requirements={state.actors}
       requirementValues={state.usecases}
+      relations={state.relations}
+      specifications={(specifications ?? []).filter((item) => item.type === 'functional').map(({ id, feature }) => ({ id, feature }))}
       analyses={suggestions}
       loadingAnalysis={busy}
       busy={busy}
@@ -431,6 +441,46 @@ export default function GiaiDoan2({
       error={error}
       runBatchAnalysis={() => runAction(runExtract, "Đang phân tích đặc tả chức năng...")}
       onSaveSuggestions={() => runAction(saveActorUseCaseSuggestions, "Đang lưu Actor và Use Case...")}
+      onCreateActor={(name) => runAction(async () => {
+        if (!projectId) return;
+        const actor = await createProjectActor(projectId, name);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: [...previous.actors, { id: actor.id, name: actor.name }] }));
+      }, "Đang thêm tác nhân...")}
+      onRenameActor={(id, name) => runAction(async () => {
+        const oldName = state.actors.find((item) => item.id === id)?.name;
+        const actor = await updateActor(id, name);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.map((item) => item.id === id ? { id: actor.id, name: actor.name } : item), relations: previous.relations.map((item) => oldName && item.from === oldName ? { ...item, from: actor.name } : item) }));
+      }, "Đang lưu tác nhân...")}
+      onDeleteActor={(id) => runAction(async () => {
+        const actor = state.actors.find((item) => item.id === id);
+        await deleteProjectActor(id);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.filter((item) => item.id !== id), relations: actor ? previous.relations.filter((item) => item.from !== actor.name) : previous.relations }));
+      }, "Đang xóa tác nhân...")}
+      onCreateUseCase={(name, specificationId) => runAction(async () => {
+        const item = await createSpecificationUseCase(specificationId, name);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, usecases: [...previous.usecases, { id: item.id, name: item.name, description: "", specificationId: item.specification_id }] }));
+      }, "Đang thêm Use Case...")}
+      onRenameUseCase={(id, name) => runAction(async () => {
+        const oldName = state.usecases.find((item) => item.id === id)?.name;
+        const item = await updateUseCaseName(id, name);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, usecases: previous.usecases.map((useCase) => useCase.id === id ? { ...useCase, name: item.name } : useCase), relations: previous.relations.map((relation) => oldName && relation.to === oldName ? { ...relation, to: item.name } : relation) }));
+      }, "Đang lưu Use Case...")}
+      onDeleteUseCase={(id) => runAction(async () => {
+        const useCase = state.usecases.find((item) => item.id === id);
+        await deleteProjectUseCase(id);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, usecases: previous.usecases.filter((item) => item.id !== id), scenarios: Object.fromEntries(Object.entries(previous.scenarios).filter(([key]) => Number(key) !== id)), interactions: previous.interactions.filter((item) => item.usecaseId !== id), relations: useCase ? previous.relations.filter((item) => item.to !== useCase.name) : previous.relations }));
+      }, "Đang xóa Use Case...")}
+      onLinkActor={(useCaseId, actorId) => runAction(async () => {
+        const actor = state.actors.find((item) => item.id === actorId);
+        const useCase = state.usecases.find((item) => item.id === useCaseId);
+        if (!actor || !useCase) return;
+        const relation = await saveActorRelation(useCaseId, actorId, "association");
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, relations: [...previous.relations.filter((item) => item.id !== relation.id), { id: relation.id, from: actor.name, to: useCase.name, type: relation.relation_type }] }));
+      }, "Đang liên kết tác nhân...")}
+      onUnlinkActor={(relationId) => runAction(async () => {
+        await deleteActorRelation(relationId);
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, relations: previous.relations.filter((item) => item.id !== relationId) }));
+      }, "Đang bỏ liên kết...")}
       confirmed={state.actorsUseCasesConfirmed}
       onConfirm={() =>
         setState((previous) => ({
