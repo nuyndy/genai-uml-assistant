@@ -145,17 +145,12 @@ function App() {
 
   const stage2Complete =
     stage1Complete &&
-    workflow.actorsUseCasesConfirmed &&
     workflow.actors.length > 0 &&
     workflow.usecases.length > 0 &&
-    workflow.useCaseDiagramConfirmed &&
     Boolean(workflow.useCaseDiagramUrl) &&
     Boolean(workflow.useCaseDiagramCode?.trim()) &&
-    workflow.scenariosConfirmed &&
     allUseCasesHaveScenarios &&
-    workflow.interactionsConfirmed &&
     allUseCasesHaveInteractionDiagrams &&
-    workflow.classDiagramConfirmed &&
     workflow.umlClasses.length > 0 &&
     Boolean(workflow.classDiagramUrl) &&
     Boolean(workflow.classDiagramCode?.trim());
@@ -186,16 +181,16 @@ function App() {
       return "Giai đoạn 2 đang khóa: dữ liệu Giai đoạn 1 chưa hoàn tất đồng bộ.";
     }
     if (!stage2Complete) {
-      if (!workflow.actorsUseCasesConfirmed || workflow.actors.length === 0 || workflow.usecases.length === 0)
-        return "Giai đoạn 3 đang khóa: hãy xác nhận Actor và Use Case ở Giai đoạn 2, Bước 1.";
-      if (!workflow.useCaseDiagramConfirmed || !workflow.useCaseDiagramUrl || !workflow.useCaseDiagramCode?.trim())
-        return "Giai đoạn 3 đang khóa: hãy hoàn thiện biểu đồ Use Case ở Giai đoạn 2, Bước 1.";
-      if (!workflow.scenariosConfirmed || !allUseCasesHaveScenarios)
-        return "Giai đoạn 3 đang khóa: cần hoàn thiện kịch bản cho mọi Use Case ở Giai đoạn 2, Bước 2.";
-      if (!workflow.interactionsConfirmed || !allUseCasesHaveInteractionDiagrams)
-        return "Giai đoạn 3 đang khóa: cần tạo biểu đồ tương tác cho mọi Use Case ở Giai đoạn 2, Bước 2.";
-      if (!workflow.classDiagramConfirmed || workflow.umlClasses.length === 0 || !workflow.classDiagramUrl || !workflow.classDiagramCode?.trim())
-        return "Giai đoạn 3 đang khóa: cần tạo và xác nhận biểu đồ lớp ở Giai đoạn 2, Bước 3.";
+      if (workflow.actors.length === 0 || workflow.usecases.length === 0)
+        return "Giai đoạn 3 đang khóa: cần có Actor và Use Case ở Giai đoạn 2, Bước 1.";
+      if (!allUseCasesHaveScenarios)
+        return "Giai đoạn 3 đang khóa: cần lưu kịch bản cho mọi Use Case ở Giai đoạn 2, Bước 2.";
+      if (!workflow.useCaseDiagramUrl || !workflow.useCaseDiagramCode?.trim())
+        return "Giai đoạn 3 đang khóa: cần có biểu đồ Use Case ở Giai đoạn 2, Bước 3.";
+      if (workflow.umlClasses.length === 0 || !workflow.classDiagramUrl || !workflow.classDiagramCode?.trim())
+        return "Giai đoạn 3 đang khóa: cần có Domain Model và Class Diagram ở Giai đoạn 2, Bước 4.";
+      if (!allUseCasesHaveInteractionDiagrams)
+        return "Giai đoạn 3 đang khóa: cần có biểu đồ tương tác cho mọi Use Case ở Giai đoạn 2, Bước 5.";
       return "Giai đoạn 3 đang khóa: dữ liệu UML chưa hoàn tất đồng bộ.";
     }
     return "";
