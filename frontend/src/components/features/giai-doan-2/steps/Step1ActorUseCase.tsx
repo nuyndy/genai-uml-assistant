@@ -113,11 +113,12 @@ export default function Step1ActorUseCase({
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
               <thead className="sticky top-0 z-10 bg-emerald-700 text-xs text-white"><tr>
-                <th className="w-[23%] border-b border-emerald-600 px-2 py-3 font-semibold">Tên tác nhân</th>
-                <th className="w-[24%] border-b px-1 py-3 font-semibold">Mô tả tác nhân</th>
-                <th className="w-[18%] border-b px-1 py-3 font-semibold">Vai trò</th>
-                <th className="border-b px-1 py-3 font-semibold">Các nghiệp vụ chính</th>
-                <th className="w-16 border-b border-emerald-600 px-1 py-3"></th>
+                <th className="w-9 border-b border-emerald-600 px-2 py-3 text-center font-semibold">STT</th>
+                <th className="w-[22%] border-b border-emerald-600 px-2 py-3 font-semibold">Tên tác nhân</th>
+                <th className="w-[24%] border-b border-emerald-600 px-2 py-3 font-semibold">Mô tả tác nhân</th>
+                <th className="w-[18%] border-b border-emerald-600 px-2 py-3 font-semibold">Vai trò</th>
+                <th className="border-b border-emerald-600 px-2 py-3 font-semibold">Các nghiệp vụ chính</th>
+                <th className="w-14 border-b border-emerald-600 px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {actors.map((actor, index) => {
@@ -146,11 +147,11 @@ export default function Step1ActorUseCase({
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
-              <thead className="sticky top-0 z-10 bg-white text-xs text-slate-600"><tr>
-                <th className="w-9 border-b border-emerald-600 px-2 py-3 font-semibold">#</th>
-                <th className="border-b border-emerald-600 px-2 py-3 font-semibold">Tên Use Case</th>
-                <th className="w-[34%] border-b px-2 py-3 font-semibold">Tác nhân</th>
-                <th className="w-16 border-b px-1 py-3"></th>
+              <thead className="sticky top-0 z-10 bg-emerald-700 text-xs text-white"><tr>
+                <th className="w-12 border-b border-emerald-600 px-2 py-3 text-center font-semibold">STT</th>
+                <th className="border-b border-emerald-600 px-3 py-3 font-semibold">Tên Use Case</th>
+                <th className="w-[34%] border-b border-emerald-600 px-3 py-3 font-semibold">Tác nhân</th>
+                <th className="w-14 border-b border-emerald-600 px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {useCases.map((useCase, index) => {
