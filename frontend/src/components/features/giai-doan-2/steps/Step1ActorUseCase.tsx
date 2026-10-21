@@ -39,6 +39,7 @@ interface Props {
   loaded?: boolean;
   error?: string;
   runBatchAnalysis: () => void | Promise<void>;
+  onSaveSuggestions: () => void | Promise<void>;
   onConfirm: () => void;
   confirmed: boolean;
   onStepChange: (step: number) => void;
@@ -53,6 +54,7 @@ export default function Step1ActorUseCase({
   loadingAnalysis,
   busy,
   runBatchAnalysis,
+  onSaveSuggestions,
   onConfirm,
   confirmed,
   wrapClass,
@@ -67,9 +69,12 @@ export default function Step1ActorUseCase({
         tone="amber"
         title="Tác nhân và use case"
         actions={
-          <SoftButton disabled={busy || loadingAnalysis} onClick={() => void runBatchAnalysis()}>
-            {hasSuggestions || actors.length > 0 ? "Phân tích lại đặc tả" : "Phân tích đặc tả"}
-          </SoftButton>
+          <div className="flex flex-wrap gap-2">
+            <SoftButton disabled={busy || loadingAnalysis} onClick={() => void runBatchAnalysis()}>
+              {hasSuggestions || actors.length > 0 ? "Phân tích lại đặc tả" : "Phân tích đặc tả"}
+            </SoftButton>
+            {hasSuggestions && <SoftButton disabled={busy || loadingAnalysis} onClick={() => void onSaveSuggestions()}>Lưu Actor và Use Case</SoftButton>}
+          </div>
         }
       >
         {loadingAnalysis ? (
