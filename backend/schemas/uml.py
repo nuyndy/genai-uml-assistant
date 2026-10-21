@@ -15,7 +15,10 @@ class ActorCreate(BaseModel):
 
 
 class ActorUpdate(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = None
+    role: str | None = None
+    main_businesses: str | None = None
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -24,6 +27,9 @@ class ActorRecord(BaseModel):
     id: int
     project_id: int
     name: str
+    description: str | None = None
+    role: str | None = None
+    main_businesses: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
