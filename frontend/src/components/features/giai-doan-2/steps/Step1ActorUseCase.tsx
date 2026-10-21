@@ -100,13 +100,13 @@ export default function Step1ActorUseCase({
         <strong>Gợi ý chưa lưu:</strong><span>{suggestions.actors.length} tác nhân</span><span>·</span><span>{suggestions.useCases.length} Use Case</span><span>Bấm “Thêm gợi ý” để lưu vào dự án.</span>
       </div>}
 
-      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="grid h-[calc(100vh-285px)] min-h-[420px] grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
           <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
             <h3 className="text-sm font-semibold text-slate-800">Tác nhân <span className="ml-1 font-normal text-slate-500">({actors.length})</span></h3>
             <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">Actor</span>
           </header>
-          <div className="max-h-[560px] overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
               <thead className="sticky top-0 z-10 bg-white text-xs text-slate-600"><tr>
                 <th className="w-9 border-b px-2 py-3"></th>
@@ -134,11 +134,11 @@ export default function Step1ActorUseCase({
               </tbody>
             </table>
           </div>
-          <form className="flex gap-2 border-t border-slate-200 bg-slate-50/70 p-3" onSubmit={(event) => { event.preventDefault(); void createActor(); }}>
+          <form className="flex shrink-0 gap-2 border-t border-slate-200 bg-slate-50/70 p-3" onSubmit={(event) => { event.preventDefault(); void createActor(); }}>
             <input value={newActor} onChange={(event) => setNewActor(event.target.value)} disabled={busy} placeholder="Tên tác nhân mới…" aria-label="Tên tác nhân mới" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500" />
             <button type="submit" disabled={busy || !newActor.trim()} className="h-9 shrink-0 rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
           </form>
-          <p className="px-3 pb-3 text-[11px] text-slate-400">Thông tin mô tả/vai trò/nghiệp vụ đang nhập tại bảng này.</p>
+          <p className="shrink-0 px-3 pb-3 text-[11px] text-slate-400">Thông tin mô tả/vai trò/nghiệp vụ đang nhập tại bảng này.</p>
         </section>
 
         <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -185,7 +185,7 @@ export default function Step1ActorUseCase({
               </tbody>
             </table>
           </div>
-          {specifications.length > 1 && <div className="px-3 pt-3"><label className="mb-1 block text-xs text-slate-500">Đặc tả chức năng khi thêm mới</label><select value={newUseCaseSpecification || String(specifications[0]?.id ?? "")} onChange={(event) => setNewUseCaseSpecification(event.target.value)} aria-label="Đặc tả chức năng cho Use Case mới" className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs">
+          {specifications.length > 1 && <div className="shrink-0 px-3 pt-3"><label className="mb-1 block text-xs text-slate-500">Đặc tả chức năng khi thêm mới</label><select value={newUseCaseSpecification || String(specifications[0]?.id ?? "")} onChange={(event) => setNewUseCaseSpecification(event.target.value)} aria-label="Đặc tả chức năng cho Use Case mới" className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs">
             {specifications.map((item) => <option key={item.id} value={item.id}>{item.feature}</option>)}
           </select></div>}
           <form className="flex gap-2 border-t border-slate-200 bg-slate-50/70 p-3" onSubmit={(event) => { event.preventDefault(); void createUseCase(); }}>
