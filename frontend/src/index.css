@@ -200,3 +200,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Làm nổi bật tạm thời mục SRS sau khi điều hướng từ mục lục bên trái. */
+.srs-toc-target {
+  scroll-margin-top: 1.25rem;
+  border-radius: 0.25rem;
+  background: rgb(220 252 231 / 75%);
+  outline: 2px solid rgb(34 197 94 / 35%);
+  outline-offset: 3px;
+  transition: background-color 180ms ease, outline-color 180ms ease;
+}
