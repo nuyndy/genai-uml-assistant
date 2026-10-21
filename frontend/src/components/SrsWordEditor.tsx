@@ -249,6 +249,11 @@ function FunctionalBlock({
           values={value.exception_flows}
           onChange={(exception_flows) => onChange({ ...value, exception_flows })}
         />
+        <WordField
+          label="Đảm bảo tối thiểu"
+          value={value.minimal_guarantee ?? ""}
+          onChange={(minimal_guarantee) => onChange({ ...value, minimal_guarantee })}
+        />
         <WordListField
           label="Điều kiện sau"
           values={value.post_conditions}
