@@ -336,73 +336,77 @@ export default function SrsWordEditor({
         </header>
 
         <div className="min-w-0 text-[15px] text-slate-900">
-          <SectionHeading>Tài liệu đặc tả yêu cầu phần mềm (SRS)</SectionHeading>
+          <SectionHeading>TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)</SectionHeading>
+          <p className="mb-6 text-center text-sm">Tên dự án: GenAI UML Assistant · Phiên bản: 1.0</p>
 
           <SectionHeading>1. Giới thiệu</SectionHeading>
-          <div className="space-y-2">
-            <WordField
-              label="1.1 Mục đích"
-              value={metadata.intro_purpose}
-              onChange={(value) => patchMeta("intro_purpose", value)}
-            />
-            <WordField
-              label="1.2 Phạm vi"
-              value={metadata.intro_scope}
-              onChange={(value) => patchMeta("intro_scope", value)}
-            />
-            <WordField
-              label="1.3 Định nghĩa, thuật ngữ và từ viết tắt"
-              value={metadata.intro_definitions}
-              onChange={(value) => patchMeta("intro_definitions", value)}
-            />
-          </div>
+          <SubHeading>1.1 Mục đích</SubHeading>
+          <WordField label="1.1 Mục đích" value={metadata.intro_purpose} onChange={(value) => patchMeta("intro_purpose", value)} />
+          <SubHeading>1.2 Quy ước tài liệu</SubHeading>
+          <p className="text-sm leading-6">Các yêu cầu được trình bày theo nhóm chức năng và phi chức năng. Mã chức năng, tên mục và trường dữ liệu được giữ nhất quán trong toàn bộ tài liệu.</p>
+          <SubHeading>1.3 Đối tượng đọc và hướng dẫn đọc</SubHeading>
+          <p className="text-sm leading-6">Tài liệu dành cho chủ dự án, người dùng nghiệp vụ, nhà phân tích, nhóm phát triển và kiểm thử. Đọc lần lượt phần giới thiệu, mô tả tổng thể, yêu cầu giao diện và các yêu cầu chức năng/phi chức năng.</p>
+          <SubHeading>1.4 Phạm vi sản phẩm</SubHeading>
+          <WordField label="1.4 Phạm vi sản phẩm" value={metadata.intro_scope} onChange={(value) => patchMeta("intro_scope", value)} />
+          <SubHeading>1.5 Tài liệu tham khảo</SubHeading>
+          <p className="text-sm leading-6">Khung trình bày SRS do người dùng cung cấp; các yêu cầu và đặc tả đã được xác nhận trong Giai đoạn 1.</p>
+          <SubHeading>1.6 Định nghĩa, thuật ngữ và từ viết tắt</SubHeading>
+          <WordField label="1.6 Định nghĩa, thuật ngữ và từ viết tắt" value={metadata.intro_definitions} onChange={(value) => patchMeta("intro_definitions", value)} />
 
           <SectionHeading>2. Mô tả tổng thể</SectionHeading>
-          <div className="space-y-2">
-            <WordField
-              label="2.1 Các lớp người dùng"
-              value={metadata.overview_user_classes}
-              onChange={(value) => patchMeta("overview_user_classes", value)}
-            />
-            <WordField
-              label="2.2 Môi trường vận hành"
-              value={metadata.overview_environment}
-              onChange={(value) => patchMeta("overview_environment", value)}
-            />
-          </div>
+          <SubHeading>2.1 Góc nhìn sản phẩm</SubHeading>
+          <p className="text-sm leading-6">GenAI UML Assistant hỗ trợ quy trình phân tích yêu cầu, xây dựng mô hình UML và hoàn thiện tài liệu SRS qua các giai đoạn liên kết.</p>
+          <SubHeading>2.2 Chức năng sản phẩm</SubHeading>
+          <ul className="list-disc space-y-1 pl-5 text-sm leading-6">
+            <li>Thu thập, phân tích và xác nhận yêu cầu; xây dựng user story và đặc tả.</li>
+            <li>Hỗ trợ xây dựng, rà soát mô hình UML và đồng bộ với yêu cầu.</li>
+            <li>Hoàn thiện, rà soát tính nhất quán và xuất tài liệu ở giai đoạn cuối.</li>
+          </ul>
+          <SubHeading>2.3 Các lớp người dùng</SubHeading>
+          <WordField label="2.3 Các lớp người dùng" value={metadata.overview_user_classes} onChange={(value) => patchMeta("overview_user_classes", value)} />
+          <SubHeading>2.4 Môi trường vận hành</SubHeading>
+          <WordField label="2.4 Môi trường vận hành" value={metadata.overview_environment} onChange={(value) => patchMeta("overview_environment", value)} />
+          <SubHeading>2.5 Ràng buộc thiết kế và triển khai</SubHeading>
+          <p className="text-sm leading-6">Nội dung triển khai phải tuân theo kiến trúc và công nghệ hiện có; dữ liệu SRS cần đồng bộ với các đặc tả đã lưu.</p>
+          <SubHeading>2.6 Tài liệu hướng dẫn người dùng</SubHeading>
+          <p className="text-sm leading-6">Hướng dẫn thao tác được thể hiện thông qua các bước nghiệp vụ và hướng dẫn trong giao diện ứng dụng.</p>
+          <SubHeading>2.7 Giả định và phụ thuộc</SubHeading>
+          <p className="text-sm leading-6">Tài liệu phụ thuộc vào dữ liệu yêu cầu, user story và đặc tả được tạo hoặc xác nhận ở các bước trước.</p>
 
-          <SectionHeading>3. Chi tiết yêu cầu</SectionHeading>
-          <SubHeading>3.1 Đặc tả chức năng</SubHeading>
-          {functional.length === 0 && (
-            <p className="text-[15px] italic text-slate-500">Chưa có đặc tả chức năng.</p>
-          )}
+          <SectionHeading>3. Yêu cầu giao diện</SectionHeading>
+          <SubHeading>3.1 Giao diện người dùng</SubHeading>
+          <p className="text-sm leading-6">Giao diện cung cấp các bước nghiệp vụ, vùng soạn thảo tài liệu và điều hướng đến từng mục SRS.</p>
+          <SubHeading>3.2 Giao diện phần cứng</SubHeading>
+          <p className="text-sm leading-6">Không xác định yêu cầu phần cứng chuyên dụng riêng trong dữ liệu đặc tả hiện có.</p>
+          <SubHeading>3.3 Giao diện phần mềm</SubHeading>
+          <p className="text-sm leading-6">Ứng dụng gồm giao diện web, dịch vụ backend và cơ sở dữ liệu; các thành phần trao đổi dữ liệu qua API của hệ thống.</p>
+          <SubHeading>3.4 Giao diện truyền thông</SubHeading>
+          <p className="text-sm leading-6">Giao tiếp giữa giao diện và backend thực hiện thông qua các yêu cầu API của ứng dụng.</p>
+
+          <SectionHeading>4. Yêu cầu chức năng</SectionHeading>
+          <SubHeading>4.1 Danh sách đặc tả chức năng</SubHeading>
+          {functional.length === 0 && <p className="text-[15px] italic text-slate-500">Chưa có đặc tả chức năng.</p>}
           {functional.map((record) => (
-            <FunctionalBlock
-              key={record.id}
-              record={record}
-              value={record.value}
-              onChange={(value) => onChangeSpecification(record, value)}
-            />
+            <FunctionalBlock key={record.id} record={record} value={record.value} onChange={(value) => onChangeSpecification(record, value)} />
           ))}
 
-          <SubHeading>3.2 Đặc tả phi chức năng</SubHeading>
+          <SectionHeading>5. Yêu cầu phi chức năng</SectionHeading>
+          <SubHeading>5.1 Danh sách đặc tả phi chức năng</SubHeading>
+          {nonFunctional.length === 0 && <p className="text-[15px] italic text-slate-500">Chưa có đặc tả phi chức năng.</p>}
           {nonFunctional.map((record) => (
-            <NonFunctionalBlock
-              key={record.id}
-              record={record}
-              value={record.value}
-              onChange={(value) => onChangeSpecification(record, value)}
-            />
+            <NonFunctionalBlock key={record.id} record={record} value={record.value} onChange={(value) => onChangeSpecification(record, value)} />
           ))}
+          <SubHeading>5.2 Quy tắc nghiệp vụ</SubHeading>
+          <p className="text-sm leading-6">Các quy tắc nghiệp vụ chi tiết được ghi tại từng đặc tả chức năng tương ứng.</p>
 
-          <SectionHeading>4. Phụ lục</SectionHeading>
-          <WordField
-            label="Ghi chú"
-            value={metadata.appendix_notes}
-            onChange={(value) => patchMeta("appendix_notes", value)}
-          />
+          <SectionHeading>6. Yêu cầu khác</SectionHeading>
+          <WordField label="6.1 Yêu cầu khác / ghi chú" value={metadata.appendix_notes} onChange={(value) => patchMeta("appendix_notes", value)} />
+
+          <SectionHeading>Phụ lục A. Thuật ngữ và từ viết tắt</SectionHeading>
+          <p className="text-sm leading-6">{metadata.intro_definitions || "Chưa bổ sung thuật ngữ và từ viết tắt."}</p>
+          <SectionHeading>Phụ lục B. Mô hình phân tích</SectionHeading>
+          <p className="text-sm leading-6">Các mô hình phân tích UML được quản lý và đồng bộ ở Giai đoạn 2 và Giai đoạn 3.</p>
         </div>
-
         <footer className="mt-8 flex justify-between border-t border-slate-300 pt-3 text-xs text-slate-500">
           <span>GenAI UML Assistant</span>
           <span>Bản thảo - Trang 1</span>
