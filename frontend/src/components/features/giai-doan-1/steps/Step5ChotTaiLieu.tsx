@@ -98,7 +98,7 @@ export default function Step5ChotTaiLieu({
   const jumpToTocItem = (target: string) => {
     const root = editorRootRef.current;
     if (!root) return;
-    const normalize = (value: string) => value.replace(/\\s+/g, " ").trim().toLocaleLowerCase();
+    const normalize = (value: string) => value.replace(/\s+/g, " ").trim().toLocaleLowerCase();
     const normalizedTarget = normalize(target);
     const candidates = Array.from(root.querySelectorAll<HTMLElement>("h2, h3, label"));
     const found = candidates.find((node) => {
