@@ -100,7 +100,7 @@ export default function Step5ChotTaiLieu({
     const root = editorRootRef.current;
     if (!root) return;
     const candidates = Array.from(root.querySelectorAll<HTMLElement>("h2, h3, label"));
-    const normalize = (value: string) => value.replace(/\\s+/g, " ").trim();
+    const normalize = (value: string) => value.replace(/\s+/g, " ").trim();
     const found = candidates.find((node) => {
       const text = normalize(node.innerText || node.textContent || "");
       return text === target || text.startsWith(target);
