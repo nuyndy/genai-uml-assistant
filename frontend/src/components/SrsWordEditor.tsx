@@ -56,16 +56,21 @@ function WordField({
       <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </span>
-      <textarea
-        ref={ref}
-        aria-label={ariaLabel ?? label}
-        rows={1}
-        value={value}
-        placeholder={placeholder}
-        readOnly={readOnly}
-        onChange={readOnly ? undefined : (event) => onChange(event.target.value)}
-        className={`w-full resize-none overflow-hidden rounded border border-transparent bg-transparent px-1 py-0.5 font-[inherit] leading-7 text-slate-900 outline-none ${readOnly ? "cursor-default" : "transition focus:border-violet-300 focus:bg-violet-50/40"}`}
-      />
+      {readOnly ? (
+        <div aria-label={ariaLabel ?? label} className="whitespace-pre-wrap break-words px-1 py-0.5 leading-7 text-slate-900">
+          {value || "—"}
+        </div>
+      ) : (
+        <textarea
+          ref={ref}
+          aria-label={ariaLabel ?? label}
+          rows={1}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full resize-none overflow-hidden rounded border border-transparent bg-transparent px-1 py-0.5 font-[inherit] leading-7 text-slate-900 outline-none transition focus:border-violet-300 focus:bg-violet-50/40"
+        />
+      )}
     </label>
   );
 }
@@ -106,30 +111,15 @@ function SubHeading({ children }: { children: ReactNode }) {
 
 function FieldMappingTable({ fields }: { fields: FieldMapping[] }) {
   return (
-    <div className="mt-1 min-w-0">
-      {fields.length === 0 ? (
-        <p className="whitespace-pre-wrap text-[13px] leading-6 text-slate-900">Chưa có ánh xạ trường dữ liệu.</p>
-      ) : (
-        <table className="w-full border-collapse text-left text-[13px]">
-          <thead>
-            <tr className="border-y border-slate-300">
-              {["Tên trường", "Kiểu dữ liệu", "Bắt buộc", "Quy tắc kiểm tra"].map((header) => (
-                <th key={header} className="px-2 py-1.5 font-bold text-slate-800">{header}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((field, index) => (
-              <tr key={index} className="border-b border-slate-200 align-top">
-                <td className="whitespace-pre-wrap break-words px-2 py-1.5">{field.field_name || "—"}</td>
-                <td className="whitespace-pre-wrap break-words px-2 py-1.5">{field.data_type || "—"}</td>
-                <td className="px-2 py-1.5 text-center">{field.required ? "Có" : "Không"}</td>
-                <td className="whitespace-pre-wrap break-words px-2 py-1.5">{field.validation_rule || "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+    <div className="whitespace-pre-wrap break-words text-[13px] leading-6 text-slate-900">
+      {fields.length === 0
+        ? "Chưa có ánh xạ trường dữ liệu."
+        : fields.map((field, index) => (
+            <p key={index}>
+              {field.field_name || "Trường chưa đặt tên"}: {field.data_type || "Chưa xác định kiểu dữ liệu"};{" "}
+              Bắt buộc: {field.required ? "Có" : "Không"}; Quy tắc kiểm tra: {field.validation_rule || "Không có"}.
+            </p>
+          ))}
     </div>
   );
 }
@@ -137,11 +127,9 @@ function FieldMappingTable({ fields }: { fields: FieldMapping[] }) {
 function FunctionalBlock({
   record,
   value,
-  onChange,
 }: {
   record: SpecificationRecord;
   value: FunctionalSpecification;
-  onChange: (value: FunctionalSpecification) => void;
 }) {
   const rows: { label: string; content: ReactNode }[] = [
     { label: "Mã chức năng", content: <WordField label="" value={value.function_code ?? ""} onChange={() => undefined} readOnly /> },
@@ -176,11 +164,9 @@ function FunctionalBlock({
 function NonFunctionalBlock({
   record,
   value,
-  onChange,
 }: {
   record: SpecificationRecord;
   value: NonFunctionalSpecification;
-  onChange: (value: NonFunctionalSpecification) => void;
 }) {
   return (
     <article
@@ -190,11 +176,6 @@ function NonFunctionalBlock({
       <SubHeading>{record.feature || "Đặc tả phi chức năng"}</SubHeading>
       <div className="space-y-2">
         {value.items.map((item, index) => {
-          const patch = (next: Partial<typeof item>) => {
-            const items = [...value.items];
-            items[index] = { ...item, ...next };
-            onChange({ items });
-          };
           return (
             <div key={item.group}>
               <WordField
@@ -342,7 +323,7 @@ export default function SrsWordEditor({
                   <h4 className="mb-2 text-[15px] font-bold text-slate-900">
                     FR {index + 1}: {record.value.function_name || record.feature || "Chức năng chưa đặt tên"}
                   </h4>
-                  <FunctionalBlock record={record} value={record.value} onChange={() => undefined} />
+                  <FunctionalBlock record={record} value={record.value} />
                 </section>
               ))}
             </div>
@@ -352,7 +333,7 @@ export default function SrsWordEditor({
           <SubHeading>5.1 Danh sách đặc tả phi chức năng</SubHeading>
           {nonFunctional.length === 0 && <p className="text-[15px] italic text-slate-500">Chưa có đặc tả phi chức năng.</p>}
           {nonFunctional.map((record) => (
-            <NonFunctionalBlock key={record.id} record={record} value={record.value} onChange={() => undefined} />
+            <NonFunctionalBlock key={record.id} record={record} value={record.value} />
           ))}
           <SubHeading>5.2 Quy tắc nghiệp vụ</SubHeading>
           <p className="text-sm leading-6">Các quy tắc nghiệp vụ chi tiết được ghi tại từng đặc tả chức năng tương ứng.</p>
