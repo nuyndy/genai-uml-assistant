@@ -53,7 +53,6 @@ export default function Step4DacTa({
   stories,
   specifications,
   functionalSpecificationTabs,
-  setFunctionalSpecificationTabs,
   specDrafts,
   setSpecDrafts,
   generatingStories,
