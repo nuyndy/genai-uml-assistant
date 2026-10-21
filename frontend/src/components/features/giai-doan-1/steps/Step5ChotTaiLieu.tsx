@@ -130,14 +130,6 @@ export default function Step5ChotTaiLieu({
 
   return (
     <div className="w-full min-w-0 space-y-5">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
-          Hoàn thiện các trường còn lại
-        </SoftButton>
-        <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
-          Lưu tài liệu SRS
-        </SoftButton>
-      </div>
       <Card
         allowOverflow
         tone="emerald"
@@ -158,7 +150,15 @@ export default function Step5ChotTaiLieu({
                   </button>
                 ))}
               </nav>
-              <p className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
+              <div className="mt-3 flex shrink-0 flex-col gap-2 border-t border-slate-100 pt-3">
+                <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
+                  Hoàn thiện các trường còn lại
+                </SoftButton>
+                <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
+                  Lưu tài liệu SRS
+                </SoftButton>
+              </div>
+              <p className="mt-2 shrink-0 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
             <div ref={editorRootRef} className="h-[calc(100dvh-15rem)] min-h-[360px] min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
