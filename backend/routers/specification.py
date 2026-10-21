@@ -187,16 +187,30 @@ def generate_project_specifications_batch(
         raise HTTPException(status_code=500, detail="Không thể đọc user story cần đặc tả.") from exc
 
     generated: list[tuple[UserStory, str]] = []
-    try:
-        for story in stories:
-            specification = generate_json(
-                build_functional_spec_prompt(story, f"UC{story.id:02d}"),
-                FunctionalSpecification,
-            )
-            generated.append((story, specification.model_dump_json()))
-    except AIServiceError as exc:
-        logger.exception("AI returned an invalid functional specification in batch")
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    if stories:
+        # Chạy tối đa 2 lượt sinh đồng thời để giảm thời gian chờ tổng thể,
+        # nhưng giới hạn tải lên Ollama để tránh làm nghẽn model cục bộ.
+        from concurrent.futures import ThreadPoolExecutor
+
+        prompts = [
+            (story, build_functional_spec_prompt(story, f"UC{story.id:02d}"))
+            for story in stories
+        ]
+        try:
+            with ThreadPoolExecutor(max_workers=min(2, len(prompts))) as executor:
+                contents = list(
+                    executor.map(
+                        lambda item: generate_json(item[1], FunctionalSpecification),
+                        prompts,
+                    )
+                )
+            generated = [
+                (story, content.model_dump_json())
+                for (story, _), content in zip(prompts, contents, strict=True)
+            ]
+        except AIServiceError as exc:
+            logger.exception("AI returned an invalid functional specification in batch")
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     saved: list[Specification] = []
     try:
