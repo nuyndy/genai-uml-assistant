@@ -246,9 +246,16 @@ def generate_srs_document_meta(
     context = {
         "project": getattr(project, "name", None) or getattr(project, "title", None) or f"Dự án {project_id}",
         "requirements": [
-            {"actor": item.actor, "action": item.action, "target_object": item.target_object,
-             "purpose": item.purpose, "pre_conditions": item.pre_conditions,
-             "business_rules": item.business_rules}
+            {
+                "content": item.content,
+                "actor": item.actor,
+                "action": item.action,
+                "target_object": item.target_object,
+                "purpose": item.purpose,
+                "normalized_text": item.normalized_text,
+                "acceptance_criteria": item.acceptance_criteria,
+                "technical_notes": item.technical_notes,
+            }
             for item in requirements
         ],
         "user_stories": [
