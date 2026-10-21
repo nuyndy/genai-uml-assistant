@@ -315,10 +315,52 @@ export function generateNonFunctionalSpecification(
   });
 }
 
-export function generateSrsMetadata(projectId: number): Promise<SrsMetadata> {
-  return apiFetch(`/api/projects/${projectId}/srs-document-meta/generate`, {
-    method: "POST",
-  });
+const SRS_METADATA_KEYS: (keyof SrsMetadata)[] = [
+  "intro_purpose",
+  "intro_scope",
+  "intro_definitions",
+  "overview_user_classes",
+  "overview_environment",
+  "appendix_notes",
+];
+
+/**
+ * API/dữ liệu cũ đôi khi trả trường metadata dưới dạng object hoặc null.
+ * Chuẩn hóa tại biên API để editor và Pydantic luôn nhận chuỗi; ưu tiên
+ * các thuộc tính văn bản phổ biến trước khi chuyển object còn lại thành JSON.
+ */
+function normalizeSrsText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeSrsText(item)).filter(Boolean).join("\\n");
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["content", "text", "value", "description"]) {
+      if (typeof record[key] === "string") return record[key] as string;
+    }
+    return JSON.stringify(value);
+  }
+  return "";
+}
+
+function normalizeSrsMetadata(value: unknown): SrsMetadata {
+  const source = value && typeof value === "object"
+    ? value as Record<string, unknown>
+    : {};
+  return Object.fromEntries(
+    SRS_METADATA_KEYS.map((key) => [key, normalizeSrsText(source[key])]),
+  ) as SrsMetadata;
+}
+
+export async function generateSrsMetadata(projectId: number): Promise<SrsMetadata> {
+  const generated: unknown = await apiFetch(
+    `/api/projects/${projectId}/srs-document-meta/generate`,
+    { method: "POST" },
+  );
+  return normalizeSrsMetadata(generated);
 }
 
 export function saveSrsMetadata(
@@ -327,14 +369,20 @@ export function saveSrsMetadata(
 ): Promise<{ project_id: number; updated_at: string | null }> {
   return apiFetch(`/api/projects/${projectId}/srs-document-meta`, {
     method: "PUT",
-    body: JSON.stringify(metadata),
+    body: JSON.stringify(normalizeSrsMetadata(metadata)),
   });
 }
 
-export function getSpecificationDocument(
+export async function getSpecificationDocument(
   projectId: number,
 ): Promise<SpecificationDocument> {
-  return apiFetch(`/api/projects/${projectId}/specification-document`);
+  const document: SpecificationDocument = await apiFetch(
+    `/api/projects/${projectId}/specification-document`,
+  );
+  return {
+    ...document,
+    metadata: normalizeSrsMetadata(document?.metadata),
+  };
 }
 
 export function exportSpecificationDocument(
