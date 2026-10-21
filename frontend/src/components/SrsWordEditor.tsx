@@ -149,11 +149,11 @@ function NonFunctionalBlock({
 }) {
   return (
     <article className="mb-4" aria-label={record.feature || "Yêu cầu phi chức năng"}>
-      <SubHeading>{record.feature || "Yêu cầu phi chức năng"}</SubHeading>
+      
       <div className="space-y-3">
         {value.items.map((item, index) => (
           <section key={`${item.group}-${index}`} className="break-inside-avoid">
-            <h4 className="mb-1 text-sm font-bold text-slate-900">{`${String.fromCharCode(97 + index)}. ${item.group || `Yêu cầu phi chức năng ${index + 1}`}`}</h4>
+            <h4 className="mb-1 text-sm font-bold text-slate-900">{`${String.fromCharCode(97 + index)}. ${item.group || `Yêu cầu phi chức năng ${index + 1}`}`.replace(/\s*&\s*/g, " và ")}</h4>
             <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={item.group || `Bảng yêu cầu phi chức năng ${index + 1}`}>
               <tbody>
                 {([
@@ -258,7 +258,7 @@ export default function SrsWordEditor({
               {functional.map((record, index) => (
                 <section key={record.id} className="break-inside-avoid">
                   <h4 className="mb-2 text-[15px] font-bold text-slate-900">
-                    FR {index + 1}: {record.value.function_name || record.feature || "Chức năng chưa đặt tên"}
+                    {String.fromCharCode(97 + index)}. FR {index + 1}: {(record.value.function_name || record.feature || "Chức năng chưa đặt tên").replace(/\s*&\s*/g, " và ")}
                   </h4>
                   <FunctionalBlock record={record} value={record.value} />
                 </section>
@@ -266,8 +266,7 @@ export default function SrsWordEditor({
             </div>
           )}
 
-          <SectionHeading>5. Yêu cầu phi chức năng</SectionHeading>
-          <SubHeading>5.1 Danh sách đặc tả phi chức năng</SubHeading>
+          <SectionHeading>5.1 Danh sách đặc tả phi chức năng</SectionHeading>
           {nonFunctional.length === 0 && <p className="text-[15px] italic text-slate-500">Chưa có đặc tả phi chức năng.</p>}
           {nonFunctional.map((record) => (
             <NonFunctionalBlock key={record.id} record={record} value={record.value} />
