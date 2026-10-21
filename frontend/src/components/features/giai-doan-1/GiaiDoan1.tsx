@@ -7,6 +7,7 @@ import {
   createProjectRequirementsBatch,
   deleteRequirement,
   generateNonFunctionalSpecification,
+  generateProjectSpecificationsBatch,
   generateSpecification,
   getSpecificationDocument,
   listProjectRequirements,
@@ -714,8 +715,32 @@ export default function GiaiDoan1({
     }
     if (pendingStories.length === 0 && !shouldGenerateNonFunctional) return;
     void (async () => {
-      for (const story of pendingStories) {
-        await generateFunctionalSpecification(story);
+      if (pendingStories.length > 0) {
+        const pendingIds = pendingStories.map((story) => story.id);
+        setGeneratingStories((previous) => ({
+          ...previous,
+          ...Object.fromEntries(pendingIds.map((id) => [id, true])),
+        }));
+        setBusy(true);
+        setAiTaskLabel(`Đang sinh đặc tả chức năng (0/${pendingStories.length})...`);
+        setError("");
+        try {
+          // Gửi một yêu cầu batch thay vì gọi API và tải lại SRS sau từng FR.
+          await generateProjectSpecificationsBatch(projectId);
+          setAiTaskLabel("Đang đồng bộ đặc tả và SRS...");
+          await refreshSpecifications();
+          await refreshSrsDocument();
+        } catch (reason) {
+          setError(`Không thể sinh đặc tả chức năng: ${formatError(reason)}`);
+        } finally {
+          setGeneratingStories((previous) => {
+            const next = { ...previous };
+            pendingIds.forEach((id) => { next[id] = false; });
+            return next;
+          });
+          setAiTaskLabel("");
+          setBusy(generationInFlight.current.size > 0);
+        }
       }
       if (shouldGenerateNonFunctional) {
         await createNonFunctionalSpecification();
@@ -723,9 +748,10 @@ export default function GiaiDoan1({
     })();
   }, [
     createNonFunctionalSpecification,
-    generateFunctionalSpecification,
     loaded,
     projectId,
+    refreshSrsDocument,
+    refreshSpecifications,
     specifications,
     step,
     stories,
