@@ -19,40 +19,33 @@ class UserStoryPrompt(Protocol):
     acceptance_criteria: str | None
 
 
-def build_functional_spec_prompt(user_story: UserStoryPrompt, uc_code: str) -> str:
-    acceptance_criteria = (
-        user_story.acceptance_criteria or "chưa có, hãy tự đề xuất"
-    )
+def build_functional_spec_prompt(user_story: UserStoryPrompt, uc_code: str = "") -> str:
+    acceptance_criteria = user_story.acceptance_criteria or "chưa có, hãy đề xuất tiêu chí cần xác nhận"
     fr_code = f"FR-{user_story.id:03d}"
     return f"""Từ User Story: "Là {user_story.role or ''}, tôi muốn {user_story.feature}, để {user_story.benefit or ''}."
 Tiêu chí chấp nhận đã có: {acceptance_criteria}
-Mã Use Case tham chiếu: {uc_code}
 Mã đặc tả chức năng phải là {fr_code}; không dùng mã UC làm function_code.
 
-Hãy sinh ĐẶC TẢ CHỨC NĂNG đầy đủ bằng tiếng Việt, trả về CHỈ JSON hợp lệ theo ĐÚNG cấu trúc sau, không thêm markdown hay văn bản ngoài JSON:
+Hãy sinh ĐẶC TẢ YÊU CẦU CHỨC NĂNG (FR), KHÔNG sinh đặc tả Use Case. Trả về CHỈ JSON hợp lệ:
 {{
   "function_code": "{fr_code}",
-  "function_name": "Tên chức năng",
-  "description": "Mô tả ngắn",
-  "actors": ["Tác nhân 1"],
-  "priority": "Must",
-  "pre_conditions": ["..."],
-  "main_flow": ["1. ...", "2. ..."],
-  "alternative_flows": ["A1 — Tại bước 2 — Điều kiện: ... — Xử lý: ... — Tiếp tục/quay lại: ...", "A2 — Tại bước 2 — Điều kiện: ... — Xử lý: ... — Tiếp tục/quay lại: ..."],
-  "exception_flows": ["E1 — Tại bước 2 — Lỗi: ... — Hệ thống xử lý: ... — Kết thúc/tiếp tục: ...", "E2 — Tại bước 2 — Lỗi: ... — Hệ thống xử lý: ... — Kết thúc/tiếp tục: ..."],
-  "post_conditions": ["..."],
-  "business_rules": ["..."],
-  "field_mapping": [
-    {{"field_name": "Email", "data_type": "String", "required": true, "validation_rule": "..."}}
-  ]
+  "function_name": "Tên yêu cầu chức năng",
+  "description": "Giới thiệu và mô tả mục tiêu/phạm vi",
+  "actors": ["Tác nhân liên quan"],
+  "process": ["Các bước xử lý nghiệp vụ ở mức yêu cầu"],
+  "input_data": ["Dữ liệu đầu vào"],
+  "processing_rules": ["Logic, điều kiện, kiểm tra và nhánh xử lý"],
+  "output_data": ["Kết quả đầu ra, trạng thái hoặc phản hồi"],
+  "acceptance_criteria": ["Điều kiện kiểm tra để xác nhận yêu cầu đạt"],
+  "business_rules": ["Quy tắc nghiệp vụ liên quan"],
+  "field_mapping": [{{"field_name":"Tên trường","data_type":"String","required":true,"validation_rule":"Quy tắc kiểm tra"}}]
 }}
-priority phải là một trong Must, Should, Could, Won't. Quy tắc luồng: main_flow chỉ đánh số bước chính 1, 2, 3...; mỗi nhánh thay thế có mã duy nhất A1, A2, A3...; mỗi ngoại lệ có mã duy nhất E1, E2, E3.... Một bước chính có thể có nhiều nhánh. Mỗi nhánh phải ghi rõ bước bắt đầu, điều kiện, xử lý và kết quả (quay lại bước nào hoặc kết thúc). Không đánh số A/E như bước chính. Các trường danh sách không có dữ liệu dùng mảng rỗng."""
+Không sinh các trường đặc trưng UC như tiền điều kiện, hậu điều kiện, luồng chính, luồng thay thế, ngoại lệ; không sinh mức ưu tiên. Dùng tiếng Việt, bám sát User Story, không tự bịa nghiệp vụ. Nếu thiếu thông tin, ghi rõ cần xác nhận. Danh sách không có dữ liệu dùng mảng rỗng."""
 
 def build_nonfunctional_spec_prompt(project_context: list[str]) -> str:
     context = json.dumps(project_context, ensure_ascii=False)
     groups = json.dumps(NONFUNCTIONAL_GROUPS, ensure_ascii=False)
-    return f"""Dựa trên bối cảnh các chức năng của dự án sau, đề xuất đặc tả phi chức năng bằng tiếng Việt.
+    return f"""Dựa trên bối cảnh chức năng dự án, sinh đặc tả phi chức năng (NFR) bằng tiếng Việt.
 Bối cảnh: {context}
-Trả về CHỈ JSON hợp lệ theo đúng cấu trúc {{"items":[{{"group":"...","criteria":"...","requirement":"..."}}]}}.
-items phải có đúng 5 phần tử theo đúng thứ tự và nhóm cố định sau: {groups}.
-criteria là tiêu chí có thể kiểm chứng; requirement nêu yêu cầu cụ thể. Không tự khẳng định số liệu chưa có căn cứ; nếu thiếu, ghi rõ cần xác nhận."""
+Trả về JSON {"items":[{"group":"...","criteria":"...","requirement":"...","metric":"...","conditions":"...","verification_method":"...","scope":"...","source":"..."}]}.
+items phải có đúng 5 phần tử theo thứ tự nhóm cố định: {groups}. criteria mô tả thuộc tính chất lượng/ràng buộc; requirement là yêu cầu cụ thể; metric là ngưỡng đo; conditions là điều kiện áp dụng; verification_method là cách kiểm chứng; scope là phạm vi; source là căn cứ. Không bịa số liệu; thiếu thông tin thì ghi cần xác nhận. Không dùng các trường luồng UC."""
