@@ -53,11 +53,9 @@ function WordField({
 
   return (
     <label className="block min-w-0">
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-        {label}
-      </span>
+      {label && <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>}
       {readOnly ? (
-        <div aria-label={ariaLabel ?? label} className="whitespace-pre-wrap break-words px-1 py-0.5 leading-7 text-slate-900">
+        <div aria-label={ariaLabel ?? label} className="whitespace-pre-wrap break-words px-0 py-0 leading-5 text-slate-900">
           {value || "—"}
         </div>
       ) : (
@@ -144,16 +142,16 @@ function FunctionalBlock({
     { label: "Quy tắc nghiệp vụ", content: <WordListField label="" values={value.business_rules ?? []} onChange={() => undefined} readOnly /> },
   ];
   return (
-    <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px]" aria-label={`Bảng đặc tả ${value.function_code || record.feature}`}>
+    <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={`Bảng đặc tả ${value.function_code || record.feature}`}>
       <tbody>
         {rows.map((row) => (
           <tr key={row.label} className="border-b border-slate-300 align-top">
-            <th scope="row" className="w-[28%] border-r border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold">{row.label}</th>
-            <td className="min-w-0 px-3 py-1.5">{row.content}</td>
+            <th scope="row" className="w-[28%] border-r border-slate-300 bg-slate-100 px-2 py-1 text-left font-bold">{row.label}</th>
+            <td className="min-w-0 px-2 py-1">{row.content}</td>
           </tr>
         ))}
         <tr className="border-b border-slate-300 align-top">
-          <th scope="row" className="border-r border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold">Ánh xạ trường dữ liệu</th>
+          <th scope="row" className="border-r border-slate-300 bg-slate-100 px-2 py-1 text-left font-bold">Ánh xạ trường dữ liệu</th>
           <td className="min-w-0 px-3 py-1.5"><FieldMappingTable fields={value.field_mapping ?? []} /></td>
         </tr>
       </tbody>
@@ -169,74 +167,32 @@ function NonFunctionalBlock({
   value: NonFunctionalSpecification;
 }) {
   return (
-    <article
-      className="mb-6 border-l-2 border-violet-300 pl-4"
-      aria-label={`Đặc tả phi chức năng ${record.feature}`}
-    >
+    <article className="mb-4" aria-label={`Đặc tả phi chức năng ${record.feature}`}>
       <SubHeading>{record.feature || "Đặc tả phi chức năng"}</SubHeading>
-      <div className="space-y-2">
-        {value.items.map((item, index) => {
-          return (
-            <div key={item.group}>
-              <WordField
-                label="Nhóm yêu cầu"
-                value={item.group ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Nhóm yêu cầu dòng ${index + 1}`}
-              />
-              <WordField
-                label="Tiêu chí"
-                value={item.criteria ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Tiêu chí dòng ${index + 1}`}
-              />
-              <WordField
-                label="Yêu cầu cụ thể"
-                value={item.requirement ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Yêu cầu cụ thể dòng ${index + 1}`}
-              />
-              <WordField
-                label="Chỉ tiêu / ngưỡng đo lường"
-                value={item.metric ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Chỉ tiêu dòng ${index + 1}`}
-              />
-              <WordField
-                label="Điều kiện áp dụng"
-                value={item.conditions ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Điều kiện áp dụng dòng ${index + 1}`}
-              />
-              <WordField
-                label="Phương pháp kiểm chứng"
-                value={item.verification_method ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Phương pháp kiểm chứng dòng ${index + 1}`}
-              />
-              <WordField
-                label="Phạm vi áp dụng"
-                value={item.scope ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Phạm vi áp dụng dòng ${index + 1}`}
-              />
-              <WordField
-                label="Nguồn / căn cứ"
-                value={item.source ?? ""}
-                onChange={() => undefined}
-                readOnly
-                ariaLabel={`Nguồn căn cứ dòng ${index + 1}`}
-              />
-            </div>
-          );
-        })}
+      <div className="space-y-3">
+        {value.items.map((item, index) => (
+          <section key={`${item.group}-${index}`} className="break-inside-avoid">
+            {item.group && <h4 className="mb-1 text-sm font-bold text-slate-900">{item.group}</h4>}
+            <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={item.group || `Bảng yêu cầu phi chức năng ${index + 1}`}>
+              <tbody>
+                {([
+                  ["Tiêu chí", item.criteria],
+                  ["Yêu cầu cụ thể", item.requirement],
+                  ["Chỉ tiêu / ngưỡng đo lường", item.metric],
+                  ["Điều kiện áp dụng", item.conditions],
+                  ["Phương pháp kiểm chứng", item.verification_method],
+                  ["Phạm vi áp dụng", item.scope],
+                  ["Nguồn / căn cứ", item.source],
+                ] as [string, string | undefined][]).map(([label, content]) => (
+                  <tr key={label} className="border-b border-slate-300 align-top last:border-b-0">
+                    <th scope="row" className="w-[28%] border-r border-slate-300 bg-slate-100 px-2 py-1 text-left font-bold">{label}</th>
+                    <td className="min-w-0 break-words whitespace-pre-wrap px-2 py-1">{content || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ))}
       </div>
     </article>
   );
