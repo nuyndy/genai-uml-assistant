@@ -445,8 +445,8 @@ export default function SrsWordEditor({
                       </tr>
                       <tr>
                         <td colSpan={2} className="p-3">
-                          <details>
-                            <summary className="cursor-pointer font-semibold text-violet-700 hover:text-violet-900">Mở rộng các trường chi tiết của FR</summary>
+                          <details open>
+                            <summary className="cursor-pointer font-semibold text-violet-700 hover:text-violet-900">Các trường chi tiết của ca sử dụng</summary>
                             <div className="pt-3">
                               <FunctionalBlock record={record} value={record.value}
                                 onChange={(value) => onChangeSpecification(record, value)} />
