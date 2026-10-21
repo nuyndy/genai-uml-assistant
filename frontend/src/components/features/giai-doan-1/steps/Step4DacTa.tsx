@@ -72,6 +72,7 @@ export default function Step4DacTa({
   const [kind, setKind] = useState<SpecKind>("functional");
   const [activeIndex, setActiveIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [regeneratingAll, setRegeneratingAll] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
   const functionalItems = useMemo(
@@ -108,6 +109,28 @@ export default function Step4DacTa({
     setKind(nextKind);
     setActiveIndex(0);
     setActionMessage("");
+  };
+
+  const regenerateAllSpecifications = async () => {
+    if (!projectId || busy || regeneratingAll || stories.length === 0) return;
+    const confirmed = window.confirm(
+      "AI sẽ sinh lại toàn bộ FR cho các User Story và NFR của dự án. Nội dung đặc tả đã lưu có thể bị thay thế. Bạn nên lưu các chỉnh sửa trước khi tiếp tục. Bạn có muốn thực hiện không?",
+    );
+    if (!confirmed) return;
+
+    setRegeneratingAll(true);
+    setActionMessage("");
+    try {
+      for (const story of stories) {
+        await generateFunctionalSpecification(story, true);
+      }
+      await createNonFunctionalSpecification(true);
+      setActionMessage("Đã gửi yêu cầu sinh lại toàn bộ FR/NFR.");
+    } catch (reason) {
+      setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại toàn bộ FR/NFR.");
+    } finally {
+      setRegeneratingAll(false);
+    }
   };
 
   const removeActiveSpecification = async () => {
@@ -148,6 +171,17 @@ export default function Step4DacTa({
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{nonFunctionalSpecification ? 1 : 0}</span>
           </button>
+          <div className="mt-3 border-t border-slate-200 pt-3">
+            <button
+              type="button"
+              onClick={() => void regenerateAllSpecifications()}
+              disabled={!projectId || stories.length === 0 || busy || regeneratingAll || Boolean(Object.values(generatingStories).some(Boolean)) || generatingNonFunctional}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {regeneratingAll ? <><span className="animate-spin">⟳</span> Đang sinh lại...</> : "Sinh lại toàn bộ"}
+            </button>
+            <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Sinh lại tất cả FR và NFR bằng AI.</p>
+          </div>
         </aside>
 
         <section className="min-w-0">
