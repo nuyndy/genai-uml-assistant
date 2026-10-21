@@ -55,6 +55,9 @@ export interface SpecDoc {
 export interface Actor {
   id: number;
   name: string;
+  description?: string;
+  role?: string;
+  mainBusinesses?: string;
 }
 
 export interface Usecase {
