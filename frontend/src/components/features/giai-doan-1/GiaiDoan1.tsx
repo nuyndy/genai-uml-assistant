@@ -562,11 +562,12 @@ export default function GiaiDoan1({
   const generateFunctionalSpecification = useCallback(async (
     story: UserStory,
     regenerate = false,
+    skipRegenerationConfirmation = false,
   ) => {
     if (!projectId) return;
     const requestKey = `${projectId}:functional:${story.id}`;
     if (generationInFlight.current.has(requestKey)) return;
-    if (regenerate && !window.confirm(
+    if (regenerate && !skipRegenerationConfirmation && !window.confirm(
       "AI sẽ thay thế toàn bộ nội dung đặc tả hiện tại, kể cả các chỉnh sửa chưa lưu. Bạn có muốn tiếp tục?",
     )) return;
     generationInFlight.current.add(requestKey);
@@ -658,11 +659,14 @@ export default function GiaiDoan1({
     }
   };
 
-  const createNonFunctionalSpecification = useCallback(async (regenerate = false) => {
+  const createNonFunctionalSpecification = useCallback(async (
+    regenerate = false,
+    skipRegenerationConfirmation = false,
+  ) => {
     if (!projectId) return;
     const requestKey = `${projectId}:non_functional`;
     if (generationInFlight.current.has(requestKey)) return;
-    if (regenerate && !window.confirm(
+    if (regenerate && !skipRegenerationConfirmation && !window.confirm(
       "AI sẽ thay thế toàn bộ nội dung đặc tả hiện tại, kể cả các chỉnh sửa chưa lưu. Bạn có muốn tiếp tục?",
     )) return;
     generationInFlight.current.add(requestKey);
