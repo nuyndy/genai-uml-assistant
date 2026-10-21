@@ -110,13 +110,10 @@ export default function Step1ActorUseCase({
 
       <div className="grid h-[calc(100vh-285px)] min-h-[420px] grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
-            <h3 className="text-sm font-semibold text-slate-800">Tác nhân</h3>
-          </header>
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
               <thead className="sticky top-0 z-10 bg-emerald-700 text-xs text-white"><tr>
-                <th className="w-[23%] border-b border-emerald-600 px-1 py-3 font-semibold">Tên tác nhân</th>
+                <th className="w-[23%] border-b border-emerald-600 px-2 py-3 font-semibold">Tên tác nhân</th>
                 <th className="w-[24%] border-b px-1 py-3 font-semibold">Mô tả tác nhân</th>
                 <th className="w-[18%] border-b px-1 py-3 font-semibold">Vai trò</th>
                 <th className="border-b px-1 py-3 font-semibold">Các nghiệp vụ chính</th>
@@ -147,14 +144,11 @@ export default function Step1ActorUseCase({
         </section>
 
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
-            <h3 className="text-sm font-semibold text-slate-800">Use Case</h3>
-          </header>
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
             <table className="w-full table-fixed border-collapse text-left">
               <thead className="sticky top-0 z-10 bg-white text-xs text-slate-600"><tr>
-                <th className="w-9 border-b border-emerald-600 px-2 py-3"></th>
-                <th className="border-b border-emerald-600 px-2 py-3 font-semibold">Tên usecase</th>
+                <th className="w-9 border-b border-emerald-600 px-2 py-3 font-semibold">#</th>
+                <th className="border-b border-emerald-600 px-2 py-3 font-semibold">Tên Use Case</th>
                 <th className="w-[34%] border-b px-2 py-3 font-semibold">Tác nhân</th>
                 <th className="w-16 border-b px-1 py-3"></th>
               </tr></thead>
