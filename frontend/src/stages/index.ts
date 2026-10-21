@@ -60,33 +60,15 @@ export const STAGES: Record<StageId, StageDef> = {
 
   2: {
     id: 2,
-    label: "Giai đoạn 2: Xây dựng và xác nhận mô hình UML",
+    label: "Giai đoạn 2: Xây dựng mô hình UML",
     short: "Mô hình UML",
     steps: [
-      {
-        id: 1,
-        label: "Phân tích chức năng",
-        hint: "Xác định Actor, Use Case, quan hệ và duyệt biểu đồ Use Case tổng quát",
-        icon: "◉",
-      },
-      {
-        id: 2,
-        label: "Kịch bản và biểu đồ tương tác",
-        hint: "Sinh kịch bản và Sequence hoặc Communication Diagram cho từng Use Case",
-        icon: "⇄",
-      },
-      {
-        id: 3,
-        label: "Mô hình hóa cấu trúc",
-        hint: "Xây dựng Class Diagram, mô tả lớp và chỉnh sửa mã biểu đồ",
-        icon: "◫",
-      },
-      {
-        id: 4,
-        label: "Kiểm tra và xác nhận UML",
-        hint: "Rà soát tính nhất quán, truy vết và xác nhận bộ mô hình",
-        icon: "✓",
-      },
+      { id: 1, label: "Actor và Use Case", hint: "Xác định tác nhân, use case và các quan hệ nghiệp vụ", icon: "◉" },
+      { id: 2, label: "Kịch bản Use Case", hint: "Sinh, chỉnh sửa và lưu luồng chính, luồng phụ, ngoại lệ cho từng use case", icon: "≡" },
+      { id: 3, label: "Biểu đồ Use Case", hint: "Sinh, chỉnh sửa mã PlantUML và render biểu đồ tổng quát", icon: "◎" },
+      { id: 4, label: "Domain Model và Class Diagram", hint: "Xây dựng lớp, thuộc tính, phương thức và quan hệ giữa các lớp", icon: "◫" },
+      { id: 5, label: "Biểu đồ tương tác", hint: "Sinh Sequence hoặc Communication Diagram cho từng use case", icon: "⇄" },
+      { id: 6, label: "Trạng thái và kiểm tra UML", hint: "Rà soát tính đầy đủ, nhất quán và truy vết của bộ mô hình", icon: "✓" },
     ],
   },
 
