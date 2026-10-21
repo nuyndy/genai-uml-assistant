@@ -450,7 +450,7 @@ export default function GiaiDoan2({
       onRenameActor={(id, name) => runAction(async () => {
         const oldName = state.actors.find((item) => item.id === id)?.name;
         const actor = await updateActor(id, { name });
-        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.map((item) => item.id === id ? { id: actor.id, name: actor.name } : item), relations: previous.relations.map((item) => oldName && item.from === oldName ? { ...item, from: actor.name } : item) }));
+        setState((previous) => ({ ...previous, actorsUseCasesConfirmed: false, useCaseDiagramConfirmed: false, actors: previous.actors.map((item) => item.id === id ? { ...item, id: actor.id, name: actor.name } : item), relations: previous.relations.map((item) => oldName && item.from === oldName ? { ...item, from: actor.name } : item) }));
       }, "Đang lưu tác nhân...")}
       onDeleteActor={(id) => runAction(async () => {
         const actor = state.actors.find((item) => item.id === id);
