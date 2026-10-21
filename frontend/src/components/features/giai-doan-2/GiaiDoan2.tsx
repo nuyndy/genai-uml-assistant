@@ -731,7 +731,7 @@ export default function GiaiDoan2({
         {step === 3 && step2}
         {step === 4 && step5}
         {step === 5 && step4}
-        {step === 6 && <Step6UmlReview state={state} /> }}
+        {step === 6 && <Step6UmlReview state={state} />}
       </div>
     </div>
   );
