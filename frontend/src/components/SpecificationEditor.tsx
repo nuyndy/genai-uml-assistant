@@ -49,7 +49,7 @@ function ArrayEditor({
         rows={rows ?? Math.min(12, Math.max(3, value.reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 72)), 0)) )}
         value={value.join("\n")}
         onChange={(event) => onChange(event.target.value.split(/\r?\n/))}
-        className={`${inputClass} mt-1 block ${fillHeight ? "h-full min-h-0 flex-1" : "h-auto"} w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
+        className={`${inputClass} mt-1 block ${fillHeight ? "h-full min-h-0 flex-1" : "h-auto min-h-24"} w-full min-w-0 resize-y overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6 max-h-[calc(100vh-12rem)]`}
       />
     </label>
   );
@@ -60,7 +60,7 @@ export function FunctionalSpecificationEditor({ value, onChange }: {
 }) {
   const text = (key: "function_code" | "function_name" | "description", label: string, multiline = false) => (
     <label className="block min-w-0 text-sm font-medium text-slate-700">{label}
-      {multiline ? <textarea aria-label={label} rows={3} value={value[key]} onChange={(event) => onChange({ ...value, [key]: event.target.value })} className={`${inputClass} mt-1 w-full resize-y`} />
+      {multiline ? <textarea aria-label={label} rows={3} value={value[key]} onChange={(event) => onChange({ ...value, [key]: event.target.value })} className={`${inputClass} mt-1 min-h-24 max-h-[calc(100vh-12rem)] w-full resize-y overflow-y-auto`} />
         : <input aria-label={label} value={value[key]} onChange={(event) => onChange({ ...value, [key]: event.target.value })} className={`${inputClass} mt-1`} />}
     </label>
   );
@@ -137,7 +137,7 @@ function FieldMappingRow({
           rows={1}
           value={field.validation_rule}
           onChange={(event) => onChange({ ...field, validation_rule: event.target.value })}
-          className={`${inputClass} block h-10 min-h-10 w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
+          className={`${inputClass} block h-10 min-h-10 max-h-[calc(100vh-12rem)] w-full min-w-0 resize-y overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-5`}
           style={{ height: `${Math.max(2.5, Math.max(field.validation_rule.split("\n").length, Math.ceil(field.validation_rule.length / 52)) * 1.25 + 0.5)}rem` }}
         />
       </td>
@@ -164,6 +164,6 @@ export function NonFunctionalSpecificationEditor({ value, onChange }: {
   return <div className="space-y-4">{value.items.map((item,index)=><section key={item.group} className="rounded-xl border border-violet-100 bg-violet-50/30 p-3 sm:p-4">
     <h4 className="mb-3 text-sm font-semibold text-slate-800">{item.group}</h4><div className="grid gap-3 md:grid-cols-2">
     {fields.map(({key,label})=><label key={key} className="block min-w-0 text-sm font-medium text-slate-700">{label}
-      <textarea aria-label={`${label} — ${item.group}`} rows={2} value={item[key] ?? ""} onChange={(event)=>patch(index,key,event.target.value)} className={`${inputClass} mt-1 block w-full resize-y`}/>
+      <textarea aria-label={`${label} — ${item.group}`} rows={2} value={item[key] ?? ""} onChange={(event)=>patch(index,key,event.target.value)} className={`${inputClass} mt-1 block min-h-24 max-h-[calc(100vh-12rem)] w-full resize-y overflow-y-auto`}/>
     </label>)}</div></section>)}</div>;
 }
