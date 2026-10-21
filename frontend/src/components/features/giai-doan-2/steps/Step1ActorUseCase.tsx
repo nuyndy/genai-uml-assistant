@@ -102,8 +102,8 @@ export default function Step1ActorUseCase({
                 {visibleRelations.map((relation) => {
                   const ai = actors.findIndex((item) => item.id === relation.actorId);
                   const ui = useCases.findIndex((item) => item.id === relation.useCaseId);
-                  const y1 = 8 + ai * ROW_HEIGHT + 25;
-                  const y2 = 8 + ui * ROW_HEIGHT + 25;
+                  const y1 = 64 + ai * ROW_HEIGHT;
+                  const y2 = 64 + ui * ROW_HEIGHT;
                   const active = selectedActorId === relation.actorId || selectedUseCaseId === relation.useCaseId;
                   const dim = (selectedActorId !== null || selectedUseCaseId !== null) && !active;
                   return <g key={relation.id} opacity={dim ? 0.13 : 1}>
@@ -142,7 +142,7 @@ export default function Step1ActorUseCase({
                     const ucRelations = visibleRelations.filter((item) => item.useCaseId === useCase.id);
                     const selected = selectedUseCaseId === useCase.id;
                     const linked = selectedActorId !== null && connectedUseCaseIds.has(useCase.id);
-                    return <div key={useCase.id} className={`group min-h-14 rounded-lg border px-2 py-1.5 ${selected || linked ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200" : "border-slate-200 bg-white hover:border-emerald-300"}`}>
+                    return <div key={useCase.id} className={`group h-14 overflow-hidden rounded-lg border px-2 py-1.5 ${selected || linked ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200" : "border-slate-200 bg-white hover:border-emerald-300"}`}>
                       <div className="flex h-7 items-center gap-2">
                         <button type="button" aria-label={`Chọn Use Case ${useCase.name}`} onClick={() => { setSelectedUseCaseId(selected ? null : useCase.id); setSelectedActorId(null); }} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-white text-xs text-emerald-800">○</button>
                         <input aria-label={`Tên Use Case ${useCase.name}`} key={`uc-${useCase.id}-${useCase.name}`} defaultValue={useCase.name} disabled={busy}
@@ -151,7 +151,7 @@ export default function Step1ActorUseCase({
                           className={`min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none ${wrapClass}`} />
                         <button type="button" title="Xóa Use Case" aria-label={`Xóa Use Case ${useCase.name}`} disabled={busy} onClick={() => { if (window.confirm(`Xóa Use Case “${useCase.name}”?`)) void onDeleteUseCase(useCase.id); }} className="rounded px-1.5 py-1 text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100 focus:opacity-100">×</button>
                       </div>
-                      <div className="ml-8 flex min-h-4 flex-wrap items-center gap-1">
+                      <div className="ml-8 flex h-4 flex-nowrap items-center gap-1 overflow-x-auto">
                         {ucRelations.map((relation) => <span key={relation.id} className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] text-emerald-800">{relation.from}<button type="button" aria-label={`Bỏ liên kết ${relation.from} với ${useCase.name}`} disabled={busy} onClick={() => void onUnlinkActor(relation.id)} className="font-semibold hover:text-rose-600">×</button></span>)}
                         {linkingUseCaseId === useCase.id ? <form className="flex items-center gap-1" onSubmit={(event) => {
                           event.preventDefault(); const actorId = Number(linkActorId);
