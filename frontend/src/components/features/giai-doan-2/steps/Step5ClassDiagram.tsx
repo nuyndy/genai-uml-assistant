@@ -65,14 +65,6 @@ export default function Step5ClassDiagram({
   };
 
   const regenerate = () => {
-    if (
-      umlClasses.length > 0 &&
-      !window.confirm(
-        "Mô hình lớp hiện tại, kể cả phần bạn đã sửa tay, sẽ bị thay bằng kết quả mới từ AI. Bạn có muốn tiếp tục?",
-      )
-    ) {
-      return;
-    }
     void onRegenerateClasses();
   };
 
@@ -194,15 +186,6 @@ export default function Step5ClassDiagram({
         </div>
       </Card>
 
-      <div className="workflow-action-bar sticky bottom-0 z-30 flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(10,51,35,0.55)] backdrop-blur-xl sm:px-5">
-        <p className="text-sm text-slate-700">Xác nhận mô hình lớp và biểu đồ lớp</p>
-        <PrimaryButton
-          disabled={busy || umlClasses.length === 0 || !classDiagramUrl}
-          onClick={onConfirmClassDiagram}
-        >
-          Xác nhận mô hình lớp và hoàn tất
-        </PrimaryButton>
-      </div>
     </div>
   );
 }
