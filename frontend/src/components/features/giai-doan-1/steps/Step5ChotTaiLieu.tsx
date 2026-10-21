@@ -128,33 +128,23 @@ export default function Step5ChotTaiLieu({
 
   return (
     <div className="w-full min-w-0 space-y-5">
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Tổng đặc tả</p><p className="mt-1 text-xl font-semibold text-slate-900">{specifications.length}</p></div>
-          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Đặc tả chức năng</p><p className="mt-1 text-xl font-semibold text-slate-900">{srsFunctionalForEditor.length}</p></div>
-          <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3"><p className="text-xs text-slate-500">Đặc tả phi chức năng</p><p className="mt-1 text-xl font-semibold text-slate-900">{srsNonFunctionalForEditor.length}</p></div>
-        </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {srsMetadataDirty ? <StatusBadge tone="warn">Phần giới thiệu có thay đổi</StatusBadge> : <StatusBadge tone="success">Phần giới thiệu đã lưu</StatusBadge> }
-          <span className="text-xs text-slate-500">Các thay đổi đặc tả được lưu tự động sau khi ngừng nhập.</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>Lưu phần giới thiệu</SoftButton>
-        </div>
-      </div>
       <Card
         tone="emerald"
         title="Bản xem và chỉnh sửa tài liệu SRS"
-        actions={<StatusBadge tone="success">{specifications.length} mục</StatusBadge>}
+        actions={
+          <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
+            Lưu tài liệu SRS
+          </SoftButton>
+        }
       >
         {srsMarkdown || specifications.length > 0 ? (
           <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[245px_minmax(0,1fr)]">
-            <aside aria-label="Mục lục tài liệu SRS" className="h-fit min-w-0 rounded-xl border border-slate-200 bg-white p-3 xl:sticky xl:top-4">
+            <aside aria-label="Mục lục tài liệu SRS" className="z-10 flex max-h-[calc(100vh-2rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-3 xl:sticky xl:top-4">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-slate-900">Mục lục SRS</h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
               </div>
-              <nav className="max-h-[70vh] space-y-1 overflow-y-auto pr-1" aria-label="Đi đến mục">
+              <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1" aria-label="Đi đến mục">
                 {tocItems.map((item, index) => (
                   <button key={`${item.level}-${item.target}-${index}`} type="button" onClick={() => jumpToTocItem(item.target)} title={item.label}
                     className={`block w-full rounded-md py-1.5 text-left text-xs leading-5 transition hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-2 focus-visible:outline-emerald-600 ${item.level === 1 ? "mt-2 border-b border-slate-100 px-2 font-bold text-slate-900" : item.level === 2 ? "pl-4 pr-2 font-medium text-slate-700" : "pl-7 pr-2 text-slate-500"}`}>
