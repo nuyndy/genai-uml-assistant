@@ -8,12 +8,12 @@ export const emptyFunctionalSpecification = (): FunctionalSpecification => ({
   function_name: "",
   description: "",
   actors: [],
-  priority: "Must",
-  pre_conditions: [],
-  main_flow: [],
-  alternative_flows: [],
-  exception_flows: [],
-  post_conditions: [],
+  actors: [],
+  process: [],
+  input_data: [],
+  processing_rules: [],
+  output_data: [],
+  acceptance_criteria: [],
   business_rules: [],
   field_mapping: [],
 });
@@ -25,7 +25,7 @@ export const emptyNonFunctionalSpecification = (): NonFunctionalSpecification =>
     "Độ tin cậy & Khả dụng",
     "Khả năng bảo trì & Mở rộng",
     "Khả năng sử dụng & Tương thích",
-  ].map((group) => ({ group, criteria: "", requirement: "" })),
+  ].map((group) => ({ group, criteria: "", requirement: "", metric: "", conditions: "", verification_method: "", scope: "", source: "" })),
 });
 
 function ArrayEditor({
@@ -55,183 +55,39 @@ function ArrayEditor({
   );
 }
 
-export function FunctionalSpecificationEditor({
-  value,
-  onChange,
-  activeTab,
-}: {
-  value: FunctionalSpecification;
-  onChange: (value: FunctionalSpecification) => void;
-  activeTab: FunctionalSpecificationTab;
+export function FunctionalSpecificationEditor({ value, onChange }: {
+  value: FunctionalSpecification; onChange: (value: FunctionalSpecification) => void; activeTab?: FunctionalSpecificationTab;
 }) {
-  const textField = (
-    key: "function_code" | "function_name" | "description",
-    label: string,
-    multiline = false,
-  ) => (
-    <label className="block min-w-0 text-sm font-medium text-slate-700">
-      {label}
-      {multiline ? (
-        <textarea
-          aria-label={label}
-          rows={Math.min(8, Math.max(2, Math.ceil(value[key].length / 72)))}
-          value={value[key]}
-          onChange={(event) => onChange({ ...value, [key]: event.target.value })}
-          className={`${inputClass} mt-1 w-full min-w-0 resize-y whitespace-pre-wrap`}
-        />
-      ) : (
-        <input
-          aria-label={label}
-          value={value[key]}
-          onChange={(event) => onChange({ ...value, [key]: event.target.value })}
-          className={`${inputClass} mt-1`}
-        />
-      )}
+  const text = (key: "function_code" | "function_name" | "description", label: string, multiline = false) => (
+    <label className="block min-w-0 text-sm font-medium text-slate-700">{label}
+      {multiline ? <textarea aria-label={label} rows={3} value={value[key]} onChange={(event) => onChange({ ...value, [key]: event.target.value })} className={`${inputClass} mt-1 w-full resize-y`} />
+        : <input aria-label={label} value={value[key]} onChange={(event) => onChange({ ...value, [key]: event.target.value })} className={`${inputClass} mt-1`} />}
     </label>
   );
-
-  const flowArrays: { key: keyof FunctionalSpecification; label: string }[] = [
-    { key: "pre_conditions", label: "Điều kiện tiên quyết" },
-    { key: "main_flow", label: "Luồng chính" },
-    { key: "alternative_flows", label: "Luồng thay thế" },
-    { key: "exception_flows", label: "Luồng ngoại lệ" },
-    { key: "post_conditions", label: "Điều kiện sau" },
-  ];
-
-  return (
-    <div className="min-w-0">
-      {activeTab === "overview" && (
-        <div className="grid min-w-0 gap-4 md:grid-cols-2">
-          {textField("function_code", "Mã chức năng")}
-          {textField("function_name", "Tên chức năng")}
-          <label className="block min-w-0 text-sm font-medium text-slate-700">
-            Mức ưu tiên
-            <select
-              aria-label="Mức ưu tiên"
-              value={value.priority}
-              onChange={(event) =>
-                onChange({ ...value, priority: event.target.value as FunctionalSpecification["priority"] })
-              }
-              className={`${inputClass} mt-1`}
-            >
-              {[
-                { value: "Must", label: "Bắt buộc" },
-                { value: "Should", label: "Nên có" },
-                { value: "Could", label: "Có thể có" },
-                { value: "Won't", label: "Không thực hiện trong phạm vi hiện tại" },
-              ].map((priority) => (
-                <option key={priority.value} value={priority.value}>{priority.label}</option>
-              ))}
-            </select>
-          </label>
-          <div className="md:col-span-2">{textField("description", "Mô tả", true)}</div>
-          <div className="md:col-span-2">
-            <ArrayEditor
-              title="Tác nhân"
-              value={value.actors}
-              onChange={(items) => onChange({ ...value, actors: items })}
-            />
-          </div>
-        </div>
-      )}
-      {activeTab === "flows" && (
-        <div className="grid min-w-0 items-stretch gap-4 xl:grid-cols-2">
-          <div className="flex min-w-0 flex-col gap-4">
-            {flowArrays.filter(({ key }) => key === "pre_conditions").map(({ key, label }) => (
-              <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
-            ))}
-            {flowArrays.filter(({ key }) => key === "main_flow").map(({ key, label }) => (
-              <div key={key} className="flex min-h-0 flex-1 flex-col">
-                <ArrayEditor
-                  title={label}
-                  value={value[key] as string[]}
-                  onChange={(items) => onChange({ ...value, [key]: items })}
-                  fillHeight
-                />
-              </div>
-            ))}
-          </div>
-          <div className="flex min-w-0 flex-col gap-4">
-            {flowArrays.filter(({ key }) => key !== "pre_conditions" && key !== "main_flow").map(({ key, label }) => (
-              <ArrayEditor key={key} title={label} value={value[key] as string[]} onChange={(items) => onChange({ ...value, [key]: items })} />
-            ))}
-          </div>
-        </div>
-      )}
-      {activeTab === "business-data" && (
-        <div className="space-y-5">
-          <ArrayEditor
-            title="Quy tắc nghiệp vụ"
-            value={value.business_rules}
-            onChange={(items) => onChange({ ...value, business_rules: items })}
-          />
-          <section className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h4 className="text-sm font-semibold text-slate-800">Ánh xạ trường dữ liệu</h4>
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({
-                    ...value,
-                    field_mapping: [
-                      ...value.field_mapping,
-                      { field_name: "", data_type: "String", required: false, validation_rule: "" },
-                    ],
-                  })
-                }
-                className="text-sm font-medium text-violet-700 hover:text-violet-900"
-              >
-                Thêm trường
-              </button>
-            </div>
-            <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full min-w-[58rem] table-fixed border-collapse text-left text-sm">
-                <colgroup>
-                  <col style={{ width: "16%" }} />
-                  <col style={{ width: "14%" }} />
-                  <col style={{ width: "12%" }} />
-                  <col style={{ width: "48%" }} />
-                  <col style={{ width: "10%" }} />
-                </colgroup>
-                <thead className="bg-slate-50 text-xs font-semibold text-slate-600">
-                  <tr>
-                    <th className="w-[16%] px-3 py-2">Tên trường</th>
-                    <th className="w-[14%] px-3 py-2">Kiểu dữ liệu</th>
-                    <th className="w-[12%] px-3 py-2">Bắt buộc</th>
-                    <th className="w-[48%] px-3 py-2">Quy tắc kiểm tra</th>
-                    <th className="w-[10%] px-3 py-2 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {value.field_mapping.map((field, index) => (
-                    <tr key={index} className="border-t border-slate-100 align-top">
-                      <FieldMappingRow
-                        field={field}
-                        onChange={(next) => {
-                          const fields = [...value.field_mapping];
-                          fields[index] = next;
-                          onChange({ ...value, field_mapping: fields });
-                        }}
-                        onRemove={() =>
-                          onChange({
-                            ...value,
-                            field_mapping: value.field_mapping.filter((_, row) => row !== index),
-                          })
-                        }
-                      />
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {value.field_mapping.length === 0 && (
-                <p className="bg-white p-3 text-sm text-slate-500">Chưa có trường dữ liệu.</p>
-              )}
-            </div>
-          </section>
-        </div>
-      )}
-    </div>
+  const list = (key: "actors" | "process" | "input_data" | "processing_rules" | "output_data" | "acceptance_criteria" | "business_rules", label: string) => (
+    <ArrayEditor title={label} value={value[key] ?? []} onChange={(items) => onChange({ ...value, [key]: items })} rows={3} />
   );
+  return <div className="min-w-0 space-y-4">
+    <div className="grid min-w-0 gap-4 md:grid-cols-2">
+      {text("function_code", "Mã yêu cầu")}{text("function_name", "Tên yêu cầu")}
+      <div className="md:col-span-2">{text("description", "Giới thiệu / Mô tả", true)}</div>
+      {list("actors", "Tác nhân liên quan")}{list("input_data", "Dữ liệu vào")}
+      <div className="md:col-span-2">{list("process", "Quy trình xử lý")}</div>
+      <div className="md:col-span-2">{list("processing_rules", "Xử lý / Quy tắc xử lý")}</div>
+      <div className="md:col-span-2">{list("output_data", "Kết quả đầu ra")}</div>
+      <div className="md:col-span-2">{list("acceptance_criteria", "Tiêu chí chấp nhận")}</div>
+      <div className="md:col-span-2">{list("business_rules", "Quy tắc nghiệp vụ liên quan")}</div>
+    </div>
+    <section className="min-w-0">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold text-slate-800">Ánh xạ trường dữ liệu</h4>
+        <button type="button" onClick={() => onChange({ ...value, field_mapping: [...(value.field_mapping ?? []), { field_name: "", data_type: "String", required: false, validation_rule: "" }] })} className="text-sm font-medium text-violet-700">Thêm trường</button>
+      </div>
+      <div className="max-w-full overflow-x-auto rounded-xl border border-slate-200"><table className="w-full min-w-[42rem] table-fixed border-collapse text-left text-sm">
+        <thead className="bg-slate-50 text-xs font-semibold text-slate-600"><tr><th className="px-3 py-2">Tên trường</th><th className="px-3 py-2">Kiểu dữ liệu</th><th className="px-3 py-2">Bắt buộc</th><th className="px-3 py-2">Quy tắc kiểm tra</th><th className="px-3 py-2">Thao tác</th></tr></thead>
+        <tbody>{(value.field_mapping ?? []).map((field,index)=><tr key={index} className="border-t border-slate-100 align-top"><FieldMappingRow field={field} onChange={(next)=>{const fields=[...value.field_mapping];fields[index]=next;onChange({...value,field_mapping:fields});}} onRemove={()=>onChange({...value,field_mapping:value.field_mapping.filter((_,row)=>row!==index)})}/></tr>)}</tbody>
+      </table>{(!value.field_mapping || value.field_mapping.length===0)&&<p className="bg-white p-3 text-sm text-slate-500">Chưa có trường dữ liệu.</p>}</div>
+    </section>
+  </div>;
 }
 
 function FieldMappingRow({
@@ -294,48 +150,20 @@ function FieldMappingRow({
   );
 }
 
-export function NonFunctionalSpecificationEditor({
-  value,
-  onChange,
-}: {
-  value: NonFunctionalSpecification;
-  onChange: (value: NonFunctionalSpecification) => void;
+export function NonFunctionalSpecificationEditor({ value, onChange }: {
+  value: NonFunctionalSpecification; onChange: (value: NonFunctionalSpecification) => void;
 }) {
-  return (
-    <div className="space-y-4">
-      {value.items.map((item, index) => (
-        <section key={item.group} className="grid gap-2.5 rounded-xl border border-violet-100 bg-violet-50/30 p-3 sm:p-3.5 md:grid-cols-2">
-          <div className="flex items-center gap-2 md:col-span-2"><span className="h-5 w-1 rounded-full bg-violet-500" /><h4 className="text-sm font-semibold text-slate-800">{item.group}</h4></div>
-          <label className="text-sm font-medium text-slate-700">
-            Tiêu chí
-            <textarea
-              aria-label={`Tiêu chí ${item.group}`}
-              rows={Math.min(8, Math.max(2, Math.ceil(Math.max(item.criteria.length, item.requirement.length) / 72)))}
-              value={item.criteria}
-              onChange={(event) => {
-                const items = [...value.items];
-                items[index] = { ...item, criteria: event.target.value };
-                onChange({ items });
-              }}
-              className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
-            />
-          </label>
-          <label className="text-sm font-medium text-slate-700">
-            Yêu cầu
-            <textarea
-              aria-label={`Yêu cầu ${item.group}`}
-              rows={Math.min(8, Math.max(2, Math.ceil(item.criteria.length / 72)))}
-              value={item.requirement}
-              onChange={(event) => {
-                const items = [...value.items];
-                items[index] = { ...item, requirement: event.target.value };
-                onChange({ items });
-              }}
-              className={`${inputClass} mt-1 block h-auto w-full min-w-0 resize-y overflow-x-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-6`}
-            />
-          </label>
-        </section>
-      ))}
-    </div>
-  );
+  const patch = (index: number, key: keyof NonFunctionalSpecification["items"][number], next: string) => {
+    const items=[...value.items]; items[index]={...items[index],[key]:next}; onChange({items});
+  };
+  const fields: {key:keyof NonFunctionalSpecification["items"][number];label:string}[]=[
+    {key:"criteria",label:"Mô tả / Tiêu chí"},{key:"requirement",label:"Yêu cầu cụ thể"},
+    {key:"metric",label:"Chỉ tiêu / Ngưỡng đo lường"},{key:"conditions",label:"Điều kiện áp dụng"},
+    {key:"verification_method",label:"Phương pháp kiểm chứng"},{key:"scope",label:"Mức độ / Phạm vi áp dụng"},{key:"source",label:"Nguồn / Căn cứ"}
+  ];
+  return <div className="space-y-4">{value.items.map((item,index)=><section key={item.group} className="rounded-xl border border-violet-100 bg-violet-50/30 p-3 sm:p-4">
+    <h4 className="mb-3 text-sm font-semibold text-slate-800">{item.group}</h4><div className="grid gap-3 md:grid-cols-2">
+    {fields.map(({key,label})=><label key={key} className="block min-w-0 text-sm font-medium text-slate-700">{label}
+      <textarea aria-label={`${label} — ${item.group}`} rows={2} value={item[key] ?? ""} onChange={(event)=>patch(index,key,event.target.value)} className={`${inputClass} mt-1 block w-full resize-y`}/>
+    </label>)}</div></section>)}</div>;
 }
