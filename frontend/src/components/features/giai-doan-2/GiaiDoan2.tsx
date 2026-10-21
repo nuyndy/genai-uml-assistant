@@ -34,7 +34,6 @@ import {
 } from "../../../services/umlService";
 import {
   Card,
-  GhostButton,
   Notice,
   PrimaryButton,
   SoftButton,
@@ -255,9 +254,6 @@ export default function GiaiDoan2({
   const [specifications, setSpecifications] = useState<ProjectSpecificationRecord[] | null>(null);
   const [specificationError, setSpecificationError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
-  const [pendingRegenerate, setPendingRegenerate] = useState<(() => void) | null>(null);
-  const [regenerateTitle, setRegenerateTitle] = useState("");
-  const [regenerateLabel, setRegenerateLabel] = useState("");
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
   const [, setClassDrafts] = useState<Record<number, ClassDraft>>({});
 
@@ -817,29 +813,3 @@ export default function GiaiDoan2({
   );
 }
 
-function OverwriteConfirm({
-  title,
-  detail,
-  confirmLabel,
-  onConfirm,
-  onCancel,
-}: {
-  title: string;
-  detail: string;
-  confirmLabel: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-        <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
-          <GhostButton onClick={onCancel}>Huỷ</GhostButton>
-          <PrimaryButton onClick={onConfirm}>{confirmLabel}</PrimaryButton>
-        </div>
-      </div>
-    </div>
-  );
-}
