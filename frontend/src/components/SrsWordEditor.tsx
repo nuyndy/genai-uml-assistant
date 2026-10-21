@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import type {
-  FieldMapping,
   FunctionalSpecification,
   NonFunctionalSpecification,
   SrsMetadata,
@@ -107,20 +106,6 @@ function SubHeading({ children }: { children: ReactNode }) {
   return <h3 className="mb-2 mt-5 text-[15px] font-bold text-slate-900">{children}</h3>;
 }
 
-function FieldMappingTable({ fields }: { fields: FieldMapping[] }) {
-  return (
-    <div className="whitespace-pre-wrap break-words text-[13px] leading-6 text-slate-900">
-      {fields.length === 0
-        ? "Chưa có ánh xạ trường dữ liệu."
-        : fields.map((field, index) => (
-            <p key={index}>
-              {field.field_name || "Trường chưa đặt tên"}: {field.data_type || "Chưa xác định kiểu dữ liệu"};{" "}
-              Bắt buộc: {field.required ? "Có" : "Không"}; Quy tắc kiểm tra: {field.validation_rule || "Không có"}.
-            </p>
-          ))}
-    </div>
-  );
-}
 
 function FunctionalBlock({
   record,
@@ -150,10 +135,6 @@ function FunctionalBlock({
             <td className="min-w-0 px-2 py-1">{row.content}</td>
           </tr>
         ))}
-        <tr className="border-b border-slate-300 align-top">
-          <th scope="row" className="border-r border-slate-300 bg-slate-100 px-2 py-1 text-left font-bold">Ánh xạ trường dữ liệu</th>
-          <td className="min-w-0 px-3 py-1.5"><FieldMappingTable fields={value.field_mapping ?? []} /></td>
-        </tr>
       </tbody>
     </table>
   );
@@ -167,12 +148,12 @@ function NonFunctionalBlock({
   value: NonFunctionalSpecification;
 }) {
   return (
-    <article className="mb-4" aria-label={`Đặc tả phi chức năng ${record.feature}`}>
-      <SubHeading>{record.feature || "Đặc tả phi chức năng"}</SubHeading>
+    <article className="mb-4" aria-label={record.feature || "Yêu cầu phi chức năng"}>
+      <SubHeading>{record.feature || "Yêu cầu phi chức năng"}</SubHeading>
       <div className="space-y-3">
         {value.items.map((item, index) => (
           <section key={`${item.group}-${index}`} className="break-inside-avoid">
-            {item.group && <h4 className="mb-1 text-sm font-bold text-slate-900">{item.group}</h4>}
+            <h4 className="mb-1 text-sm font-bold text-slate-900">{`${String.fromCharCode(97 + index)}. ${item.group || `Yêu cầu phi chức năng ${index + 1}`}`}</h4>
             <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={item.group || `Bảng yêu cầu phi chức năng ${index + 1}`}>
               <tbody>
                 {([
