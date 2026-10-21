@@ -150,14 +150,6 @@ export default function Step3UseCaseScenario({
         )}
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
-        <p className="text-sm text-slate-700">
-          Kiểm tra các kịch bản rồi xác nhận để tiếp tục.
-        </p>
-        <PrimaryButton disabled={busy || !anyScenario} onClick={confirmAll}>
-          Xác nhận kịch bản Use Case
-        </PrimaryButton>
-      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         
