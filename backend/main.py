@@ -9,6 +9,7 @@ from routers.srs import router as srs_router
 from routers.auth import router as auth_router
 from database.db import Base, engine
 from database import models
+from sqlalchemy import inspect, text
 
 app = FastAPI(title="GenAI UML Assistant")
 
@@ -28,6 +29,13 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
+
+# Bổ sung các cột Actor cho database đã tồn tại (create_all không tự ALTER bảng).
+with engine.begin() as connection:
+    actor_columns = {column["name"] for column in inspect(connection).get_columns("actor")}
+    for column_name in ("description", "role", "main_businesses"):
+        if column_name not in actor_columns:
+            connection.execute(text(f"ALTER TABLE actor ADD COLUMN {column_name} TEXT"))
 
 app.include_router(auth_router)
 app.include_router(requirement_router)
