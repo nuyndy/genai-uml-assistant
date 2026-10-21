@@ -243,36 +243,47 @@ def generate_srs_document_meta(
         .order_by(UserStory.id)
         .all()
     )
+    def _short_text(value: object, limit: int = 240) -> str:
+        text = str(value or "").strip()
+        return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+    # Chỉ cần ngữ cảnh đại diện để viết các mục mô tả chung của SRS.
+    # Tránh gửi toàn bộ lịch sử yêu cầu dài vào model nhỏ (qwen2.5:3b),
+    # vốn có thể khiến Ollama mất vài phút chỉ để xử lý prompt.
     context = {
-        "project": getattr(project, "name", None) or getattr(project, "title", None) or f"Dự án {project_id}",
+        "project": _short_text(
+            getattr(project, "name", None) or getattr(project, "title", None) or f"Dự án {project_id}",
+            120,
+        ),
         "requirements": [
             {
-                "content": item.content,
-                "actor": item.actor,
-                "action": item.action,
-                "target_object": item.target_object,
-                "purpose": item.purpose,
-                "normalized_text": item.normalized_text,
-                "acceptance_criteria": item.acceptance_criteria,
-                "technical_notes": item.technical_notes,
+                "content": _short_text(item.normalized_text or item.content),
+                "actor": _short_text(item.actor, 80),
+                "action": _short_text(item.action, 100),
+                "target_object": _short_text(item.target_object, 100),
+                "purpose": _short_text(item.purpose, 160),
             }
-            for item in requirements
+            for item in requirements[:10]
         ],
         "user_stories": [
-            {"role": item.role, "feature": item.feature, "benefit": item.benefit,
-             "acceptance_criteria": item.acceptance_criteria}
-            for item in stories
+            {
+                "role": _short_text(item.role, 80),
+                "feature": _short_text(item.feature, 160),
+                "benefit": _short_text(item.benefit, 160),
+            }
+            for item in stories[:10]
         ],
+        "total_requirements": len(requirements),
+        "total_user_stories": len(stories),
     }
     prompt = f"""
 Bạn là chuyên gia phân tích nghiệp vụ và biên soạn SRS theo IEEE 830.
-Dựa CHỈ trên ngữ cảnh dự án bên dưới, hãy viết nội dung tiếng Việt rõ ràng, cụ thể,
-nhất quán cho 6 trường văn bản SRS. Không tạo lại hoặc liệt kê FR/NFR; không bịa
-công nghệ, số liệu, tích hợp hay nghiệp vụ không có căn cứ. Nếu ngữ cảnh thiếu chi tiết,
-hãy nêu phạm vi đã biết và giả định cần xác nhận một cách minh bạch.
-Trả về JSON hợp lệ, đúng các khóa:
+Dựa CHỈ trên ngữ cảnh tóm tắt bên dưới, hãy viết 6 trường SRS bằng tiếng Việt.
+Không tạo lại hoặc liệt kê FR/NFR; không bịa công nghệ, số liệu hay nghiệp vụ.
+Mỗi trường tối đa 2 câu ngắn; nếu thiếu căn cứ, ghi rõ cần xác nhận.
+Chỉ trả JSON hợp lệ với đúng 6 khóa:
 intro_purpose, intro_scope, intro_definitions, overview_user_classes,
-overview_environment, appendix_notes. Mỗi giá trị là chuỗi văn bản, không markdown.
+overview_environment, appendix_notes. Mỗi giá trị là chuỗi, không markdown.
 Ngữ cảnh dự án:
 {json.dumps(context, ensure_ascii=False, default=str)}
 """
