@@ -29,6 +29,7 @@ interface Props {
   busy: boolean;
   onStepChange: (step: number) => void;
   saveSrsMetadataDraft: () => void | Promise<void>;
+  onGenerateRemainingFields: () => void | Promise<void>;
   saveSrsSpecification: (record: SpecificationRecord, content: SpecDraft) => Promise<void>;
   setSrsMetadata: Dispatch<SetStateAction<SrsMetadata>>;
   setSrsSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
@@ -45,6 +46,7 @@ export default function Step5ChotTaiLieu({
   srsNonFunctionalForEditor,
   busy,
   saveSrsMetadataDraft,
+  onGenerateRemainingFields,
   saveSrsSpecification,
   setSrsMetadata,
   setSrsSpecDrafts,
@@ -128,15 +130,17 @@ export default function Step5ChotTaiLieu({
 
   return (
     <div className="w-full min-w-0 space-y-5">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
+          Hoàn thiện các trường còn lại bằng AI (trừ FR/NFR)
+        </SoftButton>
+        <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
+          Lưu tài liệu SRS
+        </SoftButton>
+      </div>
       <Card
         allowOverflow
         tone="emerald"
-        title="Bản xem và chỉnh sửa tài liệu SRS"
-        actions={
-          <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
-            Lưu tài liệu SRS
-          </SoftButton>
-        }
       >
         {srsMarkdown || specifications.length > 0 ? (
           <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
