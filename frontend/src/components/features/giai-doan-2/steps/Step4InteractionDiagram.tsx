@@ -59,6 +59,8 @@ export default function Step4InteractionDiagram({
   wrapClass,
   inputClass = "w-full rounded-lg border border-slate-300 p-3 text-sm",
 }: Props) {
+  void confirmed;
+  void onConfirm;
   const [editingUseCaseId, setEditingUseCaseId] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
 
