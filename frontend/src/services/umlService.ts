@@ -227,6 +227,13 @@ export function deleteActorRelation(relationId: number) {
   return apiFetch<void>(`/api/actor-relations/${relationId}`, { method: "DELETE" });
 }
 
+export function updateUseCaseName(useCaseId: number, name: string) {
+  return apiFetch<UseCaseRecord>(`/api/use-cases/${useCaseId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
 export function deleteUseCase(useCaseId: number) {
   return apiFetch<void>(`/api/use-cases/${useCaseId}`, { method: "DELETE" });
 }
