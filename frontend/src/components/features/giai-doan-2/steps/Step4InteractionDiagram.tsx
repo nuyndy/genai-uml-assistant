@@ -74,18 +74,6 @@ export default function Step4InteractionDiagram({
     setEditingUseCaseId(null);
   };
 
-  const allDiagramsReady =
-    scenarios.length > 0 &&
-    scenarios.every((useCase) =>
-      interactions.some(
-        (item) =>
-          item.usecaseId === useCase.id &&
-          item.type === currentDiagramType &&
-          Boolean(item.imageUrl) &&
-          Boolean(item.sourceCode?.trim()),
-      ),
-    );
-
   return (
     <div className="space-y-3">
       <Card
