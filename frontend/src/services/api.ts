@@ -62,7 +62,23 @@ export async function apiFetch<T>(
     let detail = `Yêu cầu thất bại (HTTP ${res.status}).`;
     try {
       const body = await res.json();
-      if (body?.detail) detail = String(body.detail);
+      if (Array.isArray(body?.detail)) {
+        detail = body.detail
+          .map((item: unknown) => {
+            if (!item || typeof item !== "object") return String(item);
+            const error = item as { loc?: unknown[]; msg?: unknown };
+            const location = Array.isArray(error.loc)
+              ? error.loc.filter((part) => part !== "body").join(" → ")
+              : "";
+            const message = typeof error.msg === "string" ? error.msg : "Dữ liệu không hợp lệ";
+            return location ? `${location}: ${message}` : message;
+          })
+          .join("; ");
+      } else if (typeof body?.detail === "string") {
+        detail = body.detail;
+      } else if (body?.detail) {
+        detail = JSON.stringify(body.detail);
+      }
     } catch {
       // Body không phải JSON -> giữ thông báo mặc định.
     }
