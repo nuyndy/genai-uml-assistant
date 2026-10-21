@@ -117,7 +117,7 @@ export default function Step1ActorUseCase({
                 <th className="w-16 border-b px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {actors.map((actor) => {
+                {actors.map((actor, index) => {
                   const detail = actorValue(actor);
                   return <tr key={actor.id} className="align-top hover:bg-emerald-50/30">
                     <td className="px-2 py-2 text-xs text-slate-400">{index + 1}</td>
@@ -154,7 +154,7 @@ export default function Step1ActorUseCase({
                 <th className="w-16 border-b px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {useCases.map((useCase) => {
+                {useCases.map((useCase, index) => {
                   const ucRelations = visibleRelations.filter((item) => item.useCaseId === useCase.id);
                   return <tr key={useCase.id} className="align-top hover:bg-sky-50/30">
                     <td className="px-2 py-2 text-xs text-slate-400">{index + 1}</td>
