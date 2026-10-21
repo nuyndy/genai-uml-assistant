@@ -43,6 +43,7 @@ import { inputClass, wrapClass } from "../../common/ui/primitives";
 
 interface Props {
   projectId?: number;
+  projectName?: string;
   state: WorkflowState;
   setState: (updater: (prev: WorkflowState) => WorkflowState) => void;
   step: number;
@@ -137,6 +138,7 @@ const META_KEYS: (keyof SrsMetadata)[] = [
 
 export default function GiaiDoan1({
   projectId,
+  projectName,
   state,
   setState,
   step,
@@ -934,6 +936,7 @@ export default function GiaiDoan1({
 
   const step5 = (
     <Step5ChotTaiLieu
+      projectName={projectName}
       srsMetadataDirty={srsMetadataDirty}
       srsMetadata={srsMetadata}
       srsMarkdown={srsMarkdown}
