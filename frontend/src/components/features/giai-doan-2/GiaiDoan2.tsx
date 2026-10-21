@@ -47,7 +47,6 @@ import Step2UseCaseDiagram from "./steps/Step2UseCaseDiagram";
 import Step3UseCaseScenario from "./steps/Step3UseCaseScenario";
 import Step4InteractionDiagram from "./steps/Step4InteractionDiagram";
 import Step5ClassDiagram from "./steps/Step5ClassDiagram";
-import { checkProjectRequirementCoverage, createProjectRequirementsBatch, listProjectRequirements, type RequirementCoverageAnalysis, type RequirementCoverageSuggestion, type RequirementRecord } from "../../../services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -245,12 +244,6 @@ export default function GiaiDoan2({
   const [aiTaskLabel, setAiTaskLabel] = useState("");
   const [error, setError] = useState("");
   const [suggestions, setSuggestions] = useState<SuggestionState>({ actors: [], useCases: [] });
-  const [coverageAnalysis, setCoverageAnalysis] = useState<RequirementCoverageAnalysis | null>(null);
-  const [coverageLoading, setCoverageLoading] = useState(false);
-  const [coverageAdding, setCoverageAdding] = useState(false);
-  const [coverageSelected, setCoverageSelected] = useState<number[]>([]);
-  const [coverageAdded, setCoverageAdded] = useState<number[]>([]);
-  const [projectRequirements, setProjectRequirements] = useState<RequirementRecord[]>([]);
   const [diagramType, setDiagramType] = useState<InteractionType>("sequence");
   const [specifications, setSpecifications] = useState<ProjectSpecificationRecord[] | null>(null);
   const [specificationError, setSpecificationError] = useState("");
@@ -263,48 +256,6 @@ export default function GiaiDoan2({
     () => state.usecases.filter((useCase) => state.scenarios[useCase.id]?.mainFlow.length),
     [state.scenarios, state.usecases],
   );
-
-  async function runCoverageCheck(): Promise<void> {
-    if (!projectId) {
-      setError("Vui lòng mở dự án đã lưu trước khi kiểm tra độ bao phủ chức năng.");
-      return;
-    }
-    setCoverageLoading(true);
-    setError("");
-    try {
-      const result = await checkProjectRequirementCoverage(projectId);
-      setCoverageAnalysis(result);
-      setCoverageSelected([]);
-      setCoverageAdded([]);
-    } catch (reason) {
-      setError(`Không thể kiểm tra độ bao phủ chức năng: ${explainError(reason)}`);
-    } finally {
-      setCoverageLoading(false);
-    }
-  }
-
-  async function addCoverageSuggestions(): Promise<void> {
-    if (!projectId || !coverageAnalysis || coverageSelected.length === 0) return;
-    const selected = coverageSelected
-      .filter((index) => !coverageAdded.includes(index))
-      .map((index) => coverageAnalysis.suggestions[index])
-      .filter((item): item is RequirementCoverageSuggestion => Boolean(item));
-    if (!selected.length) return;
-    setCoverageAdding(true);
-    setError("");
-    try {
-      await createProjectRequirementsBatch(projectId, selected.map(({ actor, action, target_object, purpose, pre_conditions, business_rules }) => ({
-        actor, action, target_object, purpose, pre_conditions, business_rules,
-      })));
-      setCoverageAdded((previous) => [...previous, ...coverageSelected]);
-      setCoverageSelected([]);
-      await listProjectRequirements(projectId);
-    } catch (reason) {
-      setError(`Không thể thêm chức năng đã chọn: ${explainError(reason)}`);
-    } finally {
-      setCoverageAdding(false);
-    }
-  }
 
   async function refreshSavedState(): Promise<void> {
     if (!projectId) return;
@@ -490,14 +441,6 @@ export default function GiaiDoan2({
       error={error}
       runBatchAnalysis={() => runAction(runExtract, "Đang phân tích đặc tả chức năng...")}
       onSaveSuggestions={() => runAction(saveActorUseCaseSuggestions, "Đang lưu Actor và Use Case...")}
-      coverageAnalysis={coverageAnalysis}
-      coverageLoading={coverageLoading}
-      coverageAdding={coverageAdding}
-      coverageSelected={coverageSelected}
-      coverageAdded={coverageAdded}
-      coverageStats={{ pending: projectRequirements.filter((item) => item.status !== "confirmed").length, analyzed: projectRequirements.length, complete: projectRequirements.filter((item) => item.status === "confirmed").length, added: coverageAdded.length }}
-      onToggleCoverage={(index, selected) => setCoverageSelected((previous) => selected ? [...previous.filter((item) => item !== index), index] : previous.filter((item) => item !== index))}
-      onAddCoverage={addCoverageSuggestions}
       confirmed={state.actorsUseCasesConfirmed}
       onConfirm={() =>
         setState((previous) => ({
