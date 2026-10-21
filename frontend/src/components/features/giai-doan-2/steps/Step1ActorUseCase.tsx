@@ -57,6 +57,8 @@ export default function Step1ActorUseCase({
   confirmed,
   wrapClass,
 }: Props) {
+  void onConfirm;
+  void confirmed;
   const hasSuggestions = suggestions.actors.length > 0 || suggestions.useCases.length > 0;
 
   return (
