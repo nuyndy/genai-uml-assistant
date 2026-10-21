@@ -88,10 +88,16 @@ export default function Step1ActorUseCase({
 
   return (
     <Card compact title="Tác nhân & Use Case"
-      actions={<div className="flex flex-wrap gap-2">
+      actions={<div className="flex flex-wrap items-center justify-end gap-2">
         <SoftButton disabled={busy || loadingAnalysis} onClick={() => void runBatchAnalysis()}>
           {loadingAnalysis ? "Đang phân tích..." : hasSuggestions || actors.length ? "Phân tích lại bằng AI" : "Phân tích bằng AI"}
         </SoftButton>
+        <button type="button" disabled={busy || savingActorDetails} onClick={() => {
+          setSavingActorDetails(true);
+          void onSaveActorDetails(actors.map((actor) => ({ id: actor.id, ...actorValue(actor) }))).finally(() => setSavingActorDetails(false));
+        }} className="h-9 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">
+          {savingActorDetails ? "Đang lưu..." : "Lưu"}
+        </button>
         {hasSuggestions && <SoftButton disabled={busy || loadingAnalysis} onClick={() => void onSaveSuggestions()}>
           Thêm gợi ý ({suggestions.actors.length + suggestions.useCases.length})
         </SoftButton>}
@@ -138,10 +144,9 @@ export default function Step1ActorUseCase({
             <input value={newActor} onChange={(event) => setNewActor(event.target.value)} disabled={busy} placeholder="Tên tác nhân mới…" aria-label="Tên tác nhân mới" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500" />
             <button type="submit" disabled={busy || !newActor.trim()} className="h-9 shrink-0 rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
           </form>
-          <div className="shrink-0 border-t border-slate-200 bg-white p-3"><button type="button" disabled={busy || savingActorDetails} onClick={() => { setSavingActorDetails(true); void onSaveActorDetails(actors.map((actor) => ({ id: actor.id, ...actorValue(actor) }))).finally(() => setSavingActorDetails(false)); }} className="h-10 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">{savingActorDetails ? "Đang lưu..." : "Lưu thông tin tác nhân"}</button></div>
         </section>
 
-        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
           <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
             <h3 className="text-sm font-semibold text-slate-800">Use Case</h3>
           </header>
