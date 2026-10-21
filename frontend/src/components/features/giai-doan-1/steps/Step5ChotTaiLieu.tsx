@@ -132,7 +132,7 @@ export default function Step5ChotTaiLieu({
     <div className="w-full min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <SoftButton disabled={busy} onClick={() => void onGenerateRemainingFields()}>
-          Hoàn thiện các trường còn lại bằng AI (trừ FR/NFR)
+          Hoàn thiện các trường còn lại
         </SoftButton>
         <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
           Lưu tài liệu SRS
@@ -143,8 +143,8 @@ export default function Step5ChotTaiLieu({
         tone="emerald"
       >
         {srsMarkdown || specifications.length > 0 ? (
-          <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
-            <aside aria-label="Mục lục tài liệu SRS" className="z-30 flex h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-20">
+          <div className="grid min-h-[360px] h-[calc(100dvh-15rem)] min-w-0 grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+            <aside aria-label="Mục lục tài liệu SRS" className="z-30 flex h-[calc(100dvh-15rem)] min-h-[360px] min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-3 shadow-sm xl:sticky xl:top-20">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h3 className="text-base font-semibold text-slate-900">Mục lục SRS</h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
@@ -160,7 +160,7 @@ export default function Step5ChotTaiLieu({
               </nav>
               <p className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
-            <div ref={editorRootRef} className="min-w-0 max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
+            <div ref={editorRootRef} className="h-[calc(100dvh-15rem)] min-h-[360px] min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
                 onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} />
             </div>
