@@ -24,6 +24,7 @@ import {
   getProjectUmlState,
   listProjectSpecificationsForUml,
   regenerateUseCaseDiagramFromCode,
+  saveProjectActorUseCasesBatch,
   updateClass,
   updateDiagram,
   updateUseCaseScenario,
@@ -444,6 +445,17 @@ export default function GiaiDoan2({
     setSuggestions(mapSuggestions(result));
   }
 
+  async function saveActorUseCaseSuggestions(): Promise<void> {
+    if (!projectId || (!suggestions.actors.length && !suggestions.useCases.length)) return;
+    await saveProjectActorUseCasesBatch(projectId, {
+      actors: suggestions.actors.map(({ name }) => ({ name })),
+      use_cases: suggestions.useCases.map(({ specification_id, name }) => ({ specification_id, name })),
+      relations: [],
+    });
+    setSuggestions({ actors: [], useCases: [] });
+    await refreshSavedState();
+  }
+
   async function runGenerateClasses(): Promise<void> {
     if (!projectId) return;
     const classes = await generateClasses(projectId);
@@ -476,7 +488,8 @@ export default function GiaiDoan2({
       busy={busy}
       loaded={loadedProjectId !== undefined}
       error={error}
-      runBatchAnalysis={runCoverageCheck}
+      runBatchAnalysis={() => runAction(runExtract, "Đang phân tích đặc tả chức năng...")}
+      onSaveSuggestions={() => runAction(saveActorUseCaseSuggestions, "Đang lưu Actor và Use Case...")}
       coverageAnalysis={coverageAnalysis}
       coverageLoading={coverageLoading}
       coverageAdding={coverageAdding}
