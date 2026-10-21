@@ -223,6 +223,67 @@ def generate_nonfunctional_specification(
     return _spec_record(item, "Đặc tả phi chức năng")
 
 
+@router.post("/api/projects/{project_id}/srs-document-meta/generate")
+def generate_srs_document_meta(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> dict:
+    """Generate the non-FR/NFR narrative sections of the SRS from project context."""
+    project = _require_project(db, project_id)
+    requirements = (
+        db.query(RawRequirement)
+        .filter(RawRequirement.project_id == project_id)
+        .order_by(RawRequirement.id)
+        .all()
+    )
+    stories = (
+        db.query(UserStory)
+        .filter(UserStory.requirement_id.in_([item.id for item in requirements]))
+        .order_by(UserStory.id)
+        .all()
+    )
+    context = {
+        "project": getattr(project, "name", None) or getattr(project, "title", None) or f"Dự án {project_id}",
+        "requirements": [
+            {"actor": item.actor, "action": item.action, "target_object": item.target_object,
+             "purpose": item.purpose, "pre_conditions": item.pre_conditions,
+             "business_rules": item.business_rules}
+            for item in requirements
+        ],
+        "user_stories": [
+            {"role": item.role, "feature": item.feature, "benefit": item.benefit,
+             "acceptance_criteria": item.acceptance_criteria}
+            for item in stories
+        ],
+    }
+    prompt = f"""
+Bạn là chuyên gia phân tích nghiệp vụ và biên soạn SRS theo IEEE 830.
+Dựa CHỈ trên ngữ cảnh dự án bên dưới, hãy viết nội dung tiếng Việt rõ ràng, cụ thể,
+nhất quán cho 6 trường văn bản SRS. Không tạo lại hoặc liệt kê FR/NFR; không bịa
+công nghệ, số liệu, tích hợp hay nghiệp vụ không có căn cứ. Nếu ngữ cảnh thiếu chi tiết,
+hãy nêu phạm vi đã biết và giả định cần xác nhận một cách minh bạch.
+Trả về JSON hợp lệ, đúng các khóa:
+intro_purpose, intro_scope, intro_definitions, overview_user_classes,
+overview_environment, appendix_notes. Mỗi giá trị là chuỗi văn bản, không markdown.
+Ngữ cảnh dự án:
+{json.dumps(context, ensure_ascii=False, default=str)}
+"""
+    try:
+        generated = generate_json(prompt)
+        if not isinstance(generated, dict):
+            raise ValueError("AI response must be a JSON object")
+        fields = ("intro_purpose", "intro_scope", "intro_definitions",
+                  "overview_user_classes", "overview_environment", "appendix_notes")
+        result = {key: str(generated.get(key, "")).strip() for key in fields}
+        if not any(result.values()):
+            raise ValueError("AI returned empty SRS metadata")
+        return result
+    except (AIServiceError, ValueError, TypeError) as exc:
+        logger.exception("Could not generate SRS metadata")
+        raise HTTPException(status_code=502, detail="Không thể hoàn thiện các trường SRS bằng AI.") from exc
+
+
 @router.put("/api/projects/{project_id}/srs-document-meta")
 def save_srs_document_meta(
     project_id: int,
