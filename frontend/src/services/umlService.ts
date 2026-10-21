@@ -20,6 +20,9 @@ export interface ActorRecord {
   id: number;
   project_id: number;
   name: string;
+  description?: string | null;
+  role?: string | null;
+  main_businesses?: string | null;
 }
 
 /**
@@ -179,10 +182,10 @@ export function createProjectActor(projectId: number, name: string) {
   });
 }
 
-export function updateActor(actorId: number, name: string) {
+export function updateActor(actorId: number, data: { name?: string; description?: string; role?: string; main_businesses?: string }) {
   return apiFetch<ActorRecord>(`/api/actors/${actorId}`, {
     method: "PATCH",
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(data),
   });
 }
 
