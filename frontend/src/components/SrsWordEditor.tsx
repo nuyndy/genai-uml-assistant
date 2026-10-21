@@ -258,7 +258,7 @@ export default function SrsWordEditor({
               {functional.map((record, index) => (
                 <section key={record.id} className="break-inside-avoid">
                   <h4 className="mb-2 text-[15px] font-bold text-slate-900">
-                    {String.fromCharCode(97 + index)}. FR {index + 1}: {(record.value.function_name || record.feature || "Chức năng chưa đặt tên").replace(/\s*&\s*/g, " và ")}
+                    {String.fromCharCode(97 + index)}. Chức năng {index + 1}: {(record.value.function_name || record.feature || "Chức năng chưa đặt tên").replace(/\s*&\s*/g, " và ")}
                   </h4>
                   <FunctionalBlock record={record} value={record.value} />
                 </section>
