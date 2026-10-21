@@ -102,6 +102,8 @@ export interface FunctionalSpecification {
   alternative_flows: string[];
   exception_flows: string[];
   post_conditions: string[];
+  /** Kết quả tối thiểu phải được bảo toàn khi luồng xử lý thất bại. */
+  minimal_guarantee?: string;
   business_rules: string[];
   field_mapping: FieldMapping[];
 }
