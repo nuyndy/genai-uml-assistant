@@ -272,11 +272,6 @@ export default function Step4DacTa({
           )}
         </section>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-        <SoftButton disabled={busy} onClick={() => onStepChange(3)}>← Quay lại Bước 3</SoftButton>
-        <p className="text-xs text-slate-500">Đang xem {kind === "functional" ? `FR ${Math.min(activeIndex + 1, Math.max(itemCount, 1))}/${itemCount}` : "NFR"}</p>
-        <PrimaryButton disabled={!canContinue} onClick={() => onStepChange(5)}>Lưu và sang Bước 5 →</PrimaryButton>
-      </div>
     </div>
   );
 }
