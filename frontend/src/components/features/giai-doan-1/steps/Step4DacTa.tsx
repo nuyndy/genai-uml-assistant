@@ -220,7 +220,7 @@ export default function Step4DacTa({
                   </div>
                 ) : (
                   <>
-                    <div className="min-w-0 p-4 sm:p-5" role="tabpanel">
+                    <div className="min-w-0 max-h-[calc(100vh-20rem)] overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
                       <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
                     </div>
                   </>
@@ -262,7 +262,7 @@ export default function Step4DacTa({
                   {generatingNonFunctional ? <p role="status" className="mb-3 text-sm font-medium text-violet-700">AI đang sinh đặc tả phi chức năng...</p> : <SoftButton disabled={busy || !projectId} onClick={() => void createNonFunctionalSpecification()}>Tạo NFR bằng AI</SoftButton>}
                 </div>
               ) : (
-                <div className="min-w-0 p-4 sm:p-5">
+                <div className="min-w-0 max-h-[calc(100vh-20rem)] overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
                   <NonFunctionalSpecificationEditor value={activeNonFunctionalValue} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [nonFunctionalSpecification.id]: value }))} />
 
                 </div>
