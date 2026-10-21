@@ -24,6 +24,8 @@ export default function Step2UseCaseDiagram({
   onSave,
   onConfirm,
 }: Props) {
+  void confirmed;
+  void onConfirm;
   const [draftCode, setDraftCode] = useState(imageCode ?? "");
 
   useEffect(() => {
