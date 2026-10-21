@@ -194,17 +194,16 @@ function FunctionalBlock({
   onChange: (value: FunctionalSpecification) => void;
 }) {
   const rows: { label: string; content: ReactNode }[] = [
-    { label: "Mã ca sử dụng", content: <WordField label="" value={value.function_code} onChange={(function_code) => onChange({ ...value, function_code })} /> },
-    { label: "Tên ca sử dụng", content: <WordField label="" value={value.function_name} onChange={(function_name) => onChange({ ...value, function_name })} /> },
-    { label: "Tác nhân", content: <WordField label="" value={value.actors.join("\\n")} onChange={(text) => onChange({ ...value, actors: text.split(/\\r?\\n/) })} /> },
-    { label: "Mô tả", content: <WordField label="" value={value.description} onChange={(description) => onChange({ ...value, description })} /> },
-    { label: "Tiền điều kiện", content: <WordField label="" value={value.pre_conditions.join("\\n")} onChange={(text) => onChange({ ...value, pre_conditions: text.split(/\\r?\\n/) })} /> },
-    { label: "Đảm bảo tối thiểu", content: <WordField label="" value={value.minimal_guarantee ?? ""} onChange={(minimal_guarantee) => onChange({ ...value, minimal_guarantee })} /> },
-    { label: "Hậu điều kiện", content: <WordField label="" value={value.post_conditions.join("\\n")} onChange={(text) => onChange({ ...value, post_conditions: text.split(/\\r?\\n/) })} /> },
-    { label: "Chuỗi sự kiện chính", content: <WordField label="" value={value.main_flow.join("\\n")} onChange={(text) => onChange({ ...value, main_flow: text.split(/\\r?\\n/) })} /> },
-    { label: "Luồng thay thế", content: <WordField label="" value={value.alternative_flows.join("\\n")} onChange={(text) => onChange({ ...value, alternative_flows: text.split(/\\r?\\n/) })} /> },
-    { label: "Ngoại lệ", content: <WordField label="" value={value.exception_flows.join("\\n")} onChange={(text) => onChange({ ...value, exception_flows: text.split(/\\r?\\n/) })} /> },
-    { label: "Quy tắc nghiệp vụ", content: <WordField label="" value={value.business_rules.join("\\n")} onChange={(text) => onChange({ ...value, business_rules: text.split(/\\r?\\n/) })} /> },
+    { label: "Mã chức năng", content: <WordField label="" value={value.function_code ?? ""} onChange={(function_code) => onChange({ ...value, function_code })} /> },
+    { label: "Tên chức năng", content: <WordField label="" value={value.function_name ?? ""} onChange={(function_name) => onChange({ ...value, function_name })} /> },
+    { label: "Mô tả", content: <WordField label="" value={value.description ?? ""} onChange={(description) => onChange({ ...value, description })} /> },
+    { label: "Tác nhân", content: <WordListField label="" values={value.actors ?? []} onChange={(actors) => onChange({ ...value, actors })} /> },
+    { label: "Quy trình xử lý", content: <WordListField label="" values={value.process ?? []} onChange={(process) => onChange({ ...value, process })} /> },
+    { label: "Dữ liệu đầu vào", content: <WordListField label="" values={value.input_data ?? []} onChange={(input_data) => onChange({ ...value, input_data })} /> },
+    { label: "Quy tắc xử lý", content: <WordListField label="" values={value.processing_rules ?? []} onChange={(processing_rules) => onChange({ ...value, processing_rules })} /> },
+    { label: "Dữ liệu đầu ra", content: <WordListField label="" values={value.output_data ?? []} onChange={(output_data) => onChange({ ...value, output_data })} /> },
+    { label: "Tiêu chí chấp nhận", content: <WordListField label="" values={value.acceptance_criteria ?? []} onChange={(acceptance_criteria) => onChange({ ...value, acceptance_criteria })} /> },
+    { label: "Quy tắc nghiệp vụ", content: <WordListField label="" values={value.business_rules ?? []} onChange={(business_rules) => onChange({ ...value, business_rules })} /> },
   ];
   return (
     <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px]" aria-label={`Bảng đặc tả ${value.function_code || record.feature}`}>
@@ -249,16 +248,52 @@ function NonFunctionalBlock({
           return (
             <div key={item.group}>
               <WordField
-                label={item.group}
-                value={item.criteria}
-                onChange={(criteria) => patch({ criteria })}
-                ariaLabel={`Tiêu chí ${item.group}`}
+                label="Nhóm yêu cầu"
+                value={item.group ?? ""}
+                onChange={(group) => patch({ group })}
+                ariaLabel={`Nhóm yêu cầu dòng ${index + 1}`}
               />
               <WordField
-                label={`Yêu cầu - ${item.group}`}
-                value={item.requirement}
+                label="Tiêu chí"
+                value={item.criteria ?? ""}
+                onChange={(criteria) => patch({ criteria })}
+                ariaLabel={`Tiêu chí dòng ${index + 1}`}
+              />
+              <WordField
+                label="Yêu cầu cụ thể"
+                value={item.requirement ?? ""}
                 onChange={(requirement) => patch({ requirement })}
-                ariaLabel={`Yêu cầu ${item.group}`}
+                ariaLabel={`Yêu cầu cụ thể dòng ${index + 1}`}
+              />
+              <WordField
+                label="Chỉ tiêu / ngưỡng đo lường"
+                value={item.metric ?? ""}
+                onChange={(metric) => patch({ metric })}
+                ariaLabel={`Chỉ tiêu dòng ${index + 1}`}
+              />
+              <WordField
+                label="Điều kiện áp dụng"
+                value={item.conditions ?? ""}
+                onChange={(conditions) => patch({ conditions })}
+                ariaLabel={`Điều kiện áp dụng dòng ${index + 1}`}
+              />
+              <WordField
+                label="Phương pháp kiểm chứng"
+                value={item.verification_method ?? ""}
+                onChange={(verification_method) => patch({ verification_method })}
+                ariaLabel={`Phương pháp kiểm chứng dòng ${index + 1}`}
+              />
+              <WordField
+                label="Phạm vi áp dụng"
+                value={item.scope ?? ""}
+                onChange={(scope) => patch({ scope })}
+                ariaLabel={`Phạm vi áp dụng dòng ${index + 1}`}
+              />
+              <WordField
+                label="Nguồn / căn cứ"
+                value={item.source ?? ""}
+                onChange={(source) => patch({ source })}
+                ariaLabel={`Nguồn căn cứ dòng ${index + 1}`}
               />
             </div>
           );
