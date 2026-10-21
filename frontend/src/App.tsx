@@ -306,7 +306,7 @@ function App() {
       )}
 
       <ErrorBoundary>
-      <main className="pb-4">
+      <main className="min-h-[calc(100vh-132px)] pb-4">
         {stage === 1 && (
           <GiaiDoan1
             projectId={activeProject.id}
