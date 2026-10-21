@@ -114,6 +114,7 @@ export default function Step1ActorUseCase({
                 <th className="w-[24%] border-b px-1 py-3 font-semibold">Mô tả tác nhân</th>
                 <th className="w-[18%] border-b px-1 py-3 font-semibold">Vai trò</th>
                 <th className="border-b px-1 py-3 font-semibold">Các nghiệp vụ chính</th>
+                <th className="w-16 border-b px-1 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {actors.map((actor) => {
