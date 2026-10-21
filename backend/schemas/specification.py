@@ -29,29 +29,37 @@ class FieldMapping(BaseModel):
 
 
 class FunctionalSpecification(BaseModel):
-    function_code: str = Field(min_length=1)
-    function_name: str = Field(min_length=1)
-    description: str = Field(min_length=1)
-    actors: list[str]
-    priority: Literal["Must", "Should", "Could", "Won't"]
-    pre_conditions: list[str]
-    main_flow: list[str]
-    alternative_flows: list[str]
-    exception_flows: list[str]
-    post_conditions: list[str]
-    business_rules: list[str]
-    field_mapping: list[FieldMapping]
-
-    # Bỏ qua khóa lạ do AI thêm vào thay vì từ chối cả đặc tả: model nhỏ
-    # thường chèn thêm khóa mô tả, chặn cứng sẽ làm hỏng nội dung đúng.
+    function_code: str = ""
+    function_name: str = ""
+    description: str = ""
+    actors: list[str] = Field(default_factory=list)
+    process: list[str] = Field(default_factory=list)
+    input_data: list[str] = Field(default_factory=list)
+    processing_rules: list[str] = Field(default_factory=list)
+    output_data: list[str] = Field(default_factory=list)
+    acceptance_criteria: list[str] = Field(default_factory=list)
+    business_rules: list[str] = Field(default_factory=list)
+    field_mapping: list[FieldMapping] = Field(default_factory=list)
+    # Legacy fields accepted to read existing records; new FR forms do not use them.
+    priority: Literal["Must", "Should", "Could", "Won't"] | None = None
+    pre_conditions: list[str] = Field(default_factory=list)
+    main_flow: list[str] = Field(default_factory=list)
+    alternative_flows: list[str] = Field(default_factory=list)
+    exception_flows: list[str] = Field(default_factory=list)
+    post_conditions: list[str] = Field(default_factory=list)
+    minimal_guarantee: str = ""
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
 
 class NonFunctionalItem(BaseModel):
     group: str = Field(min_length=1)
-    criteria: str = Field(min_length=1)
-    requirement: str = Field(min_length=1)
-
+    criteria: str = ""
+    requirement: str = ""
+    metric: str = ""
+    conditions: str = ""
+    verification_method: str = ""
+    scope: str = ""
+    source: str = ""
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
 
