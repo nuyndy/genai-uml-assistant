@@ -87,8 +87,8 @@ export default function Step1ActorUseCase({
   }
 
   return (
-    <Card compact title="Tác nhân & Use Case"
-      actions={<div className="flex flex-wrap items-center justify-end gap-2">
+    <Card compact
+      actions={<div className="flex w-full flex-wrap items-center justify-end gap-2">
         <SoftButton disabled={busy || loadingAnalysis} onClick={() => void runBatchAnalysis()}>
           {loadingAnalysis ? "Đang phân tích..." : hasSuggestions || actors.length ? "Phân tích lại bằng AI" : "Phân tích bằng AI"}
         </SoftButton>
