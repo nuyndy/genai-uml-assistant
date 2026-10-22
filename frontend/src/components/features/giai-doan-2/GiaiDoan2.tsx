@@ -113,10 +113,16 @@ function asArray<T>(value: T[] | null | undefined): T[] {
 }
 
 function toScenario(record: UseCaseRecord): Scenario {
+  const lines = (value: unknown) => typeof value === "string" ? value.split("\n").filter(Boolean) : [];
   return {
     mainFlow: asArray(record?.main_flow),
     altFlows: asArray(record?.alt_flow),
     exceptions: asArray(record?.exception_flow),
+    actor: lines(record?.actor),
+    description: lines(record?.description),
+    preconditions: lines(record?.preconditions),
+    minimalGuarantees: lines(record?.minimal_guarantees),
+    postconditions: lines(record?.postconditions),
   };
 }
 
@@ -593,6 +599,11 @@ export default function GiaiDoan2({
           const scenario = state.scenarios[useCaseId];
           if (!scenario) return;
           await updateUseCaseScenario(useCaseId, {
+            actor: scenario.actor ?? [],
+            description: scenario.description ?? [],
+            preconditions: scenario.preconditions ?? [],
+            minimalGuarantees: scenario.minimalGuarantees ?? [],
+            postconditions: scenario.postconditions ?? [],
             mainFlow: scenario.mainFlow.map((line) => line.trim()).filter(Boolean),
             altFlows: scenario.altFlows.map((line) => line.trim()).filter(Boolean),
             exceptions: scenario.exceptions.map((line) => line.trim()).filter(Boolean),
