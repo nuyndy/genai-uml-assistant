@@ -24,8 +24,6 @@ export default function Step2UseCaseDiagram({
   onSave,
   onConfirm,
 }: Props) {
-  void confirmed;
-  void onConfirm;
   const [draftCode, setDraftCode] = useState(imageCode ?? "");
 
   useEffect(() => {
@@ -38,7 +36,7 @@ export default function Step2UseCaseDiagram({
     <div className="space-y-3">
       <Card
         tone="emerald"
-        title="Biểu đồ use case tổng quát"
+        title="Biểu đồ Use Case"
         actions={
           <SoftButton disabled={busy || !projectId} onClick={onRegenerate}>
             {busy ? "Đang sinh..." : imageCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}
@@ -47,7 +45,7 @@ export default function Step2UseCaseDiagram({
       >
         <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.42fr)]">
           <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
-            <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
+            <div className="max-h-[min(68vh,620px)] min-h-[320px] overflow-auto">
               <DiagramPreview
                 imageUrl={imageUrl}
                 emptyTitle="Chưa có ảnh biểu đồ Use Case"
@@ -65,10 +63,10 @@ export default function Step2UseCaseDiagram({
               aria-label="Mã PlantUML — có thể chỉnh sửa"
               value={draftCode}
               onChange={(event) => setDraftCode(event.target.value)}
-              rows={12}
+              rows={18}
               disabled={busy || !imageCode}
               spellCheck={false}
-              className="uml-code-panel min-h-[250px] max-h-[min(54vh,460px)] w-full flex-1 resize-y overflow-auto border-0 p-3 font-mono text-xs leading-5 text-emerald-100 outline-none"
+              className="uml-code-panel min-h-[320px] max-h-[min(68vh,620px)] w-full flex-1 resize-y overflow-auto border-0 p-3 font-mono text-xs leading-5 text-emerald-100 outline-none"
             />
             {imageCode && onSave && (
               <div className="space-y-2 border-t border-white/10 px-3 py-2">
