@@ -75,6 +75,35 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
+            <section className="rounded-xl border border-slate-200 bg-white p-4">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                <label className="block min-w-0 text-sm font-medium text-slate-700">
+                  Tên ca sử dụng
+                  <input value={activeUseCase.name} readOnly className="mt-1 h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700" />
+                </label>
+                {([
+                  ["actor", "Tác nhân", "Ví dụ: Người dùng, Quản trị viên"],
+                  ["description", "Mô tả", "Mục đích và phạm vi của ca sử dụng"],
+                  ["preconditions", "Tiền điều kiện", "Điều kiện cần có trước khi bắt đầu"],
+                  ["minimalGuarantees", "Đảm bảo tối thiểu", "Điều hệ thống phải bảo đảm khi thất bại"],
+                  ["postconditions", "Hậu điều kiện", "Trạng thái sau khi ca sử dụng kết thúc"],
+                ] as const).map(([field, label, placeholder]) => (
+                  <label key={field} className="block min-w-0 text-sm font-medium text-slate-700">
+                    {label}
+                    <textarea
+                      rows={2}
+                      value={(scenario[field] ?? []).join("\n")}
+                      placeholder={placeholder}
+                      disabled={busy}
+                      onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
+                      className={`mt-1 min-h-[72px] w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-5 text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
+                    />
+                  </label>
+                ))}
+              </div>
+            </section>
+
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
               {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
                 <section key={field} className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
