@@ -237,6 +237,11 @@ def _use_case_record(use_case: UseCase) -> UseCaseRecord:
         id=use_case.id,
         specification_id=use_case.specification_id,
         name=use_case.name,
+        actor=use_case.actor,
+        description=use_case.description,
+        preconditions=use_case.preconditions,
+        minimal_guarantees=use_case.minimal_guarantees,
+        postconditions=use_case.postconditions,
         main_flow=_decode_lines(use_case.main_flow),
         alt_flow=_decode_lines(use_case.alt_flow),
         exception_flow=_decode_lines(use_case.exception_flow),
@@ -1783,6 +1788,10 @@ def update_use_case(
                     detail="Tên use case đã tồn tại trong cùng đặc tả.",
                 )
             use_case.name = data.name
+        for field in ("actor", "description", "preconditions", "minimal_guarantees", "postconditions"):
+            value = getattr(data, field)
+            if value is not None:
+                setattr(use_case, field, value)
         if data.main_flow is not None:
             use_case.main_flow = _encode_lines(data.main_flow)
         if data.alt_flow is not None:
