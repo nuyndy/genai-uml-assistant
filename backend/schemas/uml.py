@@ -42,6 +42,11 @@ class UseCaseCreate(BaseModel):
 
 class UseCaseUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    actor: str | None = None
+    description: str | None = None
+    preconditions: str | None = None
+    minimal_guarantees: str | None = None
+    postconditions: str | None = None
     main_flow: list[str] | None = None
     alt_flow: list[str] | None = None
     exception_flow: list[str] | None = None
@@ -63,6 +68,11 @@ class UseCaseRecord(BaseModel):
     id: int
     specification_id: int
     name: str
+    actor: str | None = None
+    description: str | None = None
+    preconditions: str | None = None
+    minimal_guarantees: str | None = None
+    postconditions: str | None = None
     main_flow: list[str]
     alt_flow: list[str]
     exception_flow: list[str]
