@@ -129,21 +129,7 @@ export default function Step3UseCaseScenario({
               ))}
             </div>
 
-            <div className="border-t border-slate-100 pt-2">
-              <p className="text-xs text-slate-500">Nội dung được chỉnh sửa theo từng Use Case. Hãy lưu trước khi chuyển bước.</p>
-            </div>
-            <div className="flex items-center justify-center gap-1 pt-1">
-              {useCases.map((item, index) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  title={item.name}
-                  aria-label={`Mở Use Case ${index + 1}: ${item.name}`}
-                  onClick={() => setActiveIndex(index)}
-                  className={`h-2.5 rounded-full transition-all ${index === activeIndex ? "w-7 bg-emerald-700" : hasScenario(scenarios[item.id] ?? EMPTY_SCENARIO) ? "w-2.5 bg-emerald-300 hover:bg-emerald-500" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
-                />
-              ))}
-            </div>
+
           </div>
         )}
       </Card>
