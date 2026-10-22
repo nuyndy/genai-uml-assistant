@@ -51,7 +51,7 @@ export default function Step3UseCaseScenario({
     <div className="space-y-4">
       <Card
         tone="emerald"
-        title="Kịch bản Use Case"
+        title={activeUseCase?.name ?? "Kịch bản Use Case"}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="mr-1 text-xs text-slate-500">{populatedCount}/{useCases.length} Use Case đã có kịch bản</span>
@@ -65,9 +65,9 @@ export default function Step3UseCaseScenario({
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
         ) : (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-sm font-bold text-white">{activeIndex + 1}</span>
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <GhostButton disabled={activeIndex === 0} onClick={() => setActiveIndex((index) => Math.max(0, index - 1))} aria-label="Use Case trước">‹</GhostButton>
                 <div className="min-w-0">
                   <p className={`break-words text-base font-semibold text-slate-900 ${wrapClass}`}>{activeUseCase.name}</p>
                   <p className="mt-0.5 text-xs text-slate-500">
@@ -75,12 +75,17 @@ export default function Step3UseCaseScenario({
                     {" · "}{hasScenario(scenario) ? "Đã có nội dung kịch bản" : "Chưa có nội dung kịch bản"}
                   </p>
                 </div>
+                <GhostButton disabled={activeIndex >= useCases.length - 1} onClick={() => setActiveIndex((index) => Math.min(useCases.length - 1, index + 1))} aria-label="Use Case tiếp theo">›</GhostButton>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <GhostButton disabled={activeIndex === 0} onClick={() => setActiveIndex((index) => Math.max(0, index - 1))}>← Trước</GhostButton>
-                <GhostButton disabled={activeIndex >= useCases.length - 1} onClick={() => setActiveIndex((index) => Math.min(useCases.length - 1, index + 1))}>Sau →</GhostButton>
+                <SoftButton disabled={busy || !projectId || !activeUseCase} onClick={() => activeUseCase && void onGenerateSingle(activeUseCase.id)}>
+                  {busy ? "Đang sinh..." : "✦ Sinh bằng AI"}
+                </SoftButton>
+                <PrimaryButton disabled={busy || !hasScenario(scenario) || !activeUseCase} onClick={() => activeUseCase && void onSaveScenario(activeUseCase.id)}>
+                  Lưu
+                </PrimaryButton>
               </div>
-            </div>
+            </div>      </div>
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
               {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
@@ -107,16 +112,8 @@ export default function Step3UseCaseScenario({
               ))}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+            <div className="border-t border-slate-100 pt-3">
               <p className="text-xs text-slate-500">Nội dung được chỉnh sửa theo từng Use Case. Hãy lưu trước khi chuyển bước.</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(activeUseCase.id)}>
-                  {busy ? "Đang sinh..." : "✦ Sinh Use Case này bằng AI"}
-                </SoftButton>
-                <PrimaryButton disabled={busy || !hasScenario(scenario)} onClick={() => void onSaveScenario(activeUseCase.id)}>
-                  Lưu kịch bản
-                </PrimaryButton>
-              </div>
             </div>
             <div className="flex items-center justify-center gap-1 pt-1">
               {useCases.map((item, index) => (
