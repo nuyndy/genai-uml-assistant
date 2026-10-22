@@ -37,6 +37,11 @@ with engine.begin() as connection:
         if column_name not in actor_columns:
             connection.execute(text(f"ALTER TABLE actor ADD COLUMN {column_name} TEXT"))
 
+    use_case_columns = {column["name"] for column in inspect(connection).get_columns("use_case")}
+    for column_name in ("actor", "description", "preconditions", "minimal_guarantees", "postconditions"):
+        if column_name not in use_case_columns:
+            connection.execute(text(f"ALTER TABLE use_case ADD COLUMN {column_name} TEXT"))
+
 app.include_router(auth_router)
 app.include_router(requirement_router)
 app.include_router(specification_router)
