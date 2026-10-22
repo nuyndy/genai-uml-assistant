@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, SoftButton, PrimaryButton, DiagramPreview } from "../../../common/ui/primitives";
+import { Card, SoftButton, PrimaryButton } from "../../../common/ui/primitives";
 import { imageExtension } from "../../../../utils/imageExtension";
 
 interface Props {
@@ -25,6 +25,7 @@ export default function Step2UseCaseDiagram({
   onConfirm,
 }: Props) {
   const [draftCode, setDraftCode] = useState(imageCode ?? "");
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     setDraftCode(imageCode ?? "");
@@ -34,61 +35,29 @@ export default function Step2UseCaseDiagram({
 
   return (
     <div className="space-y-3">
-      <Card
-        tone="emerald"
-        title="Biểu đồ Use Case"
-        actions={
-          <SoftButton disabled={busy || !projectId} onClick={onRegenerate}>
-            {busy ? "Đang sinh..." : imageCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}
-          </SoftButton>
-        }
-      >
-        <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.42fr)]">
-          <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
-            <div className="max-h-[min(68vh,620px)] min-h-[320px] overflow-auto">
-              <DiagramPreview
-                imageUrl={imageUrl}
-                emptyTitle="Chưa có ảnh biểu đồ Use Case"
-                emptyHint='Bấm "Sinh biểu đồ" để tạo biểu đồ tổng cho project.'
-                downloadName={`use-case-diagram.${imageExtension(imageUrl ?? "")}`}
-              />
-            </div>
-          </div>
-          <section className="flex min-w-0 flex-col overflow-hidden rounded-xl bg-[#102d24]">
-            <div className="border-b border-white/10 px-3 py-2 text-xs font-semibold text-emerald-100">
-              Mã PlantUML
-            </div>
-            <textarea
-              id="use-case-plantuml"
-              aria-label="Mã PlantUML — có thể chỉnh sửa"
-              value={draftCode}
-              onChange={(event) => setDraftCode(event.target.value)}
-              rows={18}
-              disabled={busy || !imageCode}
-              spellCheck={false}
-              className="uml-code-panel min-h-[320px] max-h-[min(68vh,620px)] w-full flex-1 resize-y overflow-auto border-0 p-3 font-mono text-xs leading-5 text-emerald-100 outline-none"
-            />
-            {imageCode && onSave && (
-              <div className="space-y-2 border-t border-white/10 px-3 py-2">
-                <p className="text-[11px] text-emerald-200/80">
-                  {hasCodeChanges ? "Có thay đổi chưa render lại thành ảnh." : "Mã đang khớp với phiên bản đã render."}
-                </p>
-                <PrimaryButton
-                  disabled={busy || !hasCodeChanges || !draftCode.trim()}
-                  onClick={() => onSave(draftCode)}
-                >
-                  {busy ? "Đang lưu..." : "Lưu mã và render lại"}
-                </PrimaryButton>
-              </div>
-            )}
-          </section>
+      <Card tone="emerald" title="Biểu đồ Use Case">
+        <div className="flex flex-wrap items-center justify-start gap-2 border-b border-slate-100 pb-3">
+          <SoftButton disabled={busy || !projectId} onClick={onRegenerate}>{busy ? "Đang sinh..." : imageCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}</SoftButton>
+          <SoftButton disabled={!imageUrl} onClick={() => { if (!imageUrl) return; const link = document.createElement("a"); link.href = imageUrl; link.download = "use-case-diagram." + imageExtension(imageUrl); link.target = "_blank"; link.rel = "noreferrer"; link.click(); }}>↓ Tải ảnh về</SoftButton>
+          <span className="mx-1 h-6 border-l border-slate-200" />
+          <SoftButton disabled={!imageUrl || zoom <= 0.5} onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.25).toFixed(2))))}>−</SoftButton>
+          <span className="min-w-12 text-center text-xs tabular-nums text-slate-600">{Math.round(zoom * 100)}%</span>
+          <SoftButton disabled={!imageUrl || zoom >= 2.5} onClick={() => setZoom((value) => Math.min(2.5, Number((value + 0.25).toFixed(2))))}>+</SoftButton>
+          <SoftButton disabled={!imageUrl || zoom === 1} onClick={() => setZoom(1)}>Vừa khung</SoftButton>
         </div>
+        <section className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-[#102d24]">
+          <div className="flex items-center justify-between border-b border-white/10 px-3 py-2"><span className="text-xs font-semibold text-emerald-100">Mã PlantUML</span><span className="text-[11px] text-emerald-200/80">{hasCodeChanges ? "Chưa render thay đổi" : "Đã đồng bộ với ảnh"}</span></div>
+          <textarea id="use-case-plantuml" aria-label="Mã PlantUML — có thể chỉnh sửa" value={draftCode} onChange={(event) => setDraftCode(event.target.value)} rows={12} disabled={busy || !imageCode} spellCheck={false} className="uml-code-panel min-h-[220px] max-h-[min(50vh,460px)] w-full resize-y overflow-auto border-0 p-3 font-mono text-xs leading-5 text-emerald-100 outline-none" />
+          {imageCode && onSave && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 px-3 py-2"><PrimaryButton disabled={busy || !hasCodeChanges || !draftCode.trim()} onClick={() => onSave(draftCode)}>{busy ? "Đang lưu..." : "Lưu mã và render lại"}</PrimaryButton></div>}
+        </section>
+        <section className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">Ảnh biểu đồ</div>
+          <div className="min-h-[320px] max-h-[min(72vh,700px)] overflow-auto bg-slate-50 p-3">
+            {imageUrl ? <div className="flex min-h-[300px] min-w-full items-start justify-center"><img src={imageUrl} alt="Biểu đồ Use Case" draggable={false} style={{ width: (zoom * 100) + "%", minWidth: Math.min(zoom * 100, 100) + "%", maxWidth: "none", height: "auto" }} className="h-auto rounded-md object-contain shadow-sm" /></div> : <div className="flex min-h-[300px] items-center justify-center text-sm text-slate-500">Chưa có ảnh biểu đồ. Bấm “Sinh biểu đồ” để tạo.</div>}
+          </div>
+        </section>
+        <div className="flex justify-end border-t border-slate-100 pt-3"><PrimaryButton disabled={busy || !imageUrl || !imageCode} onClick={onConfirm}>{confirmed ? "Đã xác nhận" : "Xác nhận biểu đồ"}</PrimaryButton></div>
       </Card>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        
-        
-      </div>
     </div>
   );
 }
