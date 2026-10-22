@@ -72,6 +72,11 @@ export interface Scenario {
   mainFlow: string[];
   altFlows: string[];
   exceptions: string[];
+  actor?: string[];
+  description?: string[];
+  preconditions?: string[];
+  minimalGuarantees?: string[];
+  postconditions?: string[];
 }
 
 /** Loại biểu đồ tương tác chọn ở Bước 4. */
