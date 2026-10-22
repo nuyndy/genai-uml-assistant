@@ -38,14 +38,13 @@ function hasScenario(scenario: Scenario) {
 }
 
 export default function Step3UseCaseScenario({
-  useCases, scenarios, updateScenario, onGenerateBatch, onGenerateSingle, onSaveScenario,
+  useCases, scenarios, updateScenario, onGenerateSingle, onSaveScenario,
   confirmAll, busy, projectId, wrapClass,
 }: Props) {
   void confirmAll;
   const [activeIndex, setActiveIndex] = useState(0);
   const activeUseCase = useCases[Math.min(activeIndex, Math.max(0, useCases.length - 1))];
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
-  const populatedCount = useCases.filter((item) => hasScenario(scenarios[item.id] ?? EMPTY_SCENARIO)).length;
 
   return (
     <div className="space-y-4">
@@ -74,7 +73,7 @@ export default function Step3UseCaseScenario({
                   Lưu
                 </PrimaryButton>
               </div>
-            </div>      </div>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
               {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
