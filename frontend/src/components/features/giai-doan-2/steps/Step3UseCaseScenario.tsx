@@ -49,18 +49,7 @@ export default function Step3UseCaseScenario({
 
   return (
     <div className="space-y-4">
-      <Card
-        tone="emerald"
-        title={activeUseCase?.name ?? "Kịch bản Use Case"}
-        actions={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="mr-1 text-xs text-slate-500">{populatedCount}/{useCases.length} Use Case đã có kịch bản</span>
-            <PrimaryButton disabled={busy || !projectId || useCases.length === 0} onClick={() => void onGenerateBatch()}>
-              {busy ? "Đang sinh..." : "Sinh tất cả bằng AI"}
-            </PrimaryButton>
-          </div>
-        }
-      >
+      <Card tone="emerald">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
         ) : (
