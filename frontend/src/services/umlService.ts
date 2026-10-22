@@ -39,6 +39,11 @@ export interface UseCaseRecord {
   id: number;
   specification_id: number;
   name: string;
+  actor?: string | null;
+  description?: string | null;
+  preconditions?: string | null;
+  minimal_guarantees?: string | null;
+  postconditions?: string | null;
   main_flow: string[];
   alt_flow: string[];
   exception_flow: string[];
@@ -295,6 +300,11 @@ export function updateUseCaseScenario(useCaseId: number, scenario: Scenario) {
   return apiFetch<UseCaseRecord>(`/api/use-cases/${useCaseId}`, {
     method: "PATCH",
     body: JSON.stringify({
+      actor: scenario.actor?.join("\n") ?? "",
+      description: scenario.description?.join("\n") ?? "",
+      preconditions: scenario.preconditions?.join("\n") ?? "",
+      minimal_guarantees: scenario.minimalGuarantees?.join("\n") ?? "",
+      postconditions: scenario.postconditions?.join("\n") ?? "",
       main_flow: scenario.mainFlow,
       alt_flow: scenario.altFlows,
       exception_flow: scenario.exceptions,
