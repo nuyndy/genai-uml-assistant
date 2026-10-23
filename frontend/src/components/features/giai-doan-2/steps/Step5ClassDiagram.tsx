@@ -20,6 +20,7 @@ interface ClassDraft {
 }
 
 interface Props {
+  viewMode?: "configuration" | "diagram" | "all";
   umlClasses: UmlClass[];
   classDiagramUrl: string | null;
   classDiagramCode: string | null;
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export default function Step5ClassDiagram({
+  viewMode = "all",
   umlClasses,
   classDiagramUrl,
   classDiagramCode,
@@ -76,9 +78,9 @@ export default function Step5ClassDiagram({
 
   return (
     <div className="space-y-3">
-      <Card
+      {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title="Mô hình lớp suy luận"
+        title="Cấu hình các lớp"
         actions={
           <SoftButton disabled={busy || !projectId} onClick={regenerate}>
             {busy
@@ -161,9 +163,9 @@ export default function Step5ClassDiagram({
             </table>
           </div>
         )}
-      </Card>
+      </Card>}
 
-      <Card title="Mô hình UML" subtitle="Mô hình lớp và mã biểu đồ được lưu khi tạo hoặc chỉnh sửa" tone="emerald">
+      {(viewMode === "diagram" || viewMode === "all") && <Card title="Sơ đồ lớp" tone="emerald" actions={<PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Xác nhận sơ đồ lớp</PrimaryButton>}>
         <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15rem,0.38fr)]">
           <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
             <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
@@ -185,7 +187,7 @@ export default function Step5ClassDiagram({
             </pre>
           </section>
         </div>
-      </Card>
+      </Card>}
 
     </div>
   );
