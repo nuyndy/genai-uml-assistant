@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, GhostButton, PrimaryButton, EmptyState, SoftButton } from "../../../common/ui/primitives";
+import { GhostButton, PrimaryButton, EmptyState, SoftButton } from "../../../common/ui/primitives";
 import type { Scenario } from "../../../../types/workflow";
 
 interface ScenarioUseCase {
@@ -47,13 +47,13 @@ export default function Step3UseCaseScenario({
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-5 pb-6">
       <div className="space-y-4">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
         ) : (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
               <div className="flex min-w-0 flex-1 items-center gap-2">
                 <GhostButton disabled={activeIndex === 0} onClick={() => setActiveIndex((index) => Math.max(0, index - 1))} aria-label="Use Case trước">‹</GhostButton>
                 <div className="min-w-0">
@@ -75,11 +75,11 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <section className="p-0">
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-                <label className="block min-w-0 text-sm font-medium text-slate-700">
+            <section className="rounded-xl bg-transparent py-1">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+                <label className="block min-w-0 text-sm font-semibold text-slate-700">
                   Tên ca sử dụng
-                  <input value={activeUseCase.name} readOnly className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700" />
+                  <input value={activeUseCase.name} readOnly className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700" />
                 </label>
                 {([
                   ["actor", "Tác nhân", "Ví dụ: Người dùng, Quản trị viên"],
@@ -96,16 +96,16 @@ export default function Step3UseCaseScenario({
                       placeholder={placeholder}
                       disabled={busy}
                       onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                      className={`mt-1 min-h-[56px] w-full resize-y overflow-hidden rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm leading-5 text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
+                      className={`mt-1.5 min-h-[64px] w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
                     />
                   </label>
                 ))}
               </div>
             </section>
 
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
               {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
-                <section key={field} className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <section key={field} className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white shadow-sm">
                   <div className="border-b border-slate-100 bg-emerald-50/70 px-3 py-2">
                     <div className="flex items-center gap-2">
                       <span className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-700 text-xs font-semibold text-white">{index + 1}</span>
@@ -117,7 +117,7 @@ export default function Step3UseCaseScenario({
                     <textarea
                       aria-label={label}
                       rows={4}
-                      className={`${textareaClass} ${wrapClass}`}
+                      className={`${textareaClass} min-h-[150px] ${wrapClass}`}
                       value={scenario[field].join("\n")}
                       placeholder={field === "mainFlow" ? "1. Người dùng bắt đầu thao tác…\n2. Hệ thống kiểm tra dữ liệu…\n3. Hệ thống trả kết quả…" : field === "altFlows" ? "A1. Nếu người dùng chọn phương án khác…\nA2. Hệ thống xử lý nhánh thay thế…" : "E1. Nếu dữ liệu không hợp lệ…\nE2. Hệ thống thông báo lỗi và hướng xử lý…"}
                       disabled={busy}
