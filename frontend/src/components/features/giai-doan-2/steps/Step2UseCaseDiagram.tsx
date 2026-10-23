@@ -45,7 +45,7 @@ export default function Step2UseCaseDiagram({
   };
 
   return (
-    <div className="pb-6">
+    <div className="pb-16">
       <Card compact allowOverflow className="!p-3">
         <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
           <PrimaryButton disabled={busy || !projectId} onClick={onRegenerate}>{busy ? "Đang sinh..." : imageCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}</PrimaryButton>
@@ -79,7 +79,7 @@ export default function Step2UseCaseDiagram({
           </section>}
         </div>
       </Card>
-      <div aria-hidden="true" className="h-6" />
+      <div aria-hidden="true" className="h-20 min-h-20" />
     </div>
   );
 }
