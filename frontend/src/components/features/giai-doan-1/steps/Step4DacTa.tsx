@@ -67,6 +67,7 @@ export default function Step4DacTa({
   wrapClass,
 }: Props) {
   const [kind, setKind] = useState<SpecKind>("functional");
+  const [expandedList, setExpandedList] = useState<SpecKind | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [regeneratingAll, setRegeneratingAll] = useState(false);
@@ -105,6 +106,7 @@ export default function Step4DacTa({
   const chooseKind = (nextKind: SpecKind) => {
     setKind(nextKind);
     setActiveIndex(0);
+    setExpandedList((current) => current === nextKind ? null : nextKind);
     setActionMessage("");
   };
 
@@ -153,21 +155,38 @@ export default function Step4DacTa({
   };
 
   return (
-    <div className="w-full min-w-0 space-y-5">
+    <div className="w-full min-w-0">
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="h-fit rounded-2xl border border-[#C8DDD7] bg-white p-3 shadow-sm lg:sticky lg:top-4">
+      <div className="grid h-[calc(100dvh-13rem)] min-h-[420px] min-w-0 grid-cols-1 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[#C8DDD7] bg-white p-3 shadow-sm">
           <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Loại đặc tả</p>
           <button type="button" onClick={() => chooseKind("functional")} aria-pressed={kind === "functional"}
             className={`mb-2 flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "functional" ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
             <span><span className="block text-sm font-bold">FR</span><span className="mt-0.5 block text-xs opacity-75">Chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{functionalItems.length}</span>
           </button>
+          {expandedList === "functional" && (
+            <div className="mb-2 max-h-56 overflow-y-auto rounded-xl border border-emerald-100 bg-slate-50/70 p-1" aria-label="Danh sách FR">
+              {functionalItems.length ? functionalItems.map((item, index) => (
+                <button key={item.story.id} type="button" onClick={() => { setActiveIndex(index); setKind("functional"); setExpandedList(null); setActionMessage(""); }} className={"mb-1 flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition last:mb-0 " + (index === activeIndex && kind === "functional" ? "bg-emerald-100 font-semibold text-emerald-900" : "text-slate-700 hover:bg-white")}>
+                  <span className="shrink-0 font-bold">FR {index + 1}</span>
+                  <span className="min-w-0 break-words">{item.story.feature || "Use Case " + (index + 1)}</span>
+                </button>
+              )) : <p className="px-2 py-3 text-xs text-slate-500">Chưa có FR.</p>}
+            </div>
+          )}
           <button type="button" onClick={() => chooseKind("non_functional")} aria-pressed={kind === "non_functional"}
             className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "non_functional" ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{nonFunctionalSpecification ? 1 : 0}</span>
           </button>
+          {expandedList === "non_functional" && (
+            <div className="mb-2 max-h-56 overflow-y-auto rounded-xl border border-violet-100 bg-slate-50/70 p-1" aria-label="Danh sách NFR">
+              <button type="button" onClick={() => { setKind("non_functional"); setExpandedList(null); setActionMessage(""); }} className={"flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition " + (kind === "non_functional" ? "bg-violet-100 font-semibold text-violet-900" : "text-slate-700 hover:bg-white")}>
+                <span className="shrink-0 font-bold">NFR</span><span className="min-w-0 break-words">Yêu cầu chất lượng hệ thống</span>
+              </button>
+            </div>
+          )}
           <div className="mt-3 border-t border-slate-200 pt-3">
             <button
               type="button"
@@ -181,7 +200,7 @@ export default function Step4DacTa({
           </div>
         </aside>
 
-        <section className="min-w-0">
+        <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-2xl">
           {kind === "functional" ? (
             !activeStory ? (
               <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
