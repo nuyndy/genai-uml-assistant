@@ -75,57 +75,59 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <section className="rounded-xl bg-transparent py-1">
-              <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-                <label className="block min-w-0 text-sm font-semibold text-slate-700">
-                  Tên ca sử dụng
-                  <input value={activeUseCase.name} readOnly className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700" />
-                </label>
-                {([
-                  ["actor", "Tác nhân", "Ví dụ: Người dùng, Quản trị viên"],
-                  ["description", "Mô tả", "Mục đích và phạm vi của ca sử dụng"],
-                  ["preconditions", "Tiền điều kiện", "Điều kiện cần có trước khi bắt đầu"],
-                  ["minimalGuarantees", "Đảm bảo tối thiểu", "Điều hệ thống phải bảo đảm khi thất bại"],
-                  ["postconditions", "Hậu điều kiện", "Trạng thái sau khi ca sử dụng kết thúc"],
-                ] as const).map(([field, label, placeholder]) => (
-                  <label key={field} className="block min-w-0 text-sm font-medium text-slate-700">
-                    {label}
-                    <textarea
-                      rows={2}
-                      value={(scenario[field] ?? []).join("\n")}
-                      placeholder={placeholder}
-                      disabled={busy}
-                      onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                      className={`mt-1.5 min-h-[64px] w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
-                    />
+            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
+              <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <h3 className="mb-3 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
+                <div className="space-y-3">
+                  <label className="block min-w-0 rounded-lg bg-slate-50 p-2.5 text-xs font-semibold text-slate-600">
+                    Tên ca sử dụng
+                    <input value={activeUseCase.name} readOnly className="mt-1.5 h-9 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm font-normal text-slate-700" />
                   </label>
-                ))}
-              </div>
-            </section>
+                  {([
+                    ["actor", "Tác nhân", "Ví dụ: Người dùng, Quản trị viên"],
+                    ["description", "Mô tả", "Mục đích và phạm vi của ca sử dụng"],
+                    ["preconditions", "Tiền điều kiện", "Điều kiện cần có trước khi bắt đầu"],
+                    ["minimalGuarantees", "Đảm bảo tối thiểu", "Điều hệ thống phải bảo đảm khi thất bại"],
+                    ["postconditions", "Hậu điều kiện", "Trạng thái sau khi ca sử dụng kết thúc"],
+                  ] as const).map(([field, label, placeholder]) => (
+                    <label key={field} className="block min-w-0 rounded-lg bg-slate-50 p-2.5 text-xs font-semibold text-slate-600">
+                      {label}
+                      <textarea
+                        rows={2}
+                        value={(scenario[field] ?? []).join("\n")}
+                        placeholder={placeholder}
+                        disabled={busy}
+                        onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
+                        className={`mt-1.5 min-h-[58px] w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-normal leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </section>
 
-            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-              {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
-                <section key={field} className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white shadow-sm">
-                  <div className="border-b border-slate-100 bg-emerald-50/70 px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-700 text-xs font-semibold text-white">{index + 1}</span>
-                      <h3 className="text-sm font-semibold text-slate-800">{label}</h3>
-                    </div>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{hint}</p>
-                  </div>
-                  <div className="p-2">
-                    <textarea
-                      aria-label={label}
-                      rows={4}
-                      className={`${textareaClass} min-h-[150px] ${wrapClass}`}
-                      value={scenario[field].join("\n")}
-                      placeholder={field === "mainFlow" ? "1. Người dùng bắt đầu thao tác…\n2. Hệ thống kiểm tra dữ liệu…\n3. Hệ thống trả kết quả…" : field === "altFlows" ? "A1. Nếu người dùng chọn phương án khác…\nA2. Hệ thống xử lý nhánh thay thế…" : "E1. Nếu dữ liệu không hợp lệ…\nE2. Hệ thống thông báo lỗi và hướng xử lý…"}
-                      disabled={busy}
-                      onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                    />
-                  </div>
-                </section>
-              ))}
+              <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <h3 className="mb-3 text-sm font-semibold text-slate-800">Luồng xử lý</h3>
+                <div className="max-h-[calc(100dvh-300px)] min-h-[300px] space-y-4 overflow-y-auto overscroll-contain pr-2">
+                  {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
+                    <section key={field} className="min-w-0">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-700 text-xs font-semibold text-white">{index + 1}</span>
+                        <h4 className="text-sm font-semibold text-slate-800">{label}</h4>
+                      </div>
+                      <p className="mb-2 text-xs leading-5 text-slate-500">{hint}</p>
+                      <textarea
+                        aria-label={label}
+                        rows={5}
+                        className={`${textareaClass} min-h-[140px] resize-y ${wrapClass}`}
+                        value={scenario[field].join("\n")}
+                        placeholder={field === "mainFlow" ? "1. Người dùng bắt đầu thao tác…\n2. Hệ thống kiểm tra dữ liệu…\n3. Hệ thống trả kết quả…" : field === "altFlows" ? "A1. Nếu người dùng chọn phương án khác…\nA2. Hệ thống xử lý nhánh thay thế…" : "E1. Nếu dữ liệu không hợp lệ…\nE2. Hệ thống thông báo lỗi và hướng xử lý…"}
+                        disabled={busy}
+                        onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
+                      />
+                    </section>
+                  ))}
+                </div>
+              </section>
             </div>
 
 
