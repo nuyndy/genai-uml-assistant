@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import GiaiDoanStepper from "./components/common/GiaiDoanStepper";
+import { useEffect, useState } from "react";
 import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
 import GiaiDoan3 from "./components/features/giai-doan-3/GiaiDoan3";
@@ -213,101 +212,72 @@ function App() {
     );
   }
 
-  // 2) Workspace: 3 GIAI ĐOẠN lớn, mỗi giai đoạn có sub-stepper riêng.
+  // 2) Workspace: điều hướng giai đoạn bằng menu dọc cố định.
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50">
-      <div className="fixed inset-0 z-0">
-        <StageBackdrop />
-      </div>
-
-      <div className="relative z-10">
-      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] items-center gap-3 px-3 py-2 sm:gap-5 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            onClick={handleBackHome}
-            aria-label="Về trang chủ GenAI UML Assistant"
-            className="flex min-w-0 shrink-0 items-center gap-2 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:gap-3"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-sm font-bold text-white shadow-sm">U</span>
-            <span className="hidden min-w-0 sm:block">
-              <span className="block max-w-[12rem] truncate text-sm font-bold tracking-tight text-slate-900">GenAI UML Assistant</span>
-              <span className="block max-w-[12rem] truncate text-[11px] text-slate-500">{activeProject.name}</span>
-            </span>
+      <div className="pointer-events-none fixed inset-0 z-0"><StageBackdrop /></div>
+      <aside className="fixed inset-y-0 left-0 z-50 flex w-[76px] flex-col items-center border-r border-emerald-100 bg-white/95 py-4 shadow-[8px_0_28px_-24px_rgba(10,51,35,0.45)] backdrop-blur-xl sm:w-[92px] sm:py-5">
+        <button type="button" onClick={handleBackHome} aria-label="Về trang chủ GenAI UML Assistant" title="Về trang chủ" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-lg font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">U</button>
+        <span className="mt-2 hidden text-center text-[9px] font-bold tracking-wide text-slate-500 sm:block">GENAI UML</span>
+        <div className="mt-8 flex w-full flex-1 flex-col items-center">
+          <p className="mb-4 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">Giai đoạn</p>
+          <nav aria-label="Các giai đoạn của quy trình" className="w-full">
+            <ol className="relative flex flex-col items-center gap-5">
+              <span aria-hidden="true" className="absolute bottom-7 left-1/2 top-7 -z-10 w-px -translate-x-1/2 bg-emerald-100" />
+              {([1, 2, 3] as StageId[]).map((id) => {
+                const def = STAGES[id];
+                const active = id === stage;
+                const done = completedStages.includes(id);
+                const unlocked = id <= maxUnlockedStage();
+                const clickable = unlocked && !active;
+                return (
+                  <li key={id} className="w-full">
+                    <button type="button" disabled={!clickable} aria-current={active ? "step" : undefined} aria-label={`Giai đoạn ${id}: ${def.short}${done ? ", đã hoàn thành" : unlocked ? "" : ", đang khóa"}`} title={`Giai đoạn ${id}: ${def.short}`} onClick={() => { if (clickable) { setStage(id); setStep(1); setAccountMenuOpen(false); } }} className={`group mx-auto flex w-full flex-col items-center gap-1.5 px-1 py-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 ${clickable ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                      <span className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-bold transition sm:h-11 sm:w-11 ${active ? "border-emerald-700 bg-emerald-700 text-white shadow-md shadow-emerald-900/20" : done ? "border-emerald-200 bg-emerald-100 text-emerald-800" : unlocked ? "border-slate-200 bg-white text-slate-600 group-hover:border-emerald-300 group-hover:bg-emerald-50" : "border-slate-100 bg-slate-50 text-slate-300"}`}>
+                        {done ? "✓" : !unlocked ? "🔒" : id}
+                        {active && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-lime-400" />}
+                      </span>
+                      <span className={`hidden max-w-[82px] text-center text-[10px] font-semibold leading-tight sm:block ${active ? "text-emerald-800" : done ? "text-emerald-700" : unlocked ? "text-slate-500" : "text-slate-300"}`}>{def.short}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+        </div>
+        <div className="relative mt-4 shrink-0">
+          {accountMenuOpen && <div className="absolute bottom-0 left-[calc(100%+12px)] z-[60] w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+            <div className="border-b border-slate-100 px-3 py-2"><p className="truncate text-sm font-semibold text-slate-900">{user.name || "Tài khoản"}</p><p className="truncate text-xs text-slate-500">{user.email}</p></div>
+            <button type="button" onClick={() => { setAccountMenuOpen(false); logout(); }} className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-rose-700 transition hover:bg-rose-50">Đăng xuất</button>
+          </div>}
+          <button type="button" aria-label="Mở menu tài khoản" aria-expanded={accountMenuOpen} title={user.name || user.email} onClick={() => setAccountMenuOpen((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-full p-0.5 ring-2 ring-emerald-100 transition hover:ring-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+            {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-full w-full rounded-full object-cover" referrerPolicy="no-referrer" /> : <span className="flex h-full w-full items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-900">{(user.name || user.email).slice(0, 1).toUpperCase()}</span>}
           </button>
+        </div>
+      </aside>
 
-          <div className="min-w-0 flex-1">
-            <GiaiDoanStepper
-              stage={stage}
-              maxUnlockedStage={maxUnlockedStage()}
-              completedStages={completedStages}
-              onStageChange={(next) => {
-                setStage(next);
-                setStep(1);
-              }}
-            />
+      <div className="relative z-10 min-h-screen pl-[76px] sm:pl-[92px]">
+        <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6 lg:px-8">
+          <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4">
+            <div className="min-w-0"><p className="text-xs text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p></div>
+            <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800">Giai đoạn {stage} / 3</span>
           </div>
-
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              aria-label="Mở menu tài khoản"
-              aria-expanded={accountMenuOpen}
-              onClick={() => setAccountMenuOpen((open) => !open)}
-              className="flex items-center gap-2 rounded-full p-1.5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            >
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" referrerPolicy="no-referrer" />
-              ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-900">
-                  {(user.name || user.email).slice(0, 1).toUpperCase()}
-                </span>
-              )}
-              <span className="hidden max-w-36 truncate text-xs font-medium text-slate-700 lg:block">{user.name || user.email}</span>
-              <span aria-hidden="true" className="hidden text-xs text-slate-500 sm:block">⌄</span>
-            </button>
-            {accountMenuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-                <div className="border-b border-slate-100 px-3 py-2">
-                  <p className="truncate text-sm font-semibold text-slate-900">{user.name || "Tài khoản"}</p>
-                  <p className="truncate text-xs text-slate-500">{user.email}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setAccountMenuOpen(false); logout(); }}
-                  className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium text-rose-700 transition hover:bg-rose-50"
-                >
-                  Đăng xuất
-                </button>
+        </header>
+        {stageLockReason() && <div role="status" className="border-b border-amber-200 bg-amber-50/95 px-4 py-2 text-xs text-amber-900 sm:px-6 lg:px-8">{stageLockReason()}</div>}
+        <ErrorBoundary>
+          <main className="min-h-[calc(100vh-64px)] pb-8">
+            <section className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 pb-4 pt-5 sm:px-6 lg:px-8">
+              <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Giai đoạn {stage} · Bước {currentStep.id} / {STAGES[stage].steps.length}</p><h1 className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{currentStep.label}</h1></div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span></button>
+                <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span aria-hidden="true"> →</span></button>
               </div>
-            )}
-          </div>
-        </div>
-      </header>
-      {stageLockReason() && (
-        <div role="status" className="border-b border-amber-200 bg-sky-50 px-4 py-2 text-xs text-sky-800 sm:px-6 lg:px-8">
-          {stageLockReason()}
-        </div>
-      )}
-
-       <ErrorBoundary>
-      <main className="min-h-[calc(100vh-84px)] pb-8">
-        <section className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 pb-4 pt-5 sm:px-6 lg:px-8">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Giai đoạn {stage} · Bước {currentStep.id} / {STAGES[stage].steps.length}</p>
-            <h1 className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{currentStep.label}</h1>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span></button>
-            <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span aria-hidden="true"> →</span></button>
-          </div>
-        </section>
-        {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
-        {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
-        {stage === 3 && <GiaiDoan3 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
-      </main>
-      </ErrorBoundary>
-
+            </section>
+            {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
+            {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
+            {stage === 3 && <GiaiDoan3 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
+          </main>
+        </ErrorBoundary>
       </div>
     </div>
   );
