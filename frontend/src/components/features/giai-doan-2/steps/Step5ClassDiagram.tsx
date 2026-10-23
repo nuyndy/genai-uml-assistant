@@ -52,7 +52,6 @@ export default function Step5ClassDiagram({
   projectId,
   wrapClass,
 }: Props) {
-  void onConfirmClassDiagram;
   const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
 
   const startEditing = (item: UmlClass) => {
@@ -87,15 +86,14 @@ export default function Step5ClassDiagram({
               ? "Đang suy luận..."
               : umlClasses.length > 0
                 ? "↻ Sinh lại mô hình lớp"
-                : "Sinh biểu đồ lớp"}
+                : "Sinh các lớp"}
           </SoftButton>
         }
       >
         {umlClasses.length === 0 ? (
           <EmptyState
             icon="◫"
-            title="Chưa có lớp trong database"
-            hint="Bấm “Sinh biểu đồ lớp” để suy luận mô hình lớp từ các kịch bản use case."
+            title="Chưa có lớp"
           />
         ) : (
           <div className="overflow-x-auto rounded-2xl bg-slate-50/70">
@@ -172,7 +170,7 @@ export default function Step5ClassDiagram({
               <DiagramPreview
                 imageUrl={classDiagramUrl}
                 emptyTitle="Chưa có ảnh biểu đồ lớp"
-                emptyHint="Sinh mô hình lớp ở trên để tạo biểu đồ."
+                emptyHint="Chưa có sơ đồ lớp."
                 downloadName="class-diagram.svg"
               />
             </div>
