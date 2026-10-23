@@ -81,4 +81,5 @@ export default function Step2UseCaseDiagram({
         </div>
       </Card>
     </div>
+  );
 }
