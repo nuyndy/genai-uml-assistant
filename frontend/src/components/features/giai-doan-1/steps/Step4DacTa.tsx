@@ -200,12 +200,12 @@ export default function Step4DacTa({
           </div>
         </aside>
 
-        <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-2xl">
+        <section className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-2xl">
           {kind === "functional" ? (
             !activeStory ? (
               <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
             ) : (
-              <article className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+              <article className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <SoftButton disabled={activeIndex === 0 || busy} onClick={() => { setActiveIndex((index) => Math.max(0, index - 1)); setActionMessage(""); }}>← Trước</SoftButton>
@@ -239,7 +239,7 @@ export default function Step4DacTa({
                   </div>
                 ) : (
                   <>
-                    <div className="min-w-0 max-h-[calc(100vh-20rem)] overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
+                    <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
                       <FunctionalSpecificationEditor value={activeFunctionalValue} activeTab={activeTab} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [activeSpecification.id]: value }))} />
                     </div>
                   </>
@@ -248,7 +248,7 @@ export default function Step4DacTa({
               </article>
             )
           ) : (
-            <article className="overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
+            <article className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-violet-200 bg-violet-50 px-3 py-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <SoftButton disabled={busy} onClick={() => { chooseKind("functional"); setActiveIndex(Math.max(functionalItems.length - 1, 0)); }}>← Trước</SoftButton>
@@ -278,7 +278,7 @@ export default function Step4DacTa({
                   {generatingNonFunctional ? <p role="status" className="mb-3 text-sm font-medium text-violet-700">AI đang sinh đặc tả phi chức năng...</p> : <SoftButton disabled={busy || !projectId} onClick={() => void createNonFunctionalSpecification()}>Tạo NFR bằng AI</SoftButton>}
                 </div>
               ) : (
-                <div className="min-w-0 max-h-[calc(100vh-20rem)] overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
+                <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5" role="tabpanel">
                   <NonFunctionalSpecificationEditor value={activeNonFunctionalValue} onChange={(value) => setSpecDrafts((previous) => ({ ...previous, [nonFunctionalSpecification.id]: value }))} />
 
                 </div>
