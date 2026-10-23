@@ -47,8 +47,8 @@ export default function Step3UseCaseScenario({
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
 
   return (
-    <div className="max-h-[calc(100dvh-150px)] space-y-4 overflow-y-auto overscroll-contain pb-4 pr-1">
-      <Card tone="emerald">
+    <div className="space-y-4 pb-4">
+      <div className="space-y-4">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
         ) : (
@@ -75,7 +75,7 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <section className="rounded-xl border border-slate-200 bg-white p-3">
+            <section className="p-0">
               <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
                 <label className="block min-w-0 text-sm font-medium text-slate-700">
                   Tên ca sử dụng
@@ -96,7 +96,7 @@ export default function Step3UseCaseScenario({
                       placeholder={placeholder}
                       disabled={busy}
                       onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                      className={`mt-1 min-h-[56px] w-full resize-y rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm leading-5 text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
+                      className={`mt-1 min-h-[56px] w-full resize-y overflow-hidden rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm leading-5 text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
                     />
                   </label>
                 ))}
@@ -131,7 +131,7 @@ export default function Step3UseCaseScenario({
 
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }
