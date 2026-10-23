@@ -76,10 +76,10 @@ export default function Step3UseCaseScenario({
             </div>
 
             <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
-              <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <section className="min-w-0 min-w-0">
                 <h3 className="mb-3 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
                 <div className="space-y-3">
-                  <label className="block min-w-0 rounded-lg bg-slate-50 p-2.5 text-xs font-semibold text-slate-600">
+                  <label className="block min-w-0 text-xs font-semibold text-slate-600">
                     Tên ca sử dụng
                     <input value={activeUseCase.name} readOnly className="mt-1.5 h-9 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm font-normal text-slate-700" />
                   </label>
@@ -107,7 +107,7 @@ export default function Step3UseCaseScenario({
 
               <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <h3 className="mb-3 text-sm font-semibold text-slate-800">Luồng xử lý</h3>
-                <div className="max-h-[calc(100dvh-300px)] min-h-[300px] space-y-4 overflow-y-auto overscroll-contain pr-2">
+                <div className="max-h-[calc(100dvh-220px)] space-y-4 overflow-y-auto overscroll-contain pr-2">
                   {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
                     <section key={field} className="min-w-0">
                       <div className="mb-2 flex items-center gap-2">
