@@ -83,9 +83,9 @@ export default function Step2UseCaseDiagram({
               <PrimaryButton disabled={busy || !imageUrl || !imageCode} onClick={onConfirm}>{confirmed ? "✓ Đã lưu" : "Lưu biểu đồ"}</PrimaryButton>
             </div>
             <div className="min-h-0 flex-1 bg-[#102d24] p-3">
-              <textarea id="use-case-plantuml" aria-label="Mã PlantUML — có thể chỉnh sửa" value={draftCode} onChange={(event) => setDraftCode(event.target.value)} disabled={busy || !imageCode} spellCheck={false} className="uml-code-panel h-full min-h-[440px] w-full resize-y overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none focus:ring-0" />
+              <textarea id="use-case-plantuml" aria-label="Mã PlantUML — có thể chỉnh sửa" value={draftCode} onChange={(event) => setDraftCode(event.target.value)} disabled={busy || !imageCode} spellCheck={false} className="uml-code-panel block h-full min-h-0 w-full resize-none overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none focus:ring-0" />
             </div>
-            {imageCode && onSave && <div className="flex flex-col gap-2 border-t border-slate-200 p-3">
+            {imageCode && onSave && <div className="flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white p-3">
               {hasCodeChanges && <span className="text-xs text-amber-700">Có thay đổi chưa lưu</span>}
               <PrimaryButton disabled={busy || !hasCodeChanges || !draftCode.trim()} onClick={() => onSave(draftCode)}>{busy ? "Đang lưu..." : "Lưu mã và render lại"}</PrimaryButton>
             </div>}
