@@ -256,7 +256,7 @@ function App() {
         </div>
       </aside>
 
-      <div className="relative z-10 min-h-screen pl-[76px] sm:pl-[92px]">
+      <div className="relative z-10 flex min-h-screen flex-col pl-[76px] sm:pl-[92px]">
         <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6 lg:px-8">
           <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
             <div className="min-w-0 max-w-[260px]"><p className="text-xs font-medium text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p></div>
@@ -272,7 +272,7 @@ function App() {
         </header>
         
         <ErrorBoundary>
-          <main className={stage === 1 && (step === 4 || step === 5) ? "h-[calc(100dvh-64px)] min-h-0 overflow-hidden pb-0" : "min-h-[calc(100vh-64px)] pb-8"}>
+          <main className={stage === 1 && (step === 4 || step === 5) ? "flex h-[calc(100dvh-69px)] min-h-0 flex-col overflow-hidden pb-0" : "min-h-[calc(100vh-69px)] pb-8"}>
             
             {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
             {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
