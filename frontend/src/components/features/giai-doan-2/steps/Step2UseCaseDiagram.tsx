@@ -73,6 +73,7 @@ export default function Step2UseCaseDiagram({
             </div>}
             <div className="max-h-[min(78vh,1000px)] min-h-[560px] overflow-auto bg-slate-50 p-3 sm:p-5">
               {imageUrl ? <div className="flex min-h-[520px] min-w-full items-start justify-center"><img src={imageUrl} alt="Biểu đồ Use Case" draggable={false} style={{ width: (zoom * 100) + "%", minWidth: Math.min(zoom * 100, 100) + "%", maxWidth: "none", height: "auto" }} className="h-auto rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[520px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={onRegenerate}>{busy ? "Đang sinh..." : "Sinh biểu đồ"}</PrimaryButton></div></div>}
+            </div>
           </section>
 
           {showCode && <section className="flex min-h-[560px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
