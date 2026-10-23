@@ -267,11 +267,13 @@ function App() {
         
         <ErrorBoundary>
           <main className="min-h-[calc(100vh-64px)] pb-8">
-            <section className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 rounded-2xl border border-white/20 bg-emerald-900/15 px-4 py-4 sm:px-6 lg:px-8">
-              <div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white drop-shadow-sm sm:text-2xl">{currentStep.label}</h1></div>
-              <div className="flex shrink-0 items-center gap-2 rounded-xl border border-emerald-100 bg-white/95 p-1.5 shadow-sm">
-                <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span></button>
-                <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span aria-hidden="true"> →</span></button>
+            <section className="mx-auto grid w-full max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-white/20 bg-emerald-900/15 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8">
+              <div className="flex min-w-0 justify-end">
+                <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span><span className="sm:hidden">Trước</span></button>
+              </div>
+              <h1 className="min-w-0 text-center text-lg font-bold tracking-tight text-white drop-shadow-sm sm:text-xl">{currentStep.label}</h1>
+              <div className="flex min-w-0 justify-start">
+                <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span className="sm:hidden">Tiếp</span><span aria-hidden="true"> →</span></button>
               </div>
             </section>
             {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
