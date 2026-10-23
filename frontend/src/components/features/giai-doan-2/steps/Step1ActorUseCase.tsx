@@ -143,7 +143,7 @@ export default function Step1ActorUseCase({
             {actors.map((actor) => {
               const detail = actorValue(actor);
               const linkedUseCases = visibleRelations.filter((relation) => relation.actorId === actor.id);
-              return <article key={actor.id} className="min-w-0 border-b border-emerald-300/80 py-2 last:border-b-0">
+              return <article key={actor.id} className="min-w-0 rounded-lg border border-emerald-400 bg-emerald-50 p-2">
                 <div className="flex min-w-0 items-start gap-2">
                   <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-200 text-emerald-950">
                     <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -162,7 +162,7 @@ export default function Step1ActorUseCase({
                 </div>
               </article>;
             })}
-            {actors.length === 0 && <div className="px-4 py-8 text-center">
+            {actors.length === 0 && <div className="rounded-lg border border-dashed border-emerald-400 bg-emerald-50 px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có tác nhân</p>
                           </div>}
 
@@ -184,7 +184,7 @@ export default function Step1ActorUseCase({
             {useCases.map((useCase, index) => {
               const ucRelations = visibleRelations.filter((relation) => relation.useCaseId === useCase.id);
               const availableActors = actors.filter((actor) => !ucRelations.some((relation) => relation.actorId === actor.id));
-              return <article key={useCase.id} className="min-w-0 border-b border-sky-300/80 py-3 last:border-b-0">
+              return <article key={useCase.id} className="min-w-0 rounded-lg border border-sky-400 bg-sky-50 p-3">
                 <div className="flex min-w-0 items-start gap-2">
                   <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-sky-200 text-sky-950">
                     <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
