@@ -103,7 +103,7 @@ export default function Step1ActorUseCase({
   }
 
   return (
-    <Card compact allowOverflow className="!flex !h-[calc(100dvh-220px)] !min-h-[420px] !shrink-0 !flex-col !overflow-hidden !p-2"
+    <Card compact allowOverflow className="!flex !h-[calc(100dvh-80px)] !min-h-0 !shrink-0 !flex-col !overflow-hidden !p-2"
       actions={<div className="flex w-full flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-slate-600">
           <span className="font-semibold text-slate-800">{actors.length}</span> tác nhân
