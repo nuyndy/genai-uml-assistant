@@ -132,7 +132,7 @@ export default function Step1ActorUseCase({
       </div>}
 
       <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 items-stretch gap-2 overflow-hidden xl:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.4fr)]">
-        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border-2 border-emerald-500 bg-emerald-100">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-emerald-400 bg-emerald-200 px-3 py-2">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Tác nhân</h3>
@@ -173,7 +173,7 @@ export default function Step1ActorUseCase({
             </form></div>
         </section>
 
-        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border-2 border-sky-500 bg-sky-100">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-sky-400 bg-sky-200 px-4 py-3">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Use Case</h3>
@@ -230,7 +230,7 @@ export default function Step1ActorUseCase({
                 </div>
               </article>;
             })}
-            {useCases.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
+            {useCases.length === 0 && <div className="px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có Use Case</p>
                           </div>}
 
