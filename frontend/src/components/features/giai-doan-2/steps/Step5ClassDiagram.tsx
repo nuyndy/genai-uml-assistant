@@ -165,7 +165,7 @@ export default function Step5ClassDiagram({
         )}
       </Card>}
 
-      {(viewMode === "diagram" || viewMode === "all") && <Card title="Sơ đồ lớp" tone="emerald" actions={<PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Xác nhận sơ đồ lớp</PrimaryButton>}>
+      {(viewMode === "diagram" || viewMode === "all") && <Card title="Sơ đồ lớp" tone="emerald" actions={<div className="flex flex-wrap gap-2"><SoftButton disabled={busy || !projectId} onClick={regenerate}>{busy ? "Đang sinh..." : classDiagramUrl ? "Sinh lại sơ đồ lớp" : "Sinh sơ đồ lớp"}</SoftButton><PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Xác nhận sơ đồ lớp</PrimaryButton></div>}>
         <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15rem,0.38fr)]">
           <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
             <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
