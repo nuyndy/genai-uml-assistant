@@ -157,7 +157,7 @@ export default function Step4DacTa({
   return (
     <div className="w-full min-w-0">
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-      <div className="grid h-[calc(100dvh-13rem)] min-h-[420px] min-w-0 grid-cols-1 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="grid h-[calc(100dvh-9rem)] min-h-[520px] min-w-0 grid-cols-1 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[#C8DDD7] bg-white p-3 shadow-sm">
           <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Loại đặc tả</p>
           <button type="button" onClick={() => chooseKind("functional")} aria-pressed={kind === "functional"}
