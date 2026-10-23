@@ -76,7 +76,6 @@ export default function Step3UseCaseScenario({
             </div>
 
             <section className="rounded-xl border border-slate-200 bg-white p-3">
-              <h3 className="mb-2 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
                 <label className="block min-w-0 text-sm font-medium text-slate-700">
                   Tên ca sử dụng
