@@ -272,7 +272,7 @@ function App() {
         </header>
         
         <ErrorBoundary>
-          <main className="min-h-[calc(100vh-64px)] pb-8">
+          <main className={stage === 1 && (step === 4 || step === 5) ? "h-[calc(100dvh-64px)] min-h-0 overflow-hidden pb-0" : "min-h-[calc(100vh-64px)] pb-8"}>
             
             {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
             {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
