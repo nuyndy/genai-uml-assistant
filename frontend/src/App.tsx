@@ -220,7 +220,7 @@ function App() {
         <button type="button" onClick={handleBackHome} aria-label="Về trang chủ GenAI UML Assistant" title="Về trang chủ" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-lg font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">U</button>
         <span className="mt-2 hidden text-center text-[9px] font-bold tracking-wide text-slate-500 sm:block">GENAI UML</span>
         <div className="mt-8 flex w-full flex-1 flex-col items-center">
-          <p className="mb-4 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">Giai đoạn</p>
+          
           <nav aria-label="Các giai đoạn của quy trình" className="w-full">
             <ol className="relative flex flex-col items-center gap-5">
               <span aria-hidden="true" className="absolute bottom-7 left-1/2 top-7 -z-10 w-px -translate-x-1/2 bg-emerald-100" />
@@ -260,14 +260,14 @@ function App() {
         <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6 lg:px-8">
           <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4">
             <div className="min-w-0"><p className="text-xs text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p></div>
-            <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800">Giai đoạn {stage} / 3</span>
+            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">{STAGES[stage].label}</span>
           </div>
         </header>
         {stageLockReason() && <div role="status" className="border-b border-amber-200 bg-amber-50/95 px-4 py-2 text-xs text-amber-900 sm:px-6 lg:px-8">{stageLockReason()}</div>}
         <ErrorBoundary>
           <main className="min-h-[calc(100vh-64px)] pb-8">
             <section className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 pb-4 pt-5 sm:px-6 lg:px-8">
-              <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Giai đoạn {stage} · Bước {currentStep.id} / {STAGES[stage].steps.length}</p><h1 className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{currentStep.label}</h1></div>
+              <div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-emerald-950 sm:text-2xl">{currentStep.label}</h1></div>
               <div className="flex shrink-0 items-center gap-2">
                 <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span></button>
                 <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span aria-hidden="true"> →</span></button>
