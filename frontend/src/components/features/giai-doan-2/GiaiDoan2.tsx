@@ -424,13 +424,6 @@ export default function GiaiDoan2({
         methods: item.methods,
       })),
     }));
-    const diagram = await generateClassDiagram(projectId);
-    setState((previous) => ({
-      ...previous,
-      classDiagramConfirmed: false,
-      classDiagramUrl: diagram.image_url,
-      classDiagramCode: diagram.source_code,
-    }));
   }
 
   const step1 = (
@@ -752,7 +745,11 @@ export default function GiaiDoan2({
       onDeleteClass={async (id) => {
         await runAction(async () => { await deleteClass(id); setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.filter((item) => item.id !== id) })); setEditingClassId(null); }, "Đang xoá lớp...");
       }}
-      onRegenerateClasses={() => void runAction(runGenerateClasses, "Đang sinh biểu đồ lớp...")}
+      onRegenerateClasses={() => void runAction(async () => {
+        if (!projectId) return;
+        const diagram = await generateClassDiagram(projectId);
+        setState((previous) => ({ ...previous, classDiagramConfirmed: false, classDiagramUrl: diagram.image_url, classDiagramCode: diagram.source_code }));
+      }, "Đang sinh biểu đồ lớp...")}
       onConfirmClassDiagram={() => setState((previous) => ({ ...previous, classDiagramConfirmed: true }))}
       busy={busy}
       projectId={projectId}
