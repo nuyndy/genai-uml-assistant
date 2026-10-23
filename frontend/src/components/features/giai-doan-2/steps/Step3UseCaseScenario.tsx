@@ -52,7 +52,7 @@ export default function Step3UseCaseScenario({
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
               <div className="flex min-w-0 flex-1 items-center gap-2">
                 <GhostButton disabled={activeIndex === 0} onClick={() => setActiveIndex((index) => Math.max(0, index - 1))} aria-label="Use Case trước">‹</GhostButton>
@@ -75,9 +75,8 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 items-start gap-4 pb-2 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
+            <div className="grid grid-cols-1 items-start gap-4 pb-4 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
               <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
                 <div className="space-y-3">
                   <label className="block min-w-0 text-xs font-semibold text-slate-600">
                     Tên ca sử dụng
@@ -98,7 +97,7 @@ export default function Step3UseCaseScenario({
                         placeholder={placeholder}
                         disabled={busy}
                         onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                        className={`mt-1.5 min-h-[58px] w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-normal leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}` }
+                        className={`mt-1 min-h-[58px] w-full resize-y overflow-auto rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-normal leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}` }
                       />
                     </label>
                   ))}
