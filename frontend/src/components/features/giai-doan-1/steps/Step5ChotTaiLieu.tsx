@@ -134,7 +134,7 @@ export default function Step5ChotTaiLieu({
     <div className="w-full min-w-0 space-y-3">
       <Card compact allowOverflow tone="emerald">
         {srsMarkdown || specifications.length > 0 ? (
-          <div className="grid h-[calc(100dvh-8.5rem)] min-h-0 min-w-0 grid-cols-1 gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="grid h-[calc(100dvh-6rem)] min-h-0 min-w-0 grid-cols-1 gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside aria-label="Mục lục tài liệu SRS" className="z-30 flex h-full min-h-0 min-w-0 flex-col self-start rounded-xl border border-slate-200 bg-white p-2 shadow-sm xl:sticky xl:top-20">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-base font-semibold text-slate-900">Mục lục SRS</h3>
