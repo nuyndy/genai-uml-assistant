@@ -90,7 +90,7 @@ export default function Step3UseCaseScenario({
                     ["minimalGuarantees", "Đảm bảo tối thiểu", "Điều hệ thống phải bảo đảm khi thất bại"],
                     ["postconditions", "Hậu điều kiện", "Trạng thái sau khi ca sử dụng kết thúc"],
                   ] as const).map(([field, label, placeholder]) => (
-                    <label key={field} className="block min-w-0 rounded-lg bg-slate-50 p-2.5 text-xs font-semibold text-slate-600">
+                    <label key={field} className="block min-w-0 text-xs font-semibold text-slate-600">
                       {label}
                       <textarea
                         rows={2}
@@ -98,7 +98,7 @@ export default function Step3UseCaseScenario({
                         placeholder={placeholder}
                         disabled={busy}
                         onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
-                        className={`mt-1.5 min-h-[58px] w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-normal leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}`}
+                        className={`mt-1.5 min-h-[58px] w-full resize-y rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-normal leading-5 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${wrapClass}` }
                       />
                     </label>
                   ))}
