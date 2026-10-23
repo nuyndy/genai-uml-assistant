@@ -259,7 +259,8 @@ function App() {
       <div className="relative z-10 min-h-screen pl-[76px] sm:pl-[92px]">
         <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6 lg:px-8">
           <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4">
-            <div className="min-w-0"><p className="text-xs font-medium text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p><p className="mt-1 truncate text-sm font-bold text-emerald-800">{STAGES[stage].label}</p></div>
+            <div className="min-w-0"><p className="text-xs font-medium text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p></div>
+            <p className="shrink-0 truncate text-sm font-bold text-emerald-800">{STAGES[stage].label}</p>
             
           </div>
         </header>
