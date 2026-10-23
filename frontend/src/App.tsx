@@ -26,18 +26,8 @@ function App() {
   /* Giai đoạn lớn đang mở và bước con tương ứng. */
   const [stage, setStage] = useState<StageId>(1);
   const [step, setStep] = useState(1);
-  const stepNavRef = useRef<HTMLElement | null>(null);
-  const activeStepButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    const nav = stepNavRef.current;
-    if (!nav) return;
-    if (step >= STAGES[stage].steps.length) {
-      nav.scrollTo({ left: nav.scrollWidth, behavior: "smooth" });
-    } else {
-      activeStepButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-    }
-  }, [stage, step]);
+  const currentStep = STAGES[stage].steps.find((item) => item.id === step) ?? STAGES[stage].steps[0];
 
   /** Dữ liệu đang dùng ở các giai đoạn; Giai đoạn 1 luôn đọc và ghi qua API. */
   const [workflow, setWorkflow] = useState<WorkflowState>(emptyWorkflow);
@@ -300,90 +290,24 @@ function App() {
         </div>
       )}
 
-      <ErrorBoundary>
-      <main className="min-h-[calc(100vh-132px)] pb-4">
-        {stage === 1 && (
-          <GiaiDoan1
-            projectId={activeProject.id}
-            projectName={activeProject.name}
-            state={workflow}
-            setState={setWorkflow}
-            step={step}
-            onStepChange={setStep}
-          />
-        )}
-        {stage === 2 && (
-          <GiaiDoan2
-            projectId={activeProject.id}
-            state={workflow}
-            setState={setWorkflow}
-            step={step}
-            onStepChange={setStep}
-            onReturnStage1={() => {
-              setStage(1);
-              setStep(1);
-            }}
-          />
-        )}
-        {stage === 3 && (
-          <GiaiDoan3
-            projectId={activeProject.id}
-            state={workflow}
-            setState={setWorkflow}
-            step={step}
-            onStepChange={setStep}
-          />
-        )}
+       <ErrorBoundary>
+      <main className="min-h-[calc(100vh-84px)] pb-8">
+        <section className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 pb-4 pt-5 sm:px-6 lg:px-8">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Giai đoạn {stage} · Bước {currentStep.id} / {STAGES[stage].steps.length}</p>
+            <h1 className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{currentStep.label}</h1>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button type="button" disabled={step <= 1} onClick={() => setStep((current) => Math.max(1, current - 1))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span aria-hidden="true">← </span><span className="hidden sm:inline">Bước trước</span></button>
+            <button type="button" disabled={step >= STAGES[stage].steps.length} onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"><span className="hidden sm:inline">Bước tiếp</span><span aria-hidden="true"> →</span></button>
+          </div>
+        </section>
+        {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
+        {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
+        {stage === 3 && <GiaiDoan3 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
       </main>
       </ErrorBoundary>
 
-      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-100 bg-white/95 shadow-[0_-8px_24px_-20px_rgba(10,51,35,0.5)] backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center gap-1.5 px-2 py-2 sm:gap-3 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            aria-label="Bước trước"
-            title="Bước trước"
-            disabled={step <= 1}
-            onClick={() => setStep((current) => Math.max(1, current - 1))}
-            className="shrink-0 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
-          >
-            ← <span className="hidden xl:inline">Bước trước</span>
-          </button>
-          <nav ref={stepNavRef} aria-label="Điều hướng bước" className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <ol className="flex w-max min-w-full items-center justify-center gap-1 py-0.5 sm:gap-2">
-              {STAGES[stage].steps.map((item) => (
-                <li key={item.id} className="shrink-0">
-                  <button
-                    ref={step === item.id ? activeStepButtonRef : undefined}
-                    type="button"
-                    aria-current={step === item.id ? "step" : undefined}
-                    title={item.label}
-                    onClick={() => setStep(item.id)}
-                    className={`flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold transition sm:px-3 sm:text-sm lg:px-4 ${
-                      step === item.id
-                        ? "bg-emerald-600 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800"
-                    }`}
-                  >
-                    <span className="tabular-nums">{item.id}</span>
-                    <span className="hidden lg:inline">{item.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </nav>
-          <button
-            type="button"
-            aria-label="Bước tiếp"
-            title="Bước tiếp"
-            disabled={step >= STAGES[stage].steps.length}
-            onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))}
-            className="shrink-0 rounded-xl bg-emerald-600 px-2.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35 sm:px-4"
-          >
-            <span className="hidden xl:inline">Bước tiếp</span> →
-          </button>
-        </div>
-      </footer>
       </div>
     </div>
   );
