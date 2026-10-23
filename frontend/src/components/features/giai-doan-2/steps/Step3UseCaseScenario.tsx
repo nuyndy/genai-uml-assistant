@@ -47,7 +47,7 @@ export default function Step3UseCaseScenario({
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
 
   return (
-    <div className="space-y-5 pb-2">
+    <div className="space-y-5 pb-0">
       <div className="space-y-4">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
@@ -75,8 +75,8 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 items-start gap-4 pb-1 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
-              <section className="min-w-0 h-[calc(100dvh-240px)] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="grid grid-cols-1 items-start gap-4 pb-0 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]>
+              <section className="min-w-0 h-[calc(100dvh-96px)] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="h-full overflow-y-auto overscroll-contain pr-2">
                   <label className="block min-w-0 text-xs font-semibold text-slate-600">
                     Tên ca sử dụng
@@ -104,7 +104,7 @@ export default function Step3UseCaseScenario({
                 </div>
               </section>
 
-              <section className="min-w-0 h-[calc(100dvh-240px)] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <section className="min-w-0 h-[calc(100dvh-96px)] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <h3 className="mb-3 text-sm font-semibold text-slate-800">Luồng xử lý</h3>
                 <div className="h-[calc(100%-32px)] space-y-4 overflow-y-auto overscroll-contain pr-2">
                   {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
