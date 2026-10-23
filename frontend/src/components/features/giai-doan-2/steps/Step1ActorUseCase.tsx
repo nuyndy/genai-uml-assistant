@@ -36,8 +36,8 @@ interface Props {
   wrapClass: string;
 }
 
-const inputClass = "w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-50";
-const fieldClass = "block w-full min-w-0 resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-5 text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white";
+const inputClass = "w-full min-w-0 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 disabled:bg-slate-100";
+const fieldClass = "block w-full min-w-0 resize-y rounded-md border border-slate-300 bg-white px-2 py-1 text-sm leading-5 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
 
 export default function Step1ActorUseCase({
   requirements: actors,
@@ -103,7 +103,7 @@ export default function Step1ActorUseCase({
   }
 
   return (
-    <Card compact
+    <Card compact allowOverflow className="!p-2"
       actions={<div className="flex w-full flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-slate-600">
           <span className="font-semibold text-slate-800">{actors.length}</span> tác nhân
@@ -128,25 +128,24 @@ export default function Step1ActorUseCase({
         <span>{suggestions.actors.length} tác nhân</span>
         <span>·</span>
         <span>{suggestions.useCases.length} Use Case</span>
-        <span className="text-amber-800/80">Bấm “Thêm gợi ý” để lưu vào dự án.</span>
+        <span className="text-amber-800/80"></span>
       </div>}
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.4fr)]">
-        <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-2 xl:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.4fr)]">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-slate-100">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-300 bg-white px-3 py-2">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Tác nhân</h3>
-              <p className="mt-0.5 text-xs text-slate-500">Ai tương tác với hệ thống?</p>
             </div>
-            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">{actors.length}</span>
+            <span className="rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white">{actors.length}</span>
           </div>
-          <div className="flex flex-col gap-3 p-3">
+          <div className="flex flex-col gap-2 p-2">
             {actors.map((actor) => {
               const detail = actorValue(actor);
               const linkedUseCases = visibleRelations.filter((relation) => relation.actorId === actor.id);
-              return <article key={actor.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              return <article key={actor.id} className="min-w-0 rounded-lg border border-slate-300 bg-white p-2 shadow-sm">
                 <div className="flex min-w-0 items-start gap-2">
-                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+                  <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-200 text-emerald-950">
                     <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                       <circle cx="12" cy="7" r="3.2" /><path d="M5.5 20v-1.8a6.5 6.5 0 0 1 13 0V20z" />
                     </svg>
@@ -161,21 +160,21 @@ export default function Step1ActorUseCase({
                     onClick={() => { if (window.confirm(`Xóa tác nhân “${actor.name}” và các liên kết liên quan?`)) void onDeleteActor(actor.id); }}
                     className="mt-5 shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-40">Xóa</button>
                 </div>
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <label className="min-w-0 text-xs font-medium text-slate-600">Vai trò
-                    <textarea rows={2} value={detail.role} disabled={busy} onChange={(event) => updateActorField(actor, "role", event.target.value)}
+                    <textarea rows={1} value={detail.role} disabled={busy} onChange={(event) => updateActorField(actor, "role", event.target.value)}
                       onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Vai trò trong hệ thống…" className={`${fieldClass} mt-1`} />
                   </label>
                   <label className="min-w-0 text-xs font-medium text-slate-600">Mô tả
-                    <textarea rows={2} value={detail.description} disabled={busy} onChange={(event) => updateActorField(actor, "description", event.target.value)}
+                    <textarea rows={1} value={detail.description} disabled={busy} onChange={(event) => updateActorField(actor, "description", event.target.value)}
                       onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Mô tả ngắn…" className={`${fieldClass} mt-1`} />
                   </label>
                 </div>
-                <label className="mt-2 block text-xs font-medium text-slate-600">Nghiệp vụ chính
-                  <textarea rows={2} value={detail.mainBusinesses} disabled={busy} onChange={(event) => updateActorField(actor, "mainBusinesses", event.target.value)}
+                <label className="mt-2 block text-xs font-medium text-slate-700">Nghiệp vụ chính
+                  <textarea rows={1} value={detail.mainBusinesses} disabled={busy} onChange={(event) => updateActorField(actor, "mainBusinesses", event.target.value)}
                     onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Các nghiệp vụ tác nhân thực hiện…" className={`${fieldClass} mt-1`} />
                 </label>
-                <div className="mt-3 border-t border-slate-100 pt-2.5">
+                <div className="mt-2 border-t border-slate-200 pt-2">
                   <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Use Case tham gia</p>
                   {linkedUseCases.length ? <div className="flex flex-wrap gap-1.5">
                     {linkedUseCases.map((relation) => <span key={relation.id} className="inline-flex max-w-full items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-xs text-sky-800">
@@ -188,8 +187,7 @@ export default function Step1ActorUseCase({
             })}
             {actors.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có tác nhân</p>
-              <p className="mt-1 text-xs text-slate-500">Thêm tác nhân hoặc dùng AI để phân tích.</p>
-            </div>}
+                          </div>}
             <form className="flex min-w-0 gap-2 rounded-xl border border-dashed border-emerald-300 bg-white p-2.5" onSubmit={(event) => { event.preventDefault(); void createActor(); }}>
               <input value={newActor} onChange={(event) => setNewActor(event.target.value)} disabled={busy} placeholder="Tên tác nhân mới…" aria-label="Tên tác nhân mới" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" />
               <button type="submit" disabled={busy || !newActor.trim()} className="shrink-0 rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
@@ -201,9 +199,8 @@ export default function Step1ActorUseCase({
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Use Case</h3>
-              <p className="mt-0.5 text-xs text-slate-500">Hệ thống cung cấp chức năng nào và tác nhân nào tham gia?</p>
             </div>
-            <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-800">{useCases.length}</span>
+            <span className="rounded-md bg-sky-700 px-2 py-0.5 text-xs font-bold text-white">{useCases.length}</span>
           </div>
           <div className="flex flex-col gap-3 p-3">
             {useCases.map((useCase, index) => {
@@ -211,7 +208,7 @@ export default function Step1ActorUseCase({
               const availableActors = actors.filter((actor) => !ucRelations.some((relation) => relation.actorId === actor.id));
               return <article key={useCase.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="flex min-w-0 items-start gap-2">
-                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-800">
+                  <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-sky-200 text-sky-950">
                     <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                       <ellipse cx="12" cy="12" rx="9" ry="5.5" /><path d="M7 12h10" />
                     </svg>
@@ -226,8 +223,8 @@ export default function Step1ActorUseCase({
                     onClick={() => { if (window.confirm(`Xóa Use Case “${useCase.name}”?`)) void onDeleteUseCase(useCase.id); }}
                     className="mt-5 shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-40">Xóa</button>
                 </div>
-                <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
-                  <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="mt-2 rounded-lg border border-sky-200 bg-sky-50 p-2">
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold text-slate-700">Tác nhân tham gia</p>
                     <span className="text-[11px] text-slate-500">{ucRelations.length} liên kết</span>
                   </div>
@@ -236,7 +233,7 @@ export default function Step1ActorUseCase({
                       <span aria-hidden="true">●</span><span className="truncate">{relation.from}</span>
                       <button type="button" title="Bỏ liên kết" aria-label={`Bỏ liên kết ${relation.from} với ${useCase.name}`} disabled={busy} onClick={() => void onUnlinkActor(relation.id)} className="ml-0.5 font-semibold text-emerald-700 hover:text-rose-600">×</button>
                     </span>)}
-                  </div> : <p className="text-xs text-slate-400">Chưa có tác nhân liên kết. Thêm liên kết để thể hiện ai thực hiện chức năng này.</p>}
+                  </div> : <p className="text-xs text-slate-400">Chưa liên kết</p>}
                   {linkingUseCaseId === useCase.id ? <form className="mt-3 flex flex-wrap items-center gap-2" onSubmit={(event) => {
                     event.preventDefault();
                     const actorId = Number(linkActorId);
@@ -257,8 +254,7 @@ export default function Step1ActorUseCase({
             })}
             {useCases.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có Use Case</p>
-              <p className="mt-1 text-xs text-slate-500">Phân tích đặc tả hoặc thêm Use Case mới.</p>
-            </div>}
+                          </div>}
             <form className="grid min-w-0 grid-cols-1 gap-2 rounded-xl border border-dashed border-sky-300 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_minmax(160px,0.8fr)_auto]" onSubmit={(event) => { event.preventDefault(); void createUseCase(); }}>
               <input value={newUseCase} onChange={(event) => setNewUseCase(event.target.value)} disabled={busy || specifications.length === 0} placeholder="Tên Use Case mới…" aria-label="Tên Use Case mới" className="h-9 min-w-0 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" />
               <select value={newUseCaseSpecification} onChange={(event) => setNewUseCaseSpecification(event.target.value)} disabled={busy || specifications.length === 0} aria-label="Đặc tả chức năng nguồn" className="h-9 min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs outline-none focus:border-emerald-500">
