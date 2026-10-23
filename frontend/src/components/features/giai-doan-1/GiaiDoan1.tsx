@@ -959,7 +959,7 @@ export default function GiaiDoan1({
   return (
     <div className="relative">
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
-      <div className={`relative z-10 w-full max-w-none space-y-6 px-4 sm:px-6 lg:px-8 ${step === 5 ? "pt-4 pb-2" : "py-6"}`}>
+      <div className={`relative z-10 w-full max-w-none space-y-6 px-4 sm:px-6 lg:px-8 ${step === 4 || step === 5 ? "pt-3 pb-2" : "py-6"}`}>
         {!loaded && (
           <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
             Đang tải dữ liệu từ cơ sở dữ liệu...
