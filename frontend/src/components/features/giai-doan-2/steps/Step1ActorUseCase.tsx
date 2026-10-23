@@ -160,29 +160,6 @@ export default function Step1ActorUseCase({
                     onClick={() => { if (window.confirm(`Xóa tác nhân “${actor.name}” và các liên kết liên quan?`)) void onDeleteActor(actor.id); }}
                     className="mt-5 shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-40">Xóa</button>
                 </div>
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <label className="min-w-0 text-xs font-medium text-slate-600">Vai trò
-                    <textarea rows={1} value={detail.role} disabled={busy} onChange={(event) => updateActorField(actor, "role", event.target.value)}
-                      onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Vai trò trong hệ thống…" className={`${fieldClass} mt-1`} />
-                  </label>
-                  <label className="min-w-0 text-xs font-medium text-slate-600">Mô tả
-                    <textarea rows={1} value={detail.description} disabled={busy} onChange={(event) => updateActorField(actor, "description", event.target.value)}
-                      onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Mô tả ngắn…" className={`${fieldClass} mt-1`} />
-                  </label>
-                </div>
-                <label className="mt-2 block text-xs font-medium text-slate-700">Nghiệp vụ chính
-                  <textarea rows={1} value={detail.mainBusinesses} disabled={busy} onChange={(event) => updateActorField(actor, "mainBusinesses", event.target.value)}
-                    onBlur={() => void onSaveActorDetails([{ id: actor.id, ...actorValue(actor) }])} placeholder="Các nghiệp vụ tác nhân thực hiện…" className={`${fieldClass} mt-1`} />
-                </label>
-                <div className="mt-2 border-t border-slate-200 pt-2">
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Use Case tham gia</p>
-                  {linkedUseCases.length ? <div className="flex flex-wrap gap-1.5">
-                    {linkedUseCases.map((relation) => <span key={relation.id} className="inline-flex max-w-full items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-xs text-sky-800">
-                      <span className="truncate">{relation.to}</span>
-                      <button type="button" title="Bỏ liên kết" aria-label={`Bỏ liên kết ${actor.name} với ${relation.to}`} disabled={busy} onClick={() => void onUnlinkActor(relation.id)} className="font-semibold text-sky-600 hover:text-rose-600">×</button>
-                    </span>)}
-                  </div> : <p className="text-xs italic text-slate-400">Chưa liên kết với Use Case nào</p>}
-                </div>
               </article>;
             })}
             {actors.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
