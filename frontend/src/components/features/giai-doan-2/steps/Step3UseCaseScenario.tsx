@@ -47,7 +47,7 @@ export default function Step3UseCaseScenario({
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
 
   return (
-    <div className="space-y-5 pb-6">
+    <div className="space-y-5 pb-8">
       <div className="space-y-4">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
@@ -75,8 +75,8 @@ export default function Step3UseCaseScenario({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
-              <section className="min-w-0 min-w-0">
+            <div className="grid grid-cols-1 items-start gap-4 pb-2 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.6fr)]">
+              <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <h3 className="mb-3 text-sm font-semibold text-slate-800">Thông tin ca sử dụng</h3>
                 <div className="space-y-3">
                   <label className="block min-w-0 text-xs font-semibold text-slate-600">
