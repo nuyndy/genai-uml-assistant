@@ -162,10 +162,8 @@ code,
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
-main { padding-bottom: 6.5rem; }
-
+/* Thanh hành động cố định đã không còn được render; không dành sẵn khoảng trống đáy cho nó. */
 @media (max-width: 640px) {
-  main { padding-bottom: 7.5rem; }
   .workflow-action-bar { gap: 0.5rem; padding-inline: 0.75rem; }
   .workflow-action-bar button { max-width: 100%; white-space: normal; }
 }
