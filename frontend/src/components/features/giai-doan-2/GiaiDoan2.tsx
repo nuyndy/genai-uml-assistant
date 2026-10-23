@@ -677,8 +677,9 @@ export default function GiaiDoan2({
     />
   );
 
-  const step5 = (
+  const stepClassConfiguration = (
     <Step5ClassDiagram
+      viewMode="configuration"
       umlClasses={state.umlClasses}
       classDiagramUrl={state.classDiagramUrl}
       classDiagramCode={state.classDiagramCode}
@@ -726,6 +727,33 @@ export default function GiaiDoan2({
       onConfirmClassDiagram={() =>
         setState((previous) => ({ ...previous, classDiagramConfirmed: true }))
       }
+      busy={busy}
+      projectId={projectId}
+      wrapClass={wrapClass}
+    />
+  );
+
+  const stepClassDiagram = (
+    <Step5ClassDiagram
+      viewMode="diagram"
+      umlClasses={state.umlClasses}
+      classDiagramUrl={state.classDiagramUrl}
+      classDiagramCode={state.classDiagramCode}
+      editingClassId={editingClassId}
+      setEditingClassId={setEditingClassId}
+      setEditingClassDraft={(id, draft) => setClassDrafts((prev) => ({ ...prev, [id]: draft }))}
+      onSaveClass={async (id, draft) => {
+        await runAction(async () => {
+          const saved = await updateClass(id, { name: draft.name.trim(), attributes: draft.attributes.map((line) => line.trim()).filter(Boolean), methods: draft.methods.map((line) => line.trim()).filter(Boolean) });
+          setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.map((item) => item.id === saved.id ? { id: saved.id, name: saved.name, attributes: saved.attributes, methods: saved.methods } : item) }));
+          setEditingClassId(null);
+        }, "Đang lưu lớp...");
+      }}
+      onDeleteClass={async (id) => {
+        await runAction(async () => { await deleteClass(id); setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.filter((item) => item.id !== id) })); setEditingClassId(null); }, "Đang xoá lớp...");
+      }}
+      onRegenerateClasses={() => void runAction(runGenerateClasses, "Đang sinh biểu đồ lớp...")}
+      onConfirmClassDiagram={() => setState((previous) => ({ ...previous, classDiagramConfirmed: true }))}
       busy={busy}
       projectId={projectId}
       wrapClass={wrapClass}
@@ -791,9 +819,10 @@ export default function GiaiDoan2({
         {step === 1 && step1}
         {step === 2 && step3}
         {step === 3 && step2}
-        {step === 4 && step5}
-        {step === 5 && step4}
-        {step === 6 && <Step6UmlReview state={state} />}
+        {step === 4 && stepClassConfiguration}
+        {step === 5 && stepClassDiagram}
+        {step === 6 && step4}
+        {step === 7 && <Step6UmlReview state={state} />}
       </div>
     </div>
   );
