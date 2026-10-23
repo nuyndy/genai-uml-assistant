@@ -47,7 +47,7 @@ export default function Step3UseCaseScenario({
   const scenario = activeUseCase ? (scenarios[activeUseCase.id] ?? EMPTY_SCENARIO) : EMPTY_SCENARIO;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-4">
       <Card tone="emerald">
         {useCases.length === 0 ? (
           <EmptyState title="Chưa có Use Case" hint="Quay lại Bước 1 để tạo và lưu danh sách Use Case trước." />
