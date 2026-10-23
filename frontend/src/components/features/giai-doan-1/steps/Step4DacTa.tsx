@@ -157,6 +157,7 @@ export default function Step4DacTa({
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
       {error && <div role="alert" className="mb-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+      <Card compact tone="emerald" className="flex min-h-0 flex-1 flex-col">
       <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[#C8DDD7] bg-white p-3 shadow-sm">
           <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Loại đặc tả</p>
@@ -288,6 +289,7 @@ export default function Step4DacTa({
           )}
         </section>
       </div>
+      </Card>
     </div>
   );
 }
