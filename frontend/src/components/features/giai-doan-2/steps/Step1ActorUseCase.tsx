@@ -103,7 +103,7 @@ export default function Step1ActorUseCase({
   }
 
   return (
-    <Card compact allowOverflow className="!flex !h-[calc(100vh-250px)] !min-h-[420px] !flex-col !p-2"
+    <Card compact allowOverflow className="!flex !h-[min(720px,calc(100dvh-180px))] !min-h-[420px] !flex-col !p-2"
       actions={<div className="flex w-full flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-slate-600">
           <span className="font-semibold text-slate-800">{actors.length}</span> tác nhân
@@ -188,11 +188,12 @@ export default function Step1ActorUseCase({
             {actors.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có tác nhân</p>
                           </div>}
-            <form className="flex min-w-0 gap-2 rounded-xl border border-dashed border-emerald-300 bg-white p-2.5" onSubmit={(event) => { event.preventDefault(); void createActor(); }}>
+
+          </div>
+          <div className="shrink-0 border-t border-emerald-200 bg-emerald-50 p-2"><form className="flex min-w-0 gap-2 rounded-xl border border-dashed border-emerald-300 bg-white p-2.5" onSubmit={(event) => { event.preventDefault(); void createActor(); }}>
               <input value={newActor} onChange={(event) => setNewActor(event.target.value)} disabled={busy} placeholder="Tên tác nhân mới…" aria-label="Tên tác nhân mới" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" />
               <button type="submit" disabled={busy || !newActor.trim()} className="shrink-0 rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
-            </form>
-          </div>
+            </form></div>
         </section>
 
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-300 bg-slate-100">
@@ -255,7 +256,9 @@ export default function Step1ActorUseCase({
             {useCases.length === 0 && <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
               <p className="text-sm font-medium text-slate-700">Chưa có Use Case</p>
                           </div>}
-            <form className="grid min-w-0 grid-cols-1 gap-2 rounded-xl border border-dashed border-sky-300 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_minmax(160px,0.8fr)_auto]" onSubmit={(event) => { event.preventDefault(); void createUseCase(); }}>
+
+          </div>
+          <div className="shrink-0 border-t border-sky-200 bg-sky-50 p-2"><form className="grid min-w-0 grid-cols-1 gap-2 rounded-xl border border-dashed border-sky-300 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_minmax(160px,0.8fr)_auto]" onSubmit={(event) => { event.preventDefault(); void createUseCase(); }}>
               <input value={newUseCase} onChange={(event) => setNewUseCase(event.target.value)} disabled={busy || specifications.length === 0} placeholder="Tên Use Case mới…" aria-label="Tên Use Case mới" className="h-9 min-w-0 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" />
               <select value={newUseCaseSpecification} onChange={(event) => setNewUseCaseSpecification(event.target.value)} disabled={busy || specifications.length === 0} aria-label="Đặc tả chức năng nguồn" className="h-9 min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs outline-none focus:border-emerald-500">
                 <option value="">Chọn đặc tả chức năng</option>
@@ -263,8 +266,7 @@ export default function Step1ActorUseCase({
               </select>
               <button type="submit" disabled={busy || !newUseCase.trim() || specifications.length === 0} className="h-9 rounded-lg bg-sky-700 px-3 text-sm font-medium text-white disabled:opacity-40">+ Thêm</button>
               {specifications.length === 0 && <p className="text-xs text-amber-700 sm:col-span-3">Cần có đặc tả chức năng ở Giai đoạn 1 trước khi tạo Use Case.</p>}
-            </form>
-          </div>
+            </form></div>
         </section>
       </div>
     </Card>
