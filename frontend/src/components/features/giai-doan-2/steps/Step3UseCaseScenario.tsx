@@ -104,7 +104,7 @@ export default function Step3UseCaseScenario({
                 </div>
               </section>
 
-              <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <section className="min-w-0 mb-6 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <h3 className="mb-3 text-sm font-semibold text-slate-800">Luồng xử lý</h3>
                 <div className="max-h-[calc(100dvh-220px)] space-y-4 overflow-y-auto overscroll-contain pr-2">
                   {SCENARIO_PARTS.map(({ field, label, hint }, index) => (
