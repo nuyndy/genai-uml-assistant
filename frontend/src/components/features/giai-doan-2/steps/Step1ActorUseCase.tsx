@@ -103,7 +103,7 @@ export default function Step1ActorUseCase({
   }
 
   return (
-    <Card compact allowOverflow className="!p-2"
+    <Card compact allowOverflow className="!flex !h-[calc(100vh-250px)] !min-h-[420px] !flex-col !p-2"
       actions={<div className="flex w-full flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-slate-600">
           <span className="font-semibold text-slate-800">{actors.length}</span> tác nhân
@@ -131,15 +131,15 @@ export default function Step1ActorUseCase({
         <span className="text-amber-800/80"></span>
       </div>}
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-2 xl:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.4fr)]">
-        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-slate-100">
+      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 items-stretch gap-2 overflow-hidden xl:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.4fr)]">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-300 bg-slate-100">
           <div className="flex items-center justify-between gap-3 border-b border-slate-300 bg-white px-3 py-2">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Tác nhân</h3>
             </div>
             <span className="rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white">{actors.length}</span>
           </div>
-          <div className="flex flex-col gap-2 p-2">
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
             {actors.map((actor) => {
               const detail = actorValue(actor);
               const linkedUseCases = visibleRelations.filter((relation) => relation.actorId === actor.id);
@@ -195,14 +195,14 @@ export default function Step1ActorUseCase({
           </div>
         </section>
 
-        <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-300 bg-slate-100">
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Use Case</h3>
             </div>
             <span className="rounded-md bg-sky-700 px-2 py-0.5 text-xs font-bold text-white">{useCases.length}</span>
           </div>
-          <div className="flex flex-col gap-3 p-3">
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
             {useCases.map((useCase, index) => {
               const ucRelations = visibleRelations.filter((relation) => relation.useCaseId === useCase.id);
               const availableActors = actors.filter((actor) => !ucRelations.some((relation) => relation.actorId === actor.id));
