@@ -131,7 +131,7 @@ export default function Step5ChotTaiLieu({
   };
 
   return (
-    <div className="h-[calc(100dvh_-_7rem)] min-h-0 w-full min-w-0">
+    <div className="h-full min-h-0 w-full min-w-0">
       <Card compact allowOverflow tone="emerald" className="flex h-full min-h-0 flex-col">
         {srsMarkdown || specifications.length > 0 ? (
           <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
