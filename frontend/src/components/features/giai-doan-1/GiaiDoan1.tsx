@@ -936,7 +936,6 @@ export default function GiaiDoan1({
 
   const appendixBContent = (
     <div className="space-y-6 text-sm leading-6">
-      <p>Phụ lục này tổng hợp các mô hình và kết quả phân tích UML đã triển khai ở Giai đoạn 2, dựa trên dữ liệu hiện có của dự án.</p>
 
       <section>
         <h3 className="mb-2 mt-4 text-[15px] font-bold">B.1. Tác nhân, Use Case và quan hệ</h3>
