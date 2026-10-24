@@ -286,9 +286,10 @@ export default function SrsWordEditor({
           <SectionHeading>Phụ lục B. Mô hình phân tích</SectionHeading>
           {appendixBContent ?? <p className="text-sm leading-6">Các mô hình phân tích UML được quản lý và đồng bộ ở Giai đoạn 2 và Giai đoạn 3.</p>}
         </div>
-        <footer className="mt-8 flex justify-between border-t border-slate-300 pt-3 text-xs text-slate-500">
+        <footer className="mt-8 flex min-h-10 items-end justify-between border-t border-slate-300 pt-3 text-xs text-slate-500">
           <span>{projectName || "Hệ thống"}</span>
-          <span>Bản thảo - Trang 1</span>
+          <span>Đặc tả yêu cầu phần mềm (SRS)</span>
+          <span>Bản thảo</span>
         </footer>
       </article>
     </div>
