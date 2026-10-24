@@ -112,9 +112,9 @@ export default function Step5ClassDiagram({
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-10">
+          <div className="max-h-[72vh] overflow-y-auto overscroll-contain pr-1 pb-4">
             {umlClasses.map((item, index) => (
-              <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+              <article key={item.id} className="min-w-0 border-b border-slate-200 bg-white py-1 last:border-b-0">
                 {editingClassId === item.id ? (
                   <div className="p-4">
                     <ClassEditor
@@ -128,33 +128,33 @@ export default function Step5ClassDiagram({
                   </div>
                 ) : (
                   <>
-                    <div className="flex min-w-0 items-center justify-between gap-3 px-4 pt-3 pb-2">
+                    <div className="flex min-w-0 items-center justify-between gap-3 px-2 py-2">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-sm font-semibold text-emerald-800">{index + 1}</span>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
                         <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
                       </div>
                       <button
                         type="button"
                         disabled={busy}
                         onClick={() => startEditing(item)}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
                       >
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-2 gap-4 px-4 pb-4 pt-2">
+                    <div className="grid min-w-0 grid-cols-2 gap-4 px-2 pb-2 pt-1">
                       <section className="min-w-0">
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800">Thuộc tính</h4>
+                        <h4 className="mb-1 text-[11px] font-semibold text-emerald-800">Thuộc tính</h4>
                         {item.attributes.length ? (
-                          <ul className="space-y-1.5">
+                          <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-0">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <span className="text-sm text-slate-400">Chưa có thuộc tính</span>}
+                        ) : <span className="text-xs text-slate-400">Chưa có thuộc tính</span>}
                       </section>
                       <section className="min-w-0">
-                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sky-800">Phương thức</h4>
+                        <h4 className="mb-1 text-[11px] font-semibold text-sky-800">Phương thức</h4>
                         {item.methods.length ? (
                           <ul className="space-y-1.5">
                             {item.methods.map((value, valueIndex) => (
