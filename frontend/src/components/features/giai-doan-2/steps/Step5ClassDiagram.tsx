@@ -92,7 +92,7 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-16">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title={`Số lớp: ${umlClasses.length}`}
+        title={`${umlClasses.length} lớp`}
         actions={
           <SoftButton disabled={busy || !projectId} onClick={regenerate}>
             {busy
@@ -106,7 +106,7 @@ export default function Step5ClassDiagram({
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-6">
+          <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-8">
             {umlClasses.map((item, index) => (
               <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
                 {editingClassId === item.id ? (
