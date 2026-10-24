@@ -149,11 +149,8 @@ function App() {
    * Chỉ mở khoá giai đoạn khi giai đoạn trước đã hoàn thành thật, không mở
    * sẵn cả ba ngay từ đầu.
    */
-  const maxUnlockedStage = (): StageId => {
-    if (stage2Complete) return 3;
-    if (stage1Complete) return 2;
-    return 1;
-  };
+  // Cho phép chuyển tự do giữa 3 giai đoạn; không khóa điều hướng theo dữ liệu.
+  const maxUnlockedStage = (): StageId => 3;
 
   /** Giải thích rõ điều kiện còn thiếu để người dùng không bị khóa mà không biết lý do. */
   const stageLockReason = (): string => {
@@ -224,12 +221,12 @@ function App() {
                 const active = id === stage;
                 const done = completedStages.includes(id);
                 const unlocked = id <= maxUnlockedStage();
-                const clickable = unlocked && !active;
+                const clickable = !active;
                 return (
                   <li key={id} className="w-full">
-                    <button type="button" disabled={!clickable} aria-current={active ? "step" : undefined} aria-label={`Giai đoạn ${id}: ${def.short}${done ? ", đã hoàn thành" : unlocked ? "" : ", đang khóa"}`} title={`Giai đoạn ${id}: ${def.short}`} onClick={() => { if (clickable) { setStage(id); setStep(1); setAccountMenuOpen(false); } }} className={`group mx-auto flex w-full flex-col items-center gap-1.5 px-1 py-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 ${clickable ? "cursor-pointer" : "cursor-not-allowed"}`}>
+                    <button type="button" disabled={!clickable} aria-current={active ? "step" : undefined} aria-label={`Giai đoạn ${id}: ${def.short}${done ? ", đã hoàn thành" : unlocked ? "" : ", đang khóa"}`} title={`Giai đoạn ${id}: ${def.short}`} onClick={() => { if (clickable) { setStage(id); setStep(1); setAccountMenuOpen(false); } }} className={`group mx-auto flex w-full flex-col items-center gap-1.5 px-1 py-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 ${clickable ? "cursor-pointer" : "cursor-default"}`}>
                       <span className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-bold transition sm:h-11 sm:w-11 ${active ? "border-emerald-700 bg-emerald-700 text-white shadow-md shadow-emerald-900/20" : done ? "border-emerald-200 bg-emerald-100 text-emerald-800" : unlocked ? "border-slate-200 bg-white text-slate-600 group-hover:border-emerald-300 group-hover:bg-emerald-50" : "border-slate-100 bg-slate-50 text-slate-300"}`}>
-                        {done ? "✓" : !unlocked ? "🔒" : id}
+                        {done ? "✓" : id}
                         {active && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-lime-400" />}
                       </span>
                       
