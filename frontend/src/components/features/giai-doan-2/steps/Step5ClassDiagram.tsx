@@ -128,42 +128,40 @@ export default function Step5ClassDiagram({
                   </div>
                 ) : (
                   <>
-                    <div className="flex min-w-0 items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <div className="flex min-w-0 items-center justify-between gap-3 px-4 pt-3 pb-2">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-200/70 text-sm font-bold text-emerald-800">{index + 1}</span>
-                        <div className="min-w-0">
-                          <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
-                        </div>
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-sm font-semibold text-emerald-800">{index + 1}</span>
+                        <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
                       </div>
                       <button
                         type="button"
                         disabled={busy}
                         onClick={() => startEditing(item)}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
                       >
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100">
-                      <section className="flex min-w-0 flex-wrap items-center gap-2 p-3">
-                        <span className="inline-flex shrink-0 items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">Thuộc tính</span>
+                    <div className="grid min-w-0 grid-cols-2 gap-4 px-4 pb-4 pt-2">
+                      <section className="min-w-0">
+                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800">Thuộc tính</h4>
                         {item.attributes.length ? (
-                          <ul className="flex min-w-0 flex-wrap items-center gap-2">
+                          <ul className="space-y-1.5">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <span className="text-xs italic text-slate-400">Chưa có thuộc tính</span>}
+                        ) : <span className="text-sm text-slate-400">Chưa có thuộc tính</span>}
                       </section>
-                      <section className="flex min-w-0 flex-wrap items-center gap-2 p-3">
-                        <span className="inline-flex shrink-0 items-center rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800">Phương thức</span>
+                      <section className="min-w-0">
+                        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sky-800">Phương thức</h4>
                         {item.methods.length ? (
-                          <ul className="flex min-w-0 flex-wrap items-center gap-2">
+                          <ul className="space-y-1.5">
                             {item.methods.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <span className="text-xs italic text-slate-400">Chưa có phương thức</span>}
+                        ) : <span className="text-sm text-slate-400">Chưa có phương thức</span>}
                       </section>
                     </div>
                   </>
