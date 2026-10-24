@@ -1118,6 +1118,7 @@ export default function GiaiDoan1({
       setSrsMetadata={setSrsMetadata}
       setSrsSpecDrafts={setSrsSpecDrafts}
       appendixBContent={appendixBContent}
+      appendixUseCaseNames={state.usecases.map((useCase) => useCase.name)}
     />
   );
 
