@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { imageExtension } from "../../../../utils/imageExtension";
 import {
   Card,
   SoftButton,
@@ -53,6 +54,18 @@ export default function Step5ClassDiagram({
   wrapClass,
 }: Props) {
   const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
+  const [zoom, setZoom] = useState(1);
+  const [showCode, setShowCode] = useState(false);
+
+  const downloadImage = () => {
+    if (!classDiagramUrl) return;
+    const link = document.createElement("a");
+    link.href = classDiagramUrl;
+    link.download = "class-diagram." + imageExtension(classDiagramUrl);
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.click();
+  };
 
   const startEditing = (item: UmlClass) => {
     const next = { name: item.name, attributes: [...item.attributes], methods: [...item.methods] };
@@ -163,27 +176,25 @@ export default function Step5ClassDiagram({
         )}
       </Card>}
 
-      {(viewMode === "diagram" || viewMode === "all") && <Card title="Sơ đồ lớp" tone="emerald" actions={<div className="flex flex-wrap gap-2"><SoftButton disabled={busy || !projectId} onClick={regenerate}>{busy ? "Đang sinh..." : classDiagramUrl ? "Sinh lại sơ đồ lớp" : "Sinh sơ đồ lớp"}</SoftButton><PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Xác nhận sơ đồ lớp</PrimaryButton></div>}>
-        <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15rem,0.38fr)]">
-          <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
-            <div className="max-h-[min(54vh,460px)] min-h-[250px] overflow-auto">
-              <DiagramPreview
-                imageUrl={classDiagramUrl}
-                emptyTitle="Chưa có ảnh biểu đồ lớp"
-                emptyHint="Chưa có sơ đồ lớp."
-                downloadName="class-diagram.svg"
-              />
+      {(viewMode === "diagram" || viewMode === "all") && <Card compact allowOverflow className="!p-3">
+        <div className="mb-3 flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-slate-200 pb-3">
+          <PrimaryButton disabled={busy || !projectId} onClick={regenerate}>{busy ? "Đang sinh..." : classDiagramCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}</PrimaryButton>
+          <SoftButton disabled={!classDiagramUrl} onClick={downloadImage}>↓ Tải ảnh về</SoftButton>
+          <SoftButton disabled={!classDiagramCode} onClick={() => setShowCode((value) => !value)}>{showCode ? "Ẩn UML" : "Mã UML"}</SoftButton>
+          <span className="mx-1 h-6 border-l border-slate-200" />
+          <SoftButton disabled={!classDiagramUrl || zoom <= 0.5} onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.25).toFixed(2))))}>−</SoftButton>
+          <span className="min-w-12 text-center text-sm tabular-nums text-slate-600">{Math.round(zoom * 100)}%</span>
+          <SoftButton disabled={!classDiagramUrl || zoom >= 2.5} onClick={() => setZoom((value) => Math.min(2.5, Number((value + 0.25).toFixed(2))))}>+</SoftButton>
+          <SoftButton disabled={!classDiagramUrl || zoom === 1} onClick={() => setZoom(1)}>Vừa khung</SoftButton>
+          <div className="ml-auto shrink-0"><PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Lưu biểu đồ</PrimaryButton></div>
+        </div>
+        <div className={`grid min-w-0 items-start gap-3 ${showCode ? "grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,1fr)]" : "grid-cols-1"}`}>
+          <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex h-[min(68vh,760px)] min-h-[360px] items-center justify-center overflow-auto bg-slate-50 p-3 sm:p-4">
+              {classDiagramUrl ? <div className="flex min-h-full w-full min-w-0 items-center justify-center"><img src={classDiagramUrl} alt="Biểu đồ lớp" draggable={false} style={{ width: `${zoom * 100}%`, height: "auto", maxWidth: "none", flexShrink: 0 }} className="rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[360px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={regenerate}>Sinh biểu đồ</PrimaryButton></div></div>}
             </div>
-          </div>
-          <section className="flex min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-emerald-100">
-            <div className="flex items-center gap-2 border-b border-emerald-100 px-3 py-2">
-              <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-900">Mã</span>
-              <span className="rounded-md px-2.5 py-1 text-xs text-slate-500">PlantUML</span>
-            </div>
-            <pre className="uml-code-panel min-h-[250px] max-h-[min(54vh,460px)] flex-1 overflow-auto whitespace-pre-wrap break-words p-3 text-xs leading-5 [overflow-wrap:anywhere]">
-              {classDiagramCode || "Mã PlantUML sẽ xuất hiện tại đây sau khi sinh biểu đồ."}
-            </pre>
           </section>
+          {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="min-h-0 flex-1 bg-[#102d24] p-3"><pre className="uml-code-panel h-full min-h-0 overflow-auto whitespace-pre-wrap break-words border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 [overflow-wrap:anywhere]">{classDiagramCode || "Mã PlantUML sẽ xuất hiện tại đây sau khi sinh biểu đồ."}</pre></div></section>}
         </div>
       </Card>}
 
