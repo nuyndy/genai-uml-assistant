@@ -60,7 +60,7 @@ export default function Step3KiemTraNhatQuan({
 
       <Card
         tone="emerald"
-        title="Kiểm tra tính nhất quán của sơ đồ"
+        title={<span className="text-xl sm:text-2xl">Kiểm tra tính nhất quán của sơ đồ</span>}
         actions={
           <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
             {busy ? "Đang kiểm tra..." : "Kiểm tra"}
