@@ -158,10 +158,10 @@ function App() {
   /** Giải thích rõ điều kiện còn thiếu để người dùng không bị khóa mà không biết lý do. */
   const stageLockReason = (): string => {
     if (!stage1Complete) {
-      if (!workflow.requirementLocked) return "Giai đoạn 2 đang khóa: hãy xác nhận yêu cầu ở Giai đoạn 1.";
+      if (!workflow.userStoryId) return "Giai đoạn 2 đang khóa: dự án chưa có User Story.";
       if (workflow.userStoryId === null) return "Giai đoạn 2 đang khóa: dự án chưa có User Story.";
-      if (!hasApprovedFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần duyệt ít nhất một đặc tả chức năng (FR).";
-      if (!hasApprovedNonFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần duyệt đặc tả phi chức năng (NFR).";
+      if (!hasFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần có ít nhất một đặc tả chức năng (FR).";
+      if (!hasNonFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần có đặc tả phi chức năng (NFR).";
       return "Giai đoạn 2 đang khóa: dữ liệu Giai đoạn 1 chưa hoàn tất đồng bộ.";
     }
     if (!stage2Complete) {
