@@ -64,6 +64,7 @@ export default function Step4InteractionDiagram({
   const [editingUseCaseId, setEditingUseCaseId] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const [page, setPage] = useState(0);
+  const [codeVisible, setCodeVisible] = useState<Record<number, boolean>>({});
   const pageSize = 2;
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
@@ -157,14 +158,14 @@ export default function Step4InteractionDiagram({
                     {diagram?.sourceCode && diagram.id !== undefined ? (
                       <div className="min-w-0 overflow-hidden rounded-xl bg-[#102d24]">
                         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
-                          <span className="text-xs font-semibold text-emerald-100">Mã PlantUML</span>
+                          <button type="button" onClick={() => setCodeVisible((v) => ({ ...v, [useCase.id]: !(v[useCase.id] ?? true) }))} className="text-xs font-semibold text-emerald-100">Mã UML {((codeVisible[useCase.id] ?? true) ? "−" : "+")}</button>
                           {!editing && (
                             <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}>
                               ✎ Sửa mã
                             </GhostButton>
                           )}
                         </div>
-                        {editing ? (
+                        {(codeVisible[useCase.id] ?? true) && (editing ? (
                           <div className="space-y-3 border-t border-white/10 p-3">
                             <textarea
                               value={draft}
@@ -184,7 +185,7 @@ export default function Step4InteractionDiagram({
                           <pre className="uml-code-panel max-h-[min(42vh,360px)] min-h-[220px] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
                             {diagram.sourceCode}
                           </pre>
-                        )}
+                        ))}
                       </div>
                     ) : (
                       <div className="flex min-h-[220px] items-center justify-center rounded-xl bg-white px-4 text-center text-sm text-slate-500">
