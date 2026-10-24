@@ -965,6 +965,12 @@ export default function GiaiDoan1({
       ];
       const useCaseDiagram = diagrams.filter((item) => item.type === "use_case" && item.use_case_id === null).at(-1);
       const classDiagram = diagrams.filter((item) => item.type === "class" && item.use_case_id === null).at(-1);
+      const latestUseCaseDiagrams = new Map<number, (typeof diagrams)[number]>();
+      diagrams.forEach((item) => {
+        if (item.type !== "use_case" || item.use_case_id === null) return;
+        const previous = latestUseCaseDiagrams.get(item.use_case_id);
+        if (!previous || previous.id < item.id) latestUseCaseDiagrams.set(item.use_case_id, item);
+      });
       const latestActivityDiagrams = new Map<number, (typeof diagrams)[number]>();
       diagrams.forEach((item) => {
         if (item.type !== "activity" || item.use_case_id === null) return;
@@ -1000,6 +1006,10 @@ export default function GiaiDoan1({
         }])),
         useCaseDiagramUrl: useCaseDiagram?.image_url ?? null,
         useCaseDiagramCode: useCaseDiagram?.source_code ?? null,
+        useCaseDiagrams: [...latestUseCaseDiagrams.values()].map((item) => ({
+          usecaseId: item.use_case_id as number,
+          imageUrl: item.image_url,
+        })),
         activityDiagrams: [...latestActivityDiagrams.values()].map((item) => ({
           usecaseId: item.use_case_id as number,
           imageUrl: item.image_url,
