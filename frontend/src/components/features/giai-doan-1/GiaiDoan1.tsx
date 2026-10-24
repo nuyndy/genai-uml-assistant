@@ -1057,10 +1057,11 @@ export default function GiaiDoan1({
         {state.usecases.map((useCase, index) => {
           const scenario = state.scenarios[useCase.id];
           const activityDiagram = state.activityDiagrams.find((diagram) => diagram.usecaseId === useCase.id);
+          const useCaseDiagram = state.useCaseDiagrams.find((diagram) => diagram.usecaseId === useCase.id);
           return <div key={useCase.id} className="mt-6 break-inside-avoid">
             <h4 className="mb-2 font-bold">{"1.2." + (index + 1) + " " + useCase.name}</h4>
             <p className="font-semibold">Sơ đồ Use Case</p>
-            {state.useCaseDiagramUrl ? <img src={state.useCaseDiagramUrl} alt={"Sơ đồ Use Case — " + useCase.name} className="mx-auto my-2 max-w-full" /> : <p>Chưa có ảnh sơ đồ Use Case được lưu.</p>}
+            {useCaseDiagram?.imageUrl ? <img src={useCaseDiagram.imageUrl} alt={"Sơ đồ Use Case — " + useCase.name} className="mx-auto my-2 max-w-full" /> : state.useCaseDiagramUrl ? <img src={state.useCaseDiagramUrl} alt={"Biểu đồ Use Case tổng quan"} className="mx-auto my-2 max-w-full" /> : <p>Chưa có ảnh sơ đồ Use Case được lưu.</p>}
             <p className="mt-3 font-semibold">Biểu đồ hoạt động</p>
             {activityDiagram?.imageUrl ? <img src={activityDiagram.imageUrl} alt={"Biểu đồ hoạt động — " + useCase.name} className="mx-auto my-2 max-w-full" /> : <p>Chưa có ảnh biểu đồ hoạt động được lưu cho Use Case này.</p>}
             <p className="mt-3 font-semibold">Kịch bản</p>
