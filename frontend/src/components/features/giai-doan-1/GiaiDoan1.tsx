@@ -934,6 +934,91 @@ export default function GiaiDoan1({
     />
   );
 
+  const appendixBContent = (
+    <div className="space-y-6 text-sm leading-6">
+      <p>Phụ lục này tổng hợp các mô hình và kết quả phân tích UML đã triển khai ở Giai đoạn 2, dựa trên dữ liệu hiện có của dự án.</p>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.1. Tác nhân, Use Case và quan hệ</h3>
+        {state.actors.length ? (
+          <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-xs">
+            <thead><tr><th className="border border-slate-300 bg-slate-100 p-2">Tác nhân</th><th className="border border-slate-300 bg-slate-100 p-2">Vai trò / mô tả</th></tr></thead>
+            <tbody>{state.actors.map((actor) => <tr key={actor.id}><td className="border border-slate-300 p-2">{actor.name}</td><td className="border border-slate-300 p-2">{[actor.role, actor.description, actor.mainBusinesses].filter(Boolean).join(" — ") || "—"}</td></tr>)}</tbody>
+          </table>
+        ) : <p>Chưa có tác nhân được lưu.</p>}
+        {state.usecases.length ? (
+          <table className="mt-3 w-full table-fixed border-collapse border border-slate-400 text-left text-xs">
+            <thead><tr><th className="border border-slate-300 bg-slate-100 p-2">Use Case</th><th className="border border-slate-300 bg-slate-100 p-2">Tác nhân liên kết</th></tr></thead>
+            <tbody>{state.usecases.map((useCase) => <tr key={useCase.id}><td className="border border-slate-300 p-2">{useCase.name}</td><td className="border border-slate-300 p-2">{state.relations.filter((relation) => relation.to === useCase.name && state.actors.some((actor) => actor.name === relation.from)).map((relation) => relation.from).join(", ") || "—"}</td></tr>)}</tbody>
+          </table>
+        ) : <p>Chưa có Use Case được lưu.</p>}
+      </section>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.2. Biểu đồ Use Case</h3>
+        {state.useCaseDiagramUrl && <img src={state.useCaseDiagramUrl} alt="Biểu đồ Use Case" className="mx-auto my-3 max-w-full" />}
+        {state.useCaseDiagramCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{state.useCaseDiagramCode}</pre> : <p>Chưa có mã biểu đồ Use Case được lưu.</p>}
+      </section>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.3. Kịch bản Use Case</h3>
+        {state.usecases.length ? state.usecases.map((useCase) => {
+          const scenario = state.scenarios[useCase.id];
+          return <div key={useCase.id} className="mb-4 break-inside-avoid">
+            <h4 className="mb-1 font-bold">{useCase.name}</h4>
+            {!scenario ? <p>Chưa có kịch bản được lưu.</p> : <>
+              {[
+                ["Luồng chính", scenario.mainFlow],
+                ["Luồng thay thế", scenario.altFlows],
+                ["Ngoại lệ", scenario.exceptions],
+              ].map(([label, lines]) => <div key={label as string} className="mb-2">
+                <p className="font-semibold">{label as string}</p>
+                {Array.isArray(lines) && lines.length ? <ol className="list-decimal space-y-1 pl-5">{lines.map((line, index) => <li key={index}>{line}</li>)}</ol> : <p>—</p>}
+              </div>)}
+              {scenario.preconditions?.length ? <p><strong>Điều kiện trước:</strong> {scenario.preconditions.join("; ")}</p> : null}
+              {scenario.postconditions?.length ? <p><strong>Điều kiện sau:</strong> {scenario.postconditions.join("; ")}</p> : null}
+            </>}
+          </div>;
+        }) : <p>Chưa có Use Case để trình bày kịch bản.</p>}
+      </section>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.4. Biểu đồ tương tác theo từng Use Case</h3>
+        {state.interactions.length ? state.interactions.map((diagram, index) => {
+          const useCase = state.usecases.find((item) => item.id === diagram.usecaseId);
+          return <div key={`${diagram.usecaseId}-${diagram.type}-${index}`} className="mb-4 break-inside-avoid">
+            <h4 className="mb-1 font-bold">{useCase?.name || `Use Case ID ${diagram.usecaseId}`} — {diagram.type === "sequence" ? "Sequence Diagram" : "Collaboration Diagram"}</h4>
+            {diagram.imageUrl && <img src={diagram.imageUrl} alt={`Biểu đồ ${diagram.type} - ${useCase?.name || diagram.usecaseId}`} className="mx-auto my-2 max-w-full" />}
+            {diagram.sourceCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{diagram.sourceCode}</pre> : <p>Chưa có mã nguồn biểu đồ.</p>}
+          </div>;
+        }) : <p>Chưa có biểu đồ tương tác được lưu.</p>}
+      </section>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.5. Domain Model và biểu đồ lớp</h3>
+        {state.umlClasses.length ? <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-xs">
+          <thead><tr><th className="border border-slate-300 bg-slate-100 p-2">Lớp</th><th className="border border-slate-300 bg-slate-100 p-2">Thuộc tính</th><th className="border border-slate-300 bg-slate-100 p-2">Phương thức</th></tr></thead>
+          <tbody>{state.umlClasses.map((item) => <tr key={item.id}><td className="border border-slate-300 p-2 font-semibold">{item.name}</td><td className="border border-slate-300 p-2">{item.attributes.join("\n") || "—"}</td><td className="border border-slate-300 p-2">{item.methods.join("\n") || "—"}</td></tr>)}</tbody>
+        </table> : <p>Chưa có lớp trong Domain Model.</p>}
+        {state.classDiagramUrl && <img src={state.classDiagramUrl} alt="Biểu đồ lớp UML" className="mx-auto my-3 max-w-full" />}
+        {state.classDiagramCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{state.classDiagramCode}</pre> : <p>Chưa có mã biểu đồ lớp được lưu.</p>}
+        {state.relations.length > 0 && <div className="mt-3"><p className="font-semibold">Các quan hệ đã lưu</p><ul className="list-disc pl-5">{state.relations.map((relation) => <li key={relation.id}>{relation.from} — {relation.type} — {relation.to}</li>)}</ul></div>}
+      </section>
+
+      <section>
+        <h3 className="mb-2 mt-4 text-[15px] font-bold">B.6. Truy vết và trạng thái xác nhận mô hình</h3>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>Actor và Use Case: {state.actorsUseCasesConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}.</li>
+          <li>Biểu đồ Use Case: {state.useCaseDiagramConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}.</li>
+          <li>Kịch bản Use Case: {state.scenariosConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}.</li>
+          <li>Biểu đồ tương tác: {state.interactionsConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}.</li>
+          <li>Biểu đồ lớp: {state.classDiagramConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}.</li>
+        </ul>
+        <p className="mt-2">Các liên kết Use Case đến đặc tả chức năng được xác định bằng mã đặc tả liên kết trong dữ liệu UML; các thay đổi mô hình cần được rà soát tính nhất quán trước khi duyệt baseline cuối.</p>
+      </section>
+    </div>
+  );
+
   const step5 = (
     <Step5ChotTaiLieu
       projectName={projectName}
@@ -950,6 +1035,7 @@ export default function GiaiDoan1({
       saveSrsSpecification={saveSrsSpecification}
       setSrsMetadata={setSrsMetadata}
       setSrsSpecDrafts={setSrsSpecDrafts}
+      appendixBContent={appendixBContent}
     />
   );
 
