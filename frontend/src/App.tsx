@@ -254,7 +254,7 @@ function App() {
             <div className="min-w-0 max-w-[260px]"><p className="text-xs font-medium text-slate-500">Dự án</p><p className="truncate text-sm font-semibold text-slate-800">{activeProject.name}</p></div>
             <div className="mx-auto grid w-full min-w-0 max-w-[460px] grid-cols-[36px_minmax(0,1fr)_36px] items-center gap-1 sm:gap-2">
               <button type="button" disabled={step <= 1} aria-label="Bước trước" title="Bước trước" onClick={() => setStep((current) => Math.max(1, current - 1))} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-xl font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-35">‹</button>
-              <h1 className="min-w-0 truncate text-center text-base font-bold tracking-tight text-emerald-900 sm:text-lg">{currentStep.label}</h1>
+              <h1 className="min-w-0 truncate text-center text-base font-bold tracking-tight text-emerald-900 sm:text-lg">Bước {step}/{STAGES[stage].steps.length}: {currentStep.label}</h1>
               <button type="button" disabled={step >= STAGES[stage].steps.length} aria-label="Bước tiếp" title="Bước tiếp" onClick={() => setStep((current) => Math.min(STAGES[stage].steps.length, current + 1))} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-white text-xl font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-35">›</button>
             </div>
             <div className="min-w-0 max-w-[260px] justify-self-end">
