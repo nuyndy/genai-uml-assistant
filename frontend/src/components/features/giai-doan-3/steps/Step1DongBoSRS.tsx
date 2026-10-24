@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import type { ReactNode } from "react";
 import { Card, Notice, SoftButton, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {
@@ -26,7 +27,7 @@ function TextTable({ headers, rows, emptyText }: { headers: string[]; rows: unkn
   );
 }
 
-function DocumentHeading({ children, level = 2 }: { children: React.ReactNode; level?: 2 | 3 }) {
+function DocumentHeading({ children, level = 2 }: { children: ReactNode; level?: 2 | 3 }) {
   return level === 2
     ? <h2 id={String(children)} className="mb-3 mt-8 scroll-mt-4 text-center text-base font-bold uppercase tracking-wide text-slate-950 first:mt-0">{children}</h2>
     : <h3 id={String(children)} className="mb-2 mt-5 scroll-mt-4 text-[15px] font-bold text-slate-900">{children}</h3>;
@@ -109,15 +110,15 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
                   <p className="mb-2 text-sm font-bold">b. Biểu đồ hoạt động</p>
                   {uc?.activityDiagramUrl || uc?.activity_diagram_url ? <img src={uc.activityDiagramUrl || uc.activity_diagram_url} alt={`Biểu đồ hoạt động ${i + 1}`} className="mx-auto my-3 max-h-[480px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ hoạt động.</p>}
                   <p className="mb-2 text-sm font-bold">c. Kịch bản Use Case</p>
-                  <TextTable headers={["Trường", "Nội dung"]} rows={[["Tên Use Case", val(uc, "name", "title", "use_case_name")], ["Tác nhân chính", val(uc, "primaryActor", "primary_actor", "actor")], ["Mô tả", val(uc, "description")], ["Tiền điều kiện", val(uc, "preconditions", "pre_conditions")], ["Đảm bảo tối thiểu", val(uc, "minimalGuarantees", "minimal_guarantee")], ["Hậu điều kiện", val(uc, "postconditions", "post_conditions")], ["Luồng chính", val(uc, "mainFlow", "main_flow", "steps")], ["Ngoại lệ", val(uc, "exceptions", "exception_flows", "alternative_flows")]]} emptyText="Chưa có kịch bản Use Case."} />
+                  <TextTable headers={["Trường", "Nội dung"]} rows={[["Tên Use Case", val(uc, "name", "title", "use_case_name")], ["Tác nhân chính", val(uc, "primaryActor", "primary_actor", "actor")], ["Mô tả", val(uc, "description")], ["Tiền điều kiện", val(uc, "preconditions", "pre_conditions")], ["Đảm bảo tối thiểu", val(uc, "minimalGuarantees", "minimal_guarantee")], ["Hậu điều kiện", val(uc, "postconditions", "post_conditions")], ["Luồng chính", val(uc, "mainFlow", "main_flow", "steps")], ["Ngoại lệ", val(uc, "exceptions", "exception_flows", "alternative_flows")]]} emptyText="Chưa có kịch bản Use Case." />
                 </section>)}
                 <DocumentHeading level={3}>2. Mô hình hóa cấu trúc</DocumentHeading>
                 <DocumentHeading level={3}>2.1 Biểu đồ lớp</DocumentHeading>
                 {state?.previewImageUrl && <img src={state.previewImageUrl} alt="Biểu đồ lớp UML" className="mx-auto my-3 max-h-[560px] max-w-full object-contain" />}
                 {!state?.previewImageUrl && <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ lớp được lưu.</p>}
                 <DocumentHeading level={3}>2.2 Mô tả lớp và quan hệ</DocumentHeading>
-                <TextTable headers={["STT", "Tên lớp", "Thuộc tính", "Phương thức"]} rows={classRows} emptyText="Chưa có dữ liệu lớp được lưu."} />
-                <TextTable headers={["STT", "Lớp nguồn", "Lớp đích", "Quan hệ"]} rows={relationRows} emptyText="Chưa có quan hệ lớp được lưu."} />
+                <TextTable headers={["STT", "Tên lớp", "Thuộc tính", "Phương thức"]} rows={classRows} emptyText="Chưa có dữ liệu lớp được lưu." />
+                <TextTable headers={["STT", "Lớp nguồn", "Lớp đích", "Quan hệ"]} rows={relationRows} emptyText="Chưa có quan hệ lớp được lưu." />
                 <DocumentHeading level={3}>3. Mô hình hóa hành vi</DocumentHeading>
                 <DocumentHeading level={3}>3.1 Biểu đồ tuần tự</DocumentHeading>
                 {sequences.length ? sequences.map((seq: any, i: number) => <section key={seq?.id ?? i} className="my-4 break-inside-avoid"><h4 className="mb-2 text-sm font-bold">{`3.1.${i + 1} ${val(seq, "name", "title", "useCaseName")}`}</h4>{(seq?.imageUrl || seq?.image_url || seq?.diagramUrl) ? <img src={seq.imageUrl || seq.image_url || seq.diagramUrl} alt={`Biểu đồ tuần tự ${i + 1}`} className="mx-auto max-h-[560px] max-w-full object-contain" /> : <pre className="whitespace-pre-wrap break-words rounded border border-slate-200 p-3 text-xs">{val(seq, "source_code", "code", "description")}</pre>}</section>) : <p className="text-sm italic text-slate-500">Chưa có biểu đồ tuần tự được lưu.</p>}
