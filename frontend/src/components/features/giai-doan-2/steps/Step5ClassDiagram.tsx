@@ -106,7 +106,7 @@ export default function Step5ClassDiagram({
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3">
             {umlClasses.map((item, index) => (
               <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-200 hover:shadow-md">
                 {editingClassId === item.id ? (
@@ -138,7 +138,7 @@ export default function Step5ClassDiagram({
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100">
                       <section className="min-w-0 p-4">
                         <div className="mb-3 flex items-center justify-between gap-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Thuộc tính</h4>
@@ -232,7 +232,7 @@ function ClassEditor({
           className={singleLineClass}
         />
       </div>
-      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4">
         <div className="min-w-0">
           <FieldLabel hint={`${draft.attributes.length} thuộc tính`}>Thuộc tính</FieldLabel>
           <LineListEditor
