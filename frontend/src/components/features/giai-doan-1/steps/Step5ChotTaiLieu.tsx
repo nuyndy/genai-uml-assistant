@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   Card,
@@ -34,6 +35,7 @@ interface Props {
   saveSrsSpecification: (record: SpecificationRecord, content: SpecDraft) => Promise<void>;
   setSrsMetadata: Dispatch<SetStateAction<SrsMetadata>>;
   setSrsSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
+  appendixBContent?: ReactNode;
 }
 
 const SAVE_DEBOUNCE_MS = 800;
@@ -52,6 +54,7 @@ export default function Step5ChotTaiLieu({
   saveSrsSpecification,
   setSrsMetadata,
   setSrsSpecDrafts,
+  appendixBContent,
 }: Props) {
   // Mỗi đặc tả có một bộ đếm riêng: chỉ lưu sau khi người dùng ngừng sửa.
   const saveTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
@@ -165,7 +168,7 @@ export default function Step5ChotTaiLieu({
             </aside>
             <div ref={editorRootRef} className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor projectName={projectName} metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
-                onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} />
+                onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} appendixBContent={appendixBContent} />
             </div>
           </div>
         ) : (
