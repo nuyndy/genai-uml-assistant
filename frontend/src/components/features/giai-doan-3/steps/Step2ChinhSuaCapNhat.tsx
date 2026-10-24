@@ -1,12 +1,12 @@
-import { Card, PrimaryButton, StatusBadge } from "../../../common/ui/primitives";
+import { Card, PrimaryButton, SoftButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
-  state: {
-    diagramCode: string;
-  };
+  state: { diagramCode: string };
+  setState: (updater: (prev: any) => any) => void;
   consistencyResult: any;
   busy: boolean;
   onConsistencyCheck: () => Promise<void>;
+  onSaveDiagram: () => Promise<void>;
 }
 
 function Metric({ label, value, detail, tone = "neutral" }: {
@@ -35,9 +35,11 @@ function Metric({ label, value, detail, tone = "neutral" }: {
 
 export default function Step2ChinhSuaCapNhat({
   state,
+  setState,
   consistencyResult,
   busy,
   onConsistencyCheck,
+  onSaveDiagram,
 }: Props) {
   const missingDb = consistencyResult?.missing_in_database ?? [];
   const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
@@ -60,40 +62,38 @@ export default function Step2ChinhSuaCapNhat({
         tone="emerald"
         title={<span className="text-xl sm:text-2xl">Khắc phục sai lệch UML</span>}
         actions={
-          <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-            {busy ? "Đang kiểm tra..." : "Kiểm tra lại"}
-          </PrimaryButton>
+          <div className="flex flex-wrap gap-2">
+            <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onSaveDiagram}>
+              {busy ? "Đang lưu..." : "Lưu chỉnh sửa"}
+            </SoftButton>
+            <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+              {busy ? "Đang xử lý..." : "Kiểm tra lại"}
+            </PrimaryButton>
+          </div>
         }
       >
         <div className="space-y-4">
+          {hasResult && totalIssues > 0 && (
+            <Notice tone="info">
+              Có {totalIssues} sai lệch từ lần kiểm tra gần nhất. Chỉnh sửa mã PlantUML bên dưới, lưu lại rồi chọn “Kiểm tra lại”. Danh sách sai lệch đã được ẩn theo yêu cầu.
+            </Notice>
+          )}
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">Danh sách sai lệch</p>
-              {hasResult && (
-                <StatusBadge tone={totalIssues === 0 ? "success" : "danger"}>
-                  {totalIssues === 0 ? "Không có sai lệch" : `${totalIssues} sai lệch cần xử lý`}
-                </StatusBadge>
-              )}
+              <p className="text-sm font-semibold text-slate-900">Chỉnh sửa mã PlantUML</p>
+              <span className="text-xs text-slate-500">Thay đổi được cập nhật vào bản nháp khi nhập</span>
             </div>
-
-            {!hasResult ? (
-              <div className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-lg bg-slate-50 px-5 py-8 text-center">
-                <p className="text-sm font-medium text-slate-700">Chưa có kết quả kiểm tra</p>
-                <p className="max-w-md text-sm text-slate-500">Hãy chạy kiểm tra ở Bước 1 để hiển thị các sai lệch cần khắc phục.</p>
-              </div>
-            ) : totalIssues === 0 ? (
-              <div className="flex min-h-36 flex-col items-center justify-center gap-2 rounded-lg bg-emerald-50 px-5 py-8 text-center">
-                <p className="text-sm font-semibold text-emerald-800">Không phát hiện sai lệch</p>
-                <p className="text-sm text-emerald-700">Không còn vấn đề theo kết quả kiểm tra gần nhất. Nhấn “Kiểm tra lại” để xác nhận dữ liệu mới nhất.</p>
-              </div>
-            ) : (
-              <div className="max-h-56 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-slate-50 p-3">
-                {missingDb.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
-                {missingPlantUml.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
-                {missingRelations.map((item: any, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
-                {extraRelations.map((item: any, index: number) => <div className="rounded-md border border-rose-100 bg-rose-50 p-3 text-sm text-rose-900" key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</div>)}
-              </div>
-            )}
+            <textarea
+              value={state.diagramCode}
+              onChange={(event) => setState((prev) => ({ ...prev, diagramCode: event.target.value, consistencyChecked: false, baselineApproved: false }))}
+              spellCheck={false}
+              aria-label="Chỉnh sửa mã PlantUML"
+              className="min-h-[360px] w-full resize-y rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6 text-slate-800 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              placeholder="@startuml\n...\n@enduml"
+            />
+            <p className="mt-2 text-xs text-slate-500">
+              Có thể chỉnh tên tác nhân/lớp, Use Case và các dòng quan hệ trực tiếp trong mã. Lưu chỉnh sửa trước khi kiểm tra lại.
+            </p>
           </div>
         </div>
       </Card>
