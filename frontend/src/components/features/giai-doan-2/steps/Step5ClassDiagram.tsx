@@ -144,7 +144,7 @@ export default function Step5ClassDiagram({
                         {item.attributes.length ? (
                           <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`inline-flex max-w-full items-center rounded-md border border-emerald-200 bg-white px-2 py-0.5 break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
                         ) : <span className="text-xs text-slate-400">—</span>}
