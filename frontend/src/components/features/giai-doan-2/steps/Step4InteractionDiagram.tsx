@@ -81,7 +81,7 @@ export default function Step4InteractionDiagram({
         title="Sinh biểu đồ tương tác"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-full bg-slate-100 p-1.5">
+            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
               {DIAGRAM_TYPES.map(({ value, label }) => (
                 <button
                   key={value}
@@ -118,9 +118,9 @@ export default function Step4InteractionDiagram({
               return (
                 <section
                   key={useCase.id}
-                  className="min-w-0 rounded-xl bg-slate-50/70 p-3 sm:p-4"
+                  className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
                 >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/60 px-4 py-3">
                     <h3 className={`min-w-0 break-words font-semibold text-slate-900 ${wrapClass}`}>
                       {useCase.name}
                     </h3>
@@ -139,8 +139,8 @@ export default function Step4InteractionDiagram({
                     </div>
                   </div>
 
-                  <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
-                    <div className="min-w-0 overflow-hidden rounded-xl bg-emerald-50/70 p-2">
+                  <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                       <div className="max-h-[min(42vh,360px)] min-h-[220px] overflow-auto">
                         <DiagramPreview
                           imageUrl={diagram?.imageUrl ?? null}
