@@ -267,13 +267,14 @@ export default function GiaiDoan3({
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
       <div className="relative z-10 w-full max-w-none space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         {step === 1 && (
-          <Step1DongBoSRS
-            srsLoaded={srsLoaded}
-            srsMarkdown={srsMarkdown}
-            srsSynced={state.srsSynced}
+          <Step3KiemTraNhatQuan
+            state={state}
             busy={busy}
-            onSyncSrs={syncSrs}
+            onRenderAndSave={handleRenderAndSave}
+            onConsistencyCheck={runConsistencyCheck}
+            consistencyResult={consistencyResult}
             stage3Message={stage3Message}
+            onStepChange={onStepChange}
           />
         )}
         {step === 2 && (
@@ -288,14 +289,13 @@ export default function GiaiDoan3({
           />
         )}
         {step === 3 && (
-          <Step3KiemTraNhatQuan
-            state={state}
+          <Step1DongBoSRS
+            srsLoaded={srsLoaded}
+            srsMarkdown={srsMarkdown}
+            srsSynced={state.srsSynced}
             busy={busy}
-            onRenderAndSave={handleRenderAndSave}
-            onConsistencyCheck={runConsistencyCheck}
-            consistencyResult={consistencyResult}
+            onSyncSrs={syncSrs}
             stage3Message={stage3Message}
-            onStepChange={onStepChange}
           />
         )}
         {step === 4 && (
