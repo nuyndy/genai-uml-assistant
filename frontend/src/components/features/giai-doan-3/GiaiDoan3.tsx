@@ -293,6 +293,7 @@ export default function GiaiDoan3({
             consistencyResult={consistencyResult}
             busy={busy}
             onConsistencyCheck={runConsistencyCheck}
+            onSaveDiagram={handleRenderAndSave}
           />
         )}
         {step === 3 && (
