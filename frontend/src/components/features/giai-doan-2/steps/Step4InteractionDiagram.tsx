@@ -127,7 +127,7 @@ export default function Step4InteractionDiagram({
                   <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
                     <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                       <div className="space-y-2">
-                        <div className="max-h-[calc(100vh-205px)] min-h-[calc(100vh-230px)] overflow-auto">
+                        <div className="max-h-[calc(100vh-245px)] min-h-[calc(100vh-270px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
                             <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} showToolbar={false} />
                           </div>
@@ -178,7 +178,6 @@ export default function Step4InteractionDiagram({
           </div>
         )}
       </Card>
-      <div aria-hidden="true" className="mt-2 h-3 w-full rounded-sm bg-[#2F7D32]" />
     </div>
   );
 }
