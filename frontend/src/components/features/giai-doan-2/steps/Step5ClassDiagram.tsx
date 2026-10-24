@@ -67,16 +67,50 @@ export default function Step5ClassDiagram({
     link.click();
   };
 
-  const startEditing = (item: UmlClass) => {
-    const next = { name: item.name, attributes: [...item.attributes], methods: [...item.methods] };
+  const updateInline = (item: UmlClass, next: ClassDraft) => {
     setDraft(next);
     setEditingClassDraft?.(item.id, next);
-    setEditingClassId(item.id);
+    void onSaveClass(item.id, next);
   };
 
-  const changeDraft = (id: number, next: ClassDraft) => {
+  const updateMember = (item: UmlClass, kind: "attributes" | "methods", index: number, value: string) => {
+    const current: ClassDraft = {
+      name: item.name,
+      attributes: [...item.attributes],
+      methods: [...item.methods],
+    };
+    current[kind][index] = value;
+    setDraft(current);
+    setEditingClassDraft?.(item.id, current);
+  };
+
+  const saveMemberDraft = (item: UmlClass) => {
+    const current = draft.name || draft.attributes.length || draft.methods.length
+      ? draft
+      : { name: item.name, attributes: [...item.attributes], methods: [...item.methods] };
+    void onSaveClass(item.id, current);
+  };
+
+  const deleteMember = (item: UmlClass, kind: "attributes" | "methods", index: number) => {
+    const next: ClassDraft = {
+      name: item.name,
+      attributes: [...item.attributes],
+      methods: [...item.methods],
+    };
+    next[kind].splice(index, 1);
+    updateInline(item, next);
+  };
+
+  const addMember = (item: UmlClass, kind: "attributes" | "methods") => {
+    const next: ClassDraft = {
+      name: item.name,
+      attributes: [...item.attributes],
+      methods: [...item.methods],
+    };
+    next[kind].push("");
     setDraft(next);
-    setEditingClassDraft?.(id, next);
+    setEditingClassDraft?.(item.id, next);
+    void onSaveClass(item.id, next);
   };
 
   const regenerate = () => {
@@ -111,57 +145,74 @@ export default function Step5ClassDiagram({
           <div className="max-h-[72vh] overflow-y-auto overscroll-contain pr-1 pb-4">
             {umlClasses.map((item, index) => (
               <article key={item.id} className="min-w-0 border-b border-slate-200 bg-white py-1 last:border-b-0">
-                {editingClassId === item.id ? (
-                  <div className="p-4">
-                    <ClassEditor
-                      draft={draft}
-                      busy={busy}
-                      onChange={(next) => changeDraft(item.id, next)}
-                      onSave={() => void onSaveClass(item.id, draft)}
-                      onCancel={() => setEditingClassId(null)}
-                      onDelete={() => remove(item)}
+                <div className="flex min-w-0 items-center justify-between gap-3 px-2 py-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
+                    <input
+                      aria-label="Tên lớp"
+                      defaultValue={item.name}
+                      key={item.id + ":" + item.name}
+                      disabled={busy}
+                      onBlur={(event) => {
+                        const name = event.currentTarget.value.trim();
+                        if (name && name !== item.name) updateInline(item, { name, attributes: [...item.attributes], methods: [...item.methods] });
+                      }}
+                      className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-1 text-sm font-semibold text-slate-800 outline-none hover:border-slate-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
                     />
                   </div>
-                ) : (
-                  <>
-                    <div className="flex min-w-0 items-center justify-between gap-3 px-2 py-2">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
-                        <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => startEditing(item)}
-                        className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
-                      >
-                        <span aria-hidden="true">✎</span> Chỉnh sửa
-                      </button>
+                </div>
+                <div className="grid min-w-0 grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-x-4 gap-y-1 px-2 pb-2 pl-12">
+                  <section className="flex min-w-0 items-start gap-2">
+                    <span className="shrink-0 pt-1 text-[12px] font-semibold text-emerald-800">Thuộc tính</span>
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                      {item.attributes.map((value, valueIndex) => (
+                        <div key={valueIndex} className="inline-flex max-w-full items-center gap-1 rounded-md border border-emerald-200 bg-white pl-2 pr-1 py-0.5">
+                          <input
+                            aria-label={`Thuộc tính ${valueIndex + 1}`}
+                            defaultValue={value}
+                            key={item.id + ":attr:" + valueIndex + ":" + value}
+                            disabled={busy}
+                            onBlur={(event) => {
+                              if (event.currentTarget.value !== value) {
+                                const attributes = [...item.attributes];
+                                attributes[valueIndex] = event.currentTarget.value;
+                                updateInline(item, { name: item.name, attributes, methods: [...item.methods] });
+                              }
+                            }}
+                            className="w-full min-w-[4rem] max-w-full bg-transparent text-[13px] leading-5 text-slate-700 outline-none"
+                          />
+                          <button type="button" aria-label="Xóa thuộc tính" title="Xóa thuộc tính" disabled={busy} onClick={() => deleteMember(item, "attributes", valueIndex)} className="rounded px-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600">×</button>
+                        </div>
+                      ))}
+                      <button type="button" disabled={busy} onClick={() => addMember(item, "attributes")} className="rounded px-1.5 py-0.5 text-xs text-emerald-700 hover:bg-emerald-50">+ Thêm</button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-x-4 gap-y-0 px-2 pb-2 pl-12">
-                      <section className="flex min-w-0 items-baseline gap-2">
-                        <span className="shrink-0 text-[12px] font-semibold text-emerald-800">Thuộc tính</span>
-                        {item.attributes.length ? (
-                          <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
-                            {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`inline-flex max-w-full items-center rounded-md border border-emerald-200 bg-white px-2 py-0.5 break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
-                            ))}
-                          </ul>
-                        ) : <span className="text-xs text-slate-400">—</span>}
-                      </section>
-                      <section className="flex min-w-0 items-baseline gap-2">
-                        <span className="shrink-0 text-[12px] font-semibold text-sky-800">Phương thức</span>
-                        {item.methods.length ? (
-                          <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
-                            {item.methods.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`inline-flex max-w-full items-center rounded-md border border-sky-200 bg-white px-2 py-0.5 break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
-                            ))}
-                          </ul>
-                        ) : <span className="text-xs text-slate-400">—</span>}
-                      </section>
+                  </section>
+                  <section className="flex min-w-0 items-start gap-2">
+                    <span className="shrink-0 pt-1 text-[12px] font-semibold text-sky-800">Phương thức</span>
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                      {item.methods.map((value, valueIndex) => (
+                        <div key={valueIndex} className="inline-flex max-w-full items-center gap-1 rounded-md border border-sky-200 bg-white pl-2 pr-1 py-0.5">
+                          <input
+                            aria-label={`Phương thức ${valueIndex + 1}`}
+                            defaultValue={value}
+                            key={item.id + ":method:" + valueIndex + ":" + value}
+                            disabled={busy}
+                            onBlur={(event) => {
+                              if (event.currentTarget.value !== value) {
+                                const methods = [...item.methods];
+                                methods[valueIndex] = event.currentTarget.value;
+                                updateInline(item, { name: item.name, attributes: [...item.attributes], methods });
+                              }
+                            }}
+                            className="w-full min-w-[4rem] max-w-full bg-transparent text-[13px] leading-5 text-slate-700 outline-none"
+                          />
+                          <button type="button" aria-label="Xóa phương thức" title="Xóa phương thức" disabled={busy} onClick={() => deleteMember(item, "methods", valueIndex)} className="rounded px-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600">×</button>
+                        </div>
+                      ))}
+                      <button type="button" disabled={busy} onClick={() => addMember(item, "methods")} className="rounded px-1.5 py-0.5 text-xs text-sky-700 hover:bg-sky-50">+ Thêm</button>
                     </div>
-                  </>
-                )}
+                  </section>
+                </div>
               </article>
             ))}
           </div>
