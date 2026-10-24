@@ -92,13 +92,9 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-20">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title="" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-700 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-4"
+        title={`${umlClasses.length} lớp`} className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-700 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-3"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-white">
-              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-white/60 bg-white/10 px-2 text-sm font-bold text-white">{umlClasses.length}</span>
-              <span className="text-sm font-semibold">lớp</span>
-            </div>
             <SoftButton disabled={busy || !projectId} onClick={regenerate}>
             {busy
               ? "Đang suy luận..."
@@ -142,19 +138,19 @@ export default function Step5ClassDiagram({
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-2 gap-x-5 gap-y-1 px-2 pb-2 pl-12">
+                    <div className="grid min-w-0 grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-x-4 gap-y-0 px-2 pb-2 pl-12">
                       <section className="flex min-w-0 items-baseline gap-2">
-                        <span className="shrink-0 text-[11px] font-semibold text-emerald-800">Thuộc tính</span>
+                        <span className="shrink-0 text-[12px] font-semibold text-emerald-800">Thuộc tính</span>
                         {item.attributes.length ? (
                           <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`break-words text-[12px] leading-4 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
                         ) : <span className="text-xs text-slate-400">—</span>}
                       </section>
                       <section className="flex min-w-0 items-baseline gap-2">
-                        <span className="shrink-0 text-[11px] font-semibold text-sky-800">Phương thức</span>
+                        <span className="shrink-0 text-[12px] font-semibold text-sky-800">Phương thức</span>
                         {item.methods.length ? (
                           <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
                             {item.methods.map((value, valueIndex) => (
