@@ -62,7 +62,40 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
       value: record.value ?? (() => { try { return JSON.parse(record.content) as NonFunctionalSpecification; } catch { return { items: [] }; } })(),
     }));
   const toc: TocItem[] = useMemo(() => [
-    { label: "Tài liệu SRS hiện có", id: "Nội dung SRS hiện có", level: 1 },
+    { label: "1. Giới thiệu", id: "1. Giới thiệu", level: 1 },
+    { label: "1.1 Mục đích", id: "1.1 Mục đích", level: 2 },
+    { label: "1.2 Quy ước tài liệu", id: "1.2 Quy ước tài liệu", level: 2 },
+    { label: "1.3 Đối tượng đọc và hướng dẫn đọc", id: "1.3 Đối tượng đọc và hướng dẫn đọc", level: 2 },
+    { label: "1.4 Phạm vi sản phẩm", id: "1.4 Phạm vi sản phẩm", level: 2 },
+    { label: "1.5 Tài liệu tham khảo", id: "1.5 Tài liệu tham khảo", level: 2 },
+    { label: "1.6 Thuật ngữ và từ viết tắt", id: "1.6 Định nghĩa, thuật ngữ và từ viết tắt", level: 2 },
+    { label: "2. Mô tả tổng thể", id: "2. Mô tả tổng thể", level: 1 },
+    { label: "2.1 Góc nhìn sản phẩm", id: "2.1 Góc nhìn sản phẩm", level: 2 },
+    { label: "2.2 Chức năng sản phẩm", id: "2.2 Chức năng sản phẩm", level: 2 },
+    { label: "2.3 Các lớp người dùng", id: "2.3 Các lớp người dùng", level: 2 },
+    { label: "2.4 Môi trường vận hành", id: "2.4 Môi trường vận hành", level: 2 },
+    { label: "2.5 Ràng buộc thiết kế và triển khai", id: "2.5 Ràng buộc thiết kế và triển khai", level: 2 },
+    { label: "2.6 Tài liệu hướng dẫn người dùng", id: "2.6 Tài liệu hướng dẫn người dùng", level: 2 },
+    { label: "2.7 Giả định và phụ thuộc", id: "2.7 Giả định và phụ thuộc", level: 2 },
+    { label: "3. Yêu cầu giao diện", id: "3. Yêu cầu giao diện", level: 1 },
+    { label: "3.1 Giao diện người dùng", id: "3.1 Giao diện người dùng", level: 2 },
+    { label: "3.2 Giao diện phần cứng", id: "3.2 Giao diện phần cứng", level: 2 },
+    { label: "3.3 Giao diện phần mềm", id: "3.3 Giao diện phần mềm", level: 2 },
+    { label: "3.4 Giao diện truyền thông", id: "3.4 Giao diện truyền thông", level: 2 },
+    { label: "4. Yêu cầu chức năng", id: "4. Yêu cầu chức năng", level: 1 },
+    { label: "4.1 Danh sách đặc tả chức năng", id: "4.1 Danh sách đặc tả chức năng", level: 2 },
+    ...functional.map((record: any) => ({
+      label: `${record.value?.function_code || "UC"} - ${record.value?.function_name || record.feature || "Chức năng"}`,
+      id: `${record.value?.function_code || "UC"} - ${record.value?.function_name || record.feature || "Chức năng"}`,
+      level: 3 as const,
+    })),
+    { label: "5. Yêu cầu phi chức năng", id: "5. Yêu cầu phi chức năng", level: 1 },
+    { label: "5.1 Danh sách đặc tả phi chức năng", id: "5.1 Danh sách đặc tả phi chức năng", level: 2 },
+    ...nonFunctional.map((record: any) => ({ label: record.feature || "Đặc tả phi chức năng", id: record.feature || "Đặc tả phi chức năng", level: 3 as const })),
+    { label: "5.2 Quy tắc nghiệp vụ", id: "5.2 Quy tắc nghiệp vụ", level: 2 },
+    { label: "6. Yêu cầu khác", id: "6. Yêu cầu khác", level: 1 },
+    { label: "6.1 Yêu cầu khác / ghi chú", id: "6.1 Yêu cầu khác / ghi chú", level: 2 },
+    { label: "Phụ lục A. Thuật ngữ", id: "Phụ lục A. Thuật ngữ và từ viết tắt", level: 1 },
     { label: "Phụ lục B. Mô hình phân tích", id: "Phụ lục B. Mô hình phân tích", level: 1 },
     { label: "1. Mô hình hóa chức năng", id: "1. Mô hình hóa chức năng", level: 2 },
     { label: "1.1 Danh sách tác nhân", id: "1.1 Danh sách tác nhân", level: 3 },
@@ -73,7 +106,7 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
     { label: "2.2 Mô tả lớp và quan hệ", id: "2.2 Mô tả lớp và quan hệ", level: 3 },
     { label: "3. Mô hình hóa hành vi", id: "3. Mô hình hóa hành vi", level: 2 },
     { label: "3.1 Biểu đồ tuần tự", id: "3.1 Biểu đồ tuần tự", level: 3 },
-  ], [useCases]);
+  ], [functional, nonFunctional, useCases]);
 
   const jumpTo = (id: string) => {
     const root = documentRef.current;
