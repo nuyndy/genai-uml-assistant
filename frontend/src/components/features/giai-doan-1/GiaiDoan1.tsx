@@ -1065,18 +1065,41 @@ export default function GiaiDoan1({
             <p className="mt-3 font-semibold">Biểu đồ hoạt động</p>
             {activityDiagram?.imageUrl ? <img src={activityDiagram.imageUrl} alt={"Biểu đồ hoạt động — " + useCase.name} className="mx-auto my-2 max-w-full" /> : <p>Chưa có ảnh biểu đồ hoạt động được lưu cho Use Case này.</p>}
             <p className="mt-3 font-semibold">Kịch bản</p>
-            {!scenario ? <p>Chưa có kịch bản được lưu.</p> : <>
-              {[
-                ["Luồng chính", scenario.mainFlow],
-                ["Luồng thay thế", scenario.altFlows],
-                ["Ngoại lệ", scenario.exceptions],
-              ].map(([label, lines]) => <div key={label as string} className="mb-2">
-                <p className="font-semibold">{label as string}</p>
-                {Array.isArray(lines) && lines.length ? <ol className="list-decimal space-y-1 pl-5">{lines.map((line, lineIndex) => <li key={lineIndex}>{line}</li>)}</ol> : <p>—</p>}
-              </div>)}
-              {scenario.preconditions?.length ? <p><strong>Điều kiện trước:</strong> {scenario.preconditions.join("; ")}</p> : null}
-              {scenario.postconditions?.length ? <p><strong>Điều kiện sau:</strong> {scenario.postconditions.join("; ")}</p> : null}
-            </>}
+            {!scenario ? <p>Chưa có kịch bản được lưu.</p> : (
+              <table className="mb-3 w-full table-fixed border-collapse border border-slate-400 text-left text-xs leading-5">
+                <thead>
+                  <tr>
+                    <th className="w-[28%] border border-slate-300 bg-slate-100 p-2">Thành phần kịch bản</th>
+                    <th className="border border-slate-300 bg-slate-100 p-2">Nội dung</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {([
+                    ["Tác nhân", scenario.actor?.join("\n") || "—"],
+                    ["Mô tả", scenario.description?.join("\n") || useCase.description || "—"],
+                    ["Điều kiện trước", scenario.preconditions?.join("\n") || "—"],
+                    ["Luồng chính", scenario.mainFlow],
+                    ["Luồng thay thế", scenario.altFlows],
+                    ["Ngoại lệ", scenario.exceptions],
+                    ["Cam kết tối thiểu", scenario.minimalGuarantees?.join("\n") || "—"],
+                    ["Điều kiện sau", scenario.postconditions?.join("\n") || "—"],
+                  ] as [string, string | string[]][]).map(([label, content]) => (
+                    <tr key={label} className="break-inside-avoid align-top">
+                      <th className="border border-slate-300 bg-slate-50 p-2 font-semibold">{label}</th>
+                      <td className="border border-slate-300 p-2">
+                        {Array.isArray(content) ? (
+                          content.length ? (
+                            <ol className="list-decimal space-y-1 pl-5">
+                              {content.map((line, lineIndex) => <li key={lineIndex} className="whitespace-pre-wrap">{line}</li>)}
+                            </ol>
+                          ) : "—"
+                        ) : <span className="whitespace-pre-wrap">{content}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>;
         })}
         {!state.usecases.length && <p>Chưa có Use Case được lưu.</p>}
