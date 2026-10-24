@@ -1,4 +1,4 @@
-import { Card, PrimaryButton, Notice, StatusBadge } from "../../../common/ui/primitives";
+import { Card, PrimaryButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -50,7 +50,7 @@ export default function Step3KiemTraNhatQuan({
   const hasResult = consistencyResult != null;
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-6 pb-10">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Tổng sai lệch" value={hasResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues > 0 ? "warn" : hasResult ? "success" : "neutral"} />
         <Metric label="Thiếu trong dữ liệu" value={hasResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
@@ -61,16 +61,20 @@ export default function Step3KiemTraNhatQuan({
       <Card
         className="mb-2"
         tone="emerald"
-        title={<span className="text-xl sm:text-2xl">Kiểm tra tính nhất quán của sơ đồ</span>}
         actions={
-          <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-            {busy ? "Đang kiểm tra..." : "Kiểm tra"}
-          </PrimaryButton>
+          <>
+            {stage3Message && (
+              <div className="min-w-0 flex-1">
+                <Notice tone="info">{stage3Message}</Notice>
+              </div>
+            )}
+            <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+              {busy ? "Đang kiểm tra..." : "Kiểm tra"}
+            </PrimaryButton>
+          </>
         }
       >
         <div className="space-y-4">
-          {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
-
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             {!hasResult ? (
               <div className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-lg bg-slate-50 px-5 py-8 text-center">
