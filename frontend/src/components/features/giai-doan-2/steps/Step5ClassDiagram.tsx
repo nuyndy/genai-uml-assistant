@@ -92,7 +92,7 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-16">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title={`${umlClasses.length} lớp`}
+        title="" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-800 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-4"
         actions={
           <SoftButton disabled={busy || !projectId} onClick={regenerate}>
             {busy
@@ -103,6 +103,10 @@ export default function Step5ClassDiagram({
           </SoftButton>
         }
       >
+        <div className="mb-4 flex items-center gap-2">
+          <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-sm font-bold text-emerald-800 shadow-sm">{umlClasses.length}</span>
+          <span className="text-sm font-semibold text-slate-700">lớp</span>
+        </div>
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
