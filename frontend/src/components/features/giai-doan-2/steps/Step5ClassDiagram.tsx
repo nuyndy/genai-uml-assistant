@@ -123,7 +123,7 @@ export default function Step5ClassDiagram({
   };
 
   return (
-    <div className="space-y-3 pb-36 sm:pb-40">
+    <div className="space-y-3 pb-44 sm:pb-48">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
         title="" className=""
