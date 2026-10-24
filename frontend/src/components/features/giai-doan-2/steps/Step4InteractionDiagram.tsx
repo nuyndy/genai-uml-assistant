@@ -111,11 +111,6 @@ export default function Step4InteractionDiagram({
                     <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
                       {DIAGRAM_TYPES.map(({ value, label }) => <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-2 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
                     </div>
-                    <button type="button" title="Thu nhỏ" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.max(50, (v[useCase.id] ?? 100) - 10)}))} className="shrink-0 rounded-md border px-2 py-1.5 text-xs">−</button>
-                    <span className="shrink-0 text-xs">{zoom[useCase.id] ?? 100}%</span>
-                    <button type="button" title="Phóng to" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.min(200, (v[useCase.id] ?? 100) + 10)}))} className="shrink-0 rounded-md border px-2 py-1.5 text-xs">+</button>
-                    <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="shrink-0 whitespace-nowrap rounded-md border px-2 py-1.5 text-xs">Vừa khung</button>
-                    {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="shrink-0 whitespace-nowrap rounded-md border px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
                     <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
