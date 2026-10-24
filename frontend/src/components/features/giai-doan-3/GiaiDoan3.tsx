@@ -21,7 +21,6 @@ import ProgressOverlay from "../../common/ProgressOverlay";
 import GiaiDoan1 from "../giai-doan-1/GiaiDoan1";
 import Step2ChinhSuaCapNhat from "./steps/Step2ChinhSuaCapNhat";
 import Step3KiemTraNhatQuan from "./steps/Step3KiemTraNhatQuan";
-import Step4DuyetBaselineXuatTaiLieu from "./steps/Step4DuyetBaselineXuatTaiLieu";
 
 interface Props {
   projectId: number;
@@ -302,22 +301,6 @@ export default function GiaiDoan3({
             setState={setState}
             step={5}
             onStepChange={() => undefined}
-          />
-        )}
-        {step === 4 && (
-          <Step4DuyetBaselineXuatTaiLieu
-            state={state}
-            busy={busy}
-            onAttachDiagram={handleAttachDiagram}
-            onExportFormatChange={(format) => setState((prev: any) => ({ ...prev, exportFormat: format }))}
-            baselines={baselines}
-            selectedBaselineId={selectedBaselineId}
-            setSelectedBaselineId={setSelectedBaselineId}
-            consistencyResult={consistencyResult}
-            onCreateBaseline={createBaseline}
-            onApproveBaseline={approveBaseline}
-            onExportSrs={exportApprovedSrs}
-            onStepChange={onStepChange}
           />
         )}
       </div>
