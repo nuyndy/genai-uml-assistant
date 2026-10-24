@@ -100,6 +100,10 @@ export default function GiaiDoan3({
           : "Phát hiện sai lệch giữa PlantUML và dữ liệu UML đã lưu."
       );
       await loadBaselines();
+      if (step === 2 && result.consistent) {
+        setStage3Message("Đã khắc phục hết sai lệch. Đang quay lại Bước 1 để xác nhận kết quả.");
+        onStepChange(1);
+      }
     } catch (error) {
       console.error("Không thể kiểm tra UML:", error);
       setState((prev: any) => ({ ...prev, consistencyChecked: false, baselineApproved: false }));
@@ -286,6 +290,9 @@ export default function GiaiDoan3({
             singleLineClass={singleLineClass}
             nextRelationId={nextRelationId}
             nextClassId={nextClassId}
+            consistencyResult={consistencyResult}
+            busy={busy}
+            onConsistencyCheck={runConsistencyCheck}
           />
         )}
         {step === 3 && (
