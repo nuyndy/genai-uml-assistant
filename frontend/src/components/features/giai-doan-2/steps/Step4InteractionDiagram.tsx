@@ -178,6 +178,7 @@ export default function Step4InteractionDiagram({
           </div>
         )}
       </Card>
+      <div aria-hidden="true" className="mt-2 h-3 w-full rounded-sm bg-[#2F7D32]" />
     </div>
   );
 }
