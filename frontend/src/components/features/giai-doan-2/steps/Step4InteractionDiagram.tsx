@@ -86,6 +86,7 @@ export default function Step4InteractionDiagram({
         tone="emerald"
         title={undefined}
         actions={null}
+        className="mb-3"
       >
         {scenarios.length === 0 ? (
           <EmptyState
