@@ -127,17 +127,6 @@ export default function Step5ClassDiagram({
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
         title="" className="[&>div:first-child]:hidden"
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <SoftButton disabled={busy || !projectId} onClick={regenerate}>
-            {busy
-              ? "Đang suy luận..."
-              : umlClasses.length > 0
-                ? "↻ Sinh lại mô hình lớp"
-                : "Sinh các lớp"}
-            </SoftButton>
-          </div>
-        }
       >
         <div className="mb-3 flex min-w-0 items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center text-3xl font-bold leading-none tracking-tight text-emerald-900">
@@ -228,6 +217,15 @@ export default function Step5ClassDiagram({
             ))}
           </div>
         )}
+        <div className="mt-4 flex justify-end border-t border-slate-100 pt-3">
+          <SoftButton disabled={busy || !projectId} onClick={regenerate}>
+            {busy
+              ? "Đang suy luận..."
+              : umlClasses.length > 0
+                ? "↻ Sinh lại mô hình lớp"
+                : "Sinh các lớp"}
+          </SoftButton>
+        </div>
       </Card>}
 
       {(viewMode === "diagram" || viewMode === "all") && <Card compact allowOverflow className="!p-3">
