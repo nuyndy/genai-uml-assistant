@@ -299,6 +299,7 @@ export default function GiaiDoan3({
             busy={busy}
             onSyncSrs={syncSrs}
             stage3Message={stage3Message}
+            state={state}
           />
         )}
         {step === 4 && (
