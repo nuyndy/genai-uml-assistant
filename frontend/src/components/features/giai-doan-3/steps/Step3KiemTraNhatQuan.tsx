@@ -51,8 +51,6 @@ export default function Step3KiemTraNhatQuan({
 
       <Card
         tone="emerald"
-        title="Kiểm tra nhất quán"      <Card
-        tone="emerald"
         title="Quét và phát hiện sai lệch UML"
         actions={
           <div className="flex flex-wrap gap-2">
@@ -60,7 +58,7 @@ export default function Step3KiemTraNhatQuan({
               {busy ? "Đang xử lý..." : "Render và lưu sơ đồ"}
             </SoftButton>
             <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-              Kiểm tra UML
+              Quét sai lệch
             </PrimaryButton>
           </div>
         }
