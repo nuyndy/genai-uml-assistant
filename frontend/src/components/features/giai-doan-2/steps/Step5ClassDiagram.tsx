@@ -142,26 +142,26 @@ export default function Step5ClassDiagram({
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-2 gap-4 px-2 pb-2 pt-1">
-                      <section className="min-w-0">
-                        <h4 className="mb-1 text-[11px] font-semibold text-emerald-800">Thuộc tính</h4>
+                    <div className="grid min-w-0 grid-cols-2 gap-x-5 gap-y-1 px-2 pb-2 pl-12">
+                      <section className="flex min-w-0 items-baseline gap-2">
+                        <span className="shrink-0 text-[11px] font-semibold text-emerald-800">Thuộc tính</span>
                         {item.attributes.length ? (
-                          <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-0">
+                          <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`break-words text-[13px] leading-5 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-[12px] leading-4 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <span className="text-xs text-slate-400">Chưa có thuộc tính</span>}
+                        ) : <span className="text-xs text-slate-400">—</span>}
                       </section>
-                      <section className="min-w-0">
-                        <h4 className="mb-1 text-[11px] font-semibold text-sky-800">Phương thức</h4>
+                      <section className="flex min-w-0 items-baseline gap-2">
+                        <span className="shrink-0 text-[11px] font-semibold text-sky-800">Phương thức</span>
                         {item.methods.length ? (
-                          <ul className="space-y-1.5">
+                          <ul className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0">
                             {item.methods.map((value, valueIndex) => (
-                              <li key={valueIndex} className={`break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
+                              <li key={valueIndex} className={`break-words text-[12px] leading-4 text-slate-700 [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <span className="text-sm text-slate-400">Chưa có phương thức</span>}
+                        ) : <span className="text-xs text-slate-400">—</span>}
                       </section>
                     </div>
                   </>
