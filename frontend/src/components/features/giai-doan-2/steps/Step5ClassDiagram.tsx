@@ -126,7 +126,7 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-20">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title={`${umlClasses.length} lớp`} className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-700 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-3"
+        title={`${umlClasses.length} lớp`} className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-800 [&>div:first-child]:px-5 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-3 [&>div:first-child]:shadow-sm"
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <SoftButton disabled={busy || !projectId} onClick={regenerate}>
@@ -142,12 +142,12 @@ export default function Step5ClassDiagram({
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="max-h-[72vh] space-y-3 overflow-y-auto overscroll-contain px-1 pb-4">
+          <div className="max-h-[72vh] space-y-3 overflow-y-auto overscroll-contain p-1 pb-4">
             {umlClasses.map((item, index) => (
               <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
-                <div className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-3 px-2 py-2">
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
+                <div className="flex min-w-0 items-center gap-3 border-b border-slate-100 bg-slate-50/70 px-3 py-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-100 text-sm font-bold leading-none text-emerald-800">{index + 1}</span>
+                  <div className="flex min-w-0 flex-1 items-center">
                     <input
                       aria-label="Tên lớp"
                       defaultValue={item.name}
