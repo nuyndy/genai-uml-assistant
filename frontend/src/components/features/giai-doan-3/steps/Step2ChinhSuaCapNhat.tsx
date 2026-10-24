@@ -118,7 +118,7 @@ export default function Step2ChinhSuaCapNhat({
                 Không phát hiện sai lệch. Mã PlantUML khớp với dữ liệu UML đã lưu.
               </div>
             ) : (
-              <div className="min-h-0 space-y-2 xl:max-h-[560px] xl:overflow-y-auto">
+              <div className="min-h-0 space-y-2 xl:max-h-[calc(100vh-360px)] xl:overflow-y-auto">
                 {issues.map((issue, index) => (
                   <button
                     key={issue.id}
@@ -152,7 +152,7 @@ export default function Step2ChinhSuaCapNhat({
               spellCheck={false}
               aria-label="Chỉnh sửa mã PlantUML"
               wrap="off"
-              className="min-h-[420px] w-full resize-y rounded-lg border border-slate-700 bg-[#20252d] p-4 font-mono text-sm leading-6 text-slate-100 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              className="min-h-[280px] max-h-[calc(100vh-320px)] w-full resize-y rounded-lg border border-slate-700 bg-[#20252d] p-4 font-mono text-sm leading-6 text-slate-100 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               placeholder="@startuml\n...\n@enduml"
             />
             <p className="mt-2 text-xs leading-5 text-slate-500">
