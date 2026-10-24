@@ -90,6 +90,12 @@ export interface InteractionDiagram {
   sourceCode?: string;
 }
 
+/** Biểu đồ hoạt động được lưu cho từng Use Case. */
+export interface ActivityDiagram {
+  usecaseId: number;
+  imageUrl: string | null;
+}
+
 /** Lớp được suy luận ra ở Bước 5 của Giai đoạn 2. */
 export interface UmlClass {
   id: number;
@@ -143,6 +149,7 @@ export interface WorkflowState {
   useCaseDiagramUrl: string | null;
   useCaseDiagramCode: string | null;
   interactions: InteractionDiagram[];
+  activityDiagrams: ActivityDiagram[];
   /** Lớp suy luận ở Bước 5 — hiển thị để người dùng xem trước khi sinh ảnh. */
   umlClasses: UmlClass[];
   classDiagramUrl: string | null;
@@ -192,6 +199,7 @@ export const emptyWorkflow = (): WorkflowState => ({
   useCaseDiagramUrl: null,
   useCaseDiagramCode: null,
   interactions: [],
+  activityDiagrams: [],
   umlClasses: [],
   classDiagramUrl: null,
   classDiagramCode: null,
