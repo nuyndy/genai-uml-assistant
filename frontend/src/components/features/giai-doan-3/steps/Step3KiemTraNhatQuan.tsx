@@ -50,7 +50,7 @@ export default function Step3KiemTraNhatQuan({
   const hasResult = consistencyResult != null;
 
   return (
-    <div className="space-y-6 pb-2">
+    <div className="space-y-6 pb-6">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Tổng sai lệch" value={hasResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues > 0 ? "warn" : hasResult ? "success" : "neutral"} />
         <Metric label="Thiếu trong dữ liệu" value={hasResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
