@@ -144,8 +144,8 @@ export default function Step5ClassDiagram({
         ) : (
           <div className="max-h-[72vh] overflow-y-auto overscroll-contain pr-1 pb-4">
             {umlClasses.map((item, index) => (
-              <article key={item.id} className="min-w-0 border-b border-slate-200 bg-white py-1 last:border-b-0">
-                <div className="flex min-w-0 items-center justify-between gap-3 px-2 py-2">
+              <article key={item.id} className="min-w-0 bg-white py-1">
+                <div className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-3 px-2 py-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
                     <input
