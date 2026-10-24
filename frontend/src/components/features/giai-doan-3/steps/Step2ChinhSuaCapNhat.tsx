@@ -102,7 +102,7 @@ export default function Step2ChinhSuaCapNhat({
           </div>
         }
       >
-        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.5fr)]">
+        <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(300px,0.9fr)_minmax(0,1.6fr)]">
           <section className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold text-slate-900">Danh sách sai lệch</h3>
@@ -118,7 +118,7 @@ export default function Step2ChinhSuaCapNhat({
                 Không phát hiện sai lệch. Mã PlantUML khớp với dữ liệu UML đã lưu.
               </div>
             ) : (
-              <div className="min-h-0 space-y-2 xl:max-h-[calc(100vh-360px)] xl:overflow-y-auto">
+              <div className="min-h-0 space-y-2 xl:max-h-[calc(100vh-320px)] xl:overflow-y-auto">
                 {issues.map((issue, index) => (
                   <button
                     key={issue.id}
@@ -152,7 +152,7 @@ export default function Step2ChinhSuaCapNhat({
               spellCheck={false}
               aria-label="Chỉnh sửa mã PlantUML"
               wrap="off"
-              className="min-h-[280px] max-h-[calc(100vh-320px)] w-full resize-y rounded-lg border border-slate-700 bg-[#20252d] p-4 font-mono text-sm leading-6 text-slate-100 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              className="min-h-[320px] max-h-[calc(100vh-280px)] w-full resize-y rounded-lg border border-slate-700 bg-[#20252d] p-4 font-mono text-sm leading-6 text-slate-100 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               placeholder="@startuml\n...\n@enduml"
             />
             <p className="mt-2 text-xs leading-5 text-slate-500">
