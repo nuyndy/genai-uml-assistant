@@ -957,7 +957,7 @@ export default function GiaiDoan1({
       <section>
         <h3 className="mb-2 mt-4 text-[15px] font-bold">B.2. Biểu đồ Use Case</h3>
         {state.useCaseDiagramUrl && <img src={state.useCaseDiagramUrl} alt="Biểu đồ Use Case" className="mx-auto my-3 max-w-full" />}
-        {state.useCaseDiagramCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{state.useCaseDiagramCode}</pre> : <p>Chưa có mã biểu đồ Use Case được lưu.</p>}
+        {!state.useCaseDiagramUrl && <p>Chưa có ảnh biểu đồ Use Case được lưu.</p>}
       </section>
 
       <section>
@@ -989,7 +989,7 @@ export default function GiaiDoan1({
           return <div key={`${diagram.usecaseId}-${diagram.type}-${index}`} className="mb-4 break-inside-avoid">
             <h4 className="mb-1 font-bold">{useCase?.name || `Use Case ID ${diagram.usecaseId}`} — {diagram.type === "sequence" ? "Sequence Diagram" : "Collaboration Diagram"}</h4>
             {diagram.imageUrl && <img src={diagram.imageUrl} alt={`Biểu đồ ${diagram.type} - ${useCase?.name || diagram.usecaseId}`} className="mx-auto my-2 max-w-full" />}
-            {diagram.sourceCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{diagram.sourceCode}</pre> : <p>Chưa có mã nguồn biểu đồ.</p>}
+            {!diagram.imageUrl && <p>Chưa có ảnh biểu đồ tương tác được lưu.</p>}
           </div>;
         }) : <p>Chưa có biểu đồ tương tác được lưu.</p>}
       </section>
@@ -1001,7 +1001,7 @@ export default function GiaiDoan1({
           <tbody>{state.umlClasses.map((item) => <tr key={item.id}><td className="border border-slate-300 p-2 font-semibold">{item.name}</td><td className="border border-slate-300 p-2">{item.attributes.join("\n") || "—"}</td><td className="border border-slate-300 p-2">{item.methods.join("\n") || "—"}</td></tr>)}</tbody>
         </table> : <p>Chưa có lớp trong Domain Model.</p>}
         {state.classDiagramUrl && <img src={state.classDiagramUrl} alt="Biểu đồ lớp UML" className="mx-auto my-3 max-w-full" />}
-        {state.classDiagramCode?.trim() ? <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs">{state.classDiagramCode}</pre> : <p>Chưa có mã biểu đồ lớp được lưu.</p>}
+        {!state.classDiagramUrl && <p>Chưa có ảnh biểu đồ lớp được lưu.</p>}
         {state.relations.length > 0 && <div className="mt-3"><p className="font-semibold">Các quan hệ đã lưu</p><ul className="list-disc pl-5">{state.relations.map((relation) => <li key={relation.id}>{relation.from} — {relation.type} — {relation.to}</li>)}</ul></div>}
       </section>
 
