@@ -142,9 +142,9 @@ export default function Step5ClassDiagram({
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="max-h-[72vh] overflow-y-auto overscroll-contain pr-1 pb-4">
+          <div className="max-h-[72vh] space-y-3 overflow-y-auto overscroll-contain px-1 pb-4">
             {umlClasses.map((item, index) => (
-              <article key={item.id} className="min-w-0 bg-white py-1">
+              <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
                 <div className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-3 px-2 py-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-semibold text-emerald-800">{index + 1}</span>
@@ -157,11 +157,11 @@ export default function Step5ClassDiagram({
                         const name = event.currentTarget.value.trim();
                         if (name && name !== item.name) updateInline(item, { name, attributes: [...item.attributes], methods: [...item.methods] });
                       }}
-                      className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-1 text-sm font-semibold text-slate-800 outline-none hover:border-slate-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                      className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-base font-bold text-slate-800 outline-none hover:border-slate-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
                     />
                   </div>
                 </div>
-                <div className="grid min-w-0 grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-x-4 gap-y-1 px-2 pb-2 pl-12">
+                <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
                   <section className="flex min-w-0 items-start gap-2">
                     <span className="shrink-0 pt-1 text-[12px] font-semibold text-emerald-800">Thuộc tính</span>
                     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
