@@ -126,7 +126,7 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-36 sm:pb-40">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title="" className="[&>div:first-child]:hidden"
+        title="" className=""
       >
         <div className="mb-3 flex min-w-0 items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center text-3xl font-bold leading-none tracking-tight text-emerald-900">
