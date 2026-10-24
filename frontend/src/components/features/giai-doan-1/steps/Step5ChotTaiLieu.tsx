@@ -100,12 +100,14 @@ export default function Step5ChotTaiLieu({
     { label: "6.1 Yêu cầu khác / ghi chú", target: "6.1 Yêu cầu khác / ghi chú", level: 2 },
     { label: "Phụ lục A. Thuật ngữ", target: "Phụ lục A. Thuật ngữ và từ viết tắt", level: 1 },
     { label: "Phụ lục B. Mô hình phân tích", target: "Phụ lục B. Mô hình phân tích", level: 1 },
-    { label: "B.1 Tác nhân, Use Case và quan hệ", target: "B.1. Tác nhân, Use Case và quan hệ", level: 2 },
-    { label: "B.2 Biểu đồ Use Case", target: "B.2. Biểu đồ Use Case", level: 2 },
-    { label: "B.3 Kịch bản Use Case", target: "B.3. Kịch bản Use Case", level: 2 },
-    { label: "B.4 Biểu đồ tương tác", target: "B.4. Biểu đồ tương tác theo từng Use Case", level: 2 },
-    { label: "B.5 Domain Model và biểu đồ lớp", target: "B.5. Domain Model và biểu đồ lớp", level: 2 },
-    { label: "B.6 Truy vết và xác nhận mô hình", target: "B.6. Truy vết và trạng thái xác nhận mô hình", level: 2 },
+    { label: "1. Mô hình hóa chức năng", target: "1. Mô hình hóa chức năng", level: 2 },
+    { label: "1.1 Danh sách tác nhân", target: "1.1 Danh sách tác nhân", level: 3 },
+    { label: "1.2 Biểu đồ Use Case tổng quan", target: "1.2 Biểu đồ Use Case tổng quan", level: 3 },
+    { label: "2. Mô hình hóa cấu trúc", target: "2. Mô hình hóa cấu trúc", level: 2 },
+    { label: "2.1 Biểu đồ lớp", target: "2.1 Biểu đồ lớp", level: 3 },
+    { label: "2.2 Mô tả các lớp và mối quan hệ", target: "2.2 Mô tả các lớp và mối quan hệ", level: 3 },
+    { label: "3. Mô hình hóa hành vi", target: "3. Mô hình hóa hành vi", level: 2 },
+    { label: "3.1 Biểu đồ tuần tự cho từng Use Case", target: "3.1 Biểu đồ tuần tự cho từng Use Case", level: 3 },
   ];
 
   const jumpToTocItem = (target: string) => {
