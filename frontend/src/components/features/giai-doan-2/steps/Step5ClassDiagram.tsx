@@ -210,7 +210,7 @@ function ClassEditor({
   onDelete: () => void;
 }) {
   return (
-    <div className="space-y-4 rounded-xl border-2 border-emerald-300 bg-white p-4 shadow-[0_2px_10px_rgba(47,125,50,0.12)] ring-2 ring-emerald-50">
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-transparent p-4">
       <div className="min-w-0">
         <FieldLabel>Tên lớp</FieldLabel>
         <input
