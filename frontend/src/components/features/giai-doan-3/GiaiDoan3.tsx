@@ -293,6 +293,7 @@ export default function GiaiDoan3({
         )}
         {step === 3 && (
           <Step1DongBoSRS
+            state={state}
             srsLoaded={srsLoaded}
             srsMarkdown={srsMarkdown}
             srsSynced={state.srsSynced}
