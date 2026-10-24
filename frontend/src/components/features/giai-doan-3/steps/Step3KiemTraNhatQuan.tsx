@@ -59,18 +59,13 @@ export default function Step3KiemTraNhatQuan({
         <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
         <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onRenderAndSave}>
-          {busy ? "Đang xử lý..." : "Render và lưu sơ đồ"}
-        </SoftButton>
-        <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-          {busy ? "Đang xử lý..." : "Quét sai lệch"}
-        </PrimaryButton>
-      </div>
-      <Card tone="emerald" title="Phạm vi quét nhất quán">
-        <p className="mb-3 text-sm text-slate-600">
-          Quét theo 8 quy tắc chính thức trong luồng hệ thống. Quy tắc chưa đủ dữ liệu sẽ được đánh dấu chưa thể xác minh, không tự động coi là đạt.
-        </p>
+      <Card tone="emerald" title="Các quy tắc kiểm tra nhất quán">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">Các tiêu chí dùng để đánh giá mức độ nhất quán của mô hình UML.</p>
+          <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+            {busy ? "Đang quét..." : "Quét sơ đồ"}
+          </PrimaryButton>
+        </div>
         <div className="space-y-2">
           {[
             ["CON-001", "Mỗi yêu cầu có ít nhất một Use Case liên quan hoặc có lý do ngoại lệ."],
@@ -85,8 +80,14 @@ export default function Step3KiemTraNhatQuan({
             <div key={code} className="flex flex-col gap-1 rounded-lg border border-slate-200 p-3 sm:flex-row sm:items-start sm:gap-3">
               <span className="shrink-0 text-xs font-semibold text-slate-700">{code}</span>
               <span className="flex-1 text-sm text-slate-600">{description}</span>
-              <StatusBadge tone={consistencyResult && code === "CON-006" ? (consistencyResult.consistent ? "success" : "danger") : "muted"}>
-                {consistencyResult && code === "CON-006" ? (consistencyResult.consistent ? "Đã kiểm tra" : "Có sai lệch") : "Chưa xác minh"}
+              <StatusBadge tone={
+                !consistencyResult ? "muted" :
+                code === "CON-006" ? (consistencyResult.consistent ? "success" : "danger") :
+                "info"
+              }>
+                {!consistencyResult ? "Chưa quét" :
+                  code === "CON-006" ? (consistencyResult.consistent ? "Nhất quán" : "Có sai lệch") :
+                  "Chưa xác minh"}
               </StatusBadge>
             </div>
           ))}
@@ -95,7 +96,7 @@ export default function Step3KiemTraNhatQuan({
 
       <Card
         tone="emerald"
-        title="Quét và phát hiện sai lệch UML"
+        title="Kết quả quét sơ đồ"
       >
         {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
         <div className="mt-4">
