@@ -104,9 +104,9 @@ export default function Step4InteractionDiagram({
                   key={useCase.id}
                   className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
                 >
-                  <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto border-b border-emerald-100 bg-emerald-50/60 px-3 py-2">
+                  <div className="flex w-full min-w-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto border-b border-emerald-100 bg-emerald-50/60 px-3 py-2">
                     <button type="button" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} className="shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-xs disabled:opacity-30">‹</button>
-                    <h3 className="shrink-0 whitespace-nowrap text-sm font-semibold text-slate-900">{useCase.name}</h3>
+                    <h3 title={useCase.name} className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-900">{useCase.name}</h3>
                     <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))} className="shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-xs disabled:opacity-30">›</button>
                     <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
                       {DIAGRAM_TYPES.map(({ value, label }) => <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-2 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
