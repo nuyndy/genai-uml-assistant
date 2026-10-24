@@ -139,37 +139,25 @@ export default function Step5ClassDiagram({
                       </button>
                     </div>
                     <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100">
-                      <section className="min-w-0 p-4">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Thuộc tính</h4>
-                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] tabular-nums text-slate-500">{item.attributes.length}</span>
-                        </div>
+                      <section className="flex min-w-0 flex-wrap items-center gap-2 p-3">
+                        <span className="inline-flex shrink-0 items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">Thuộc tính</span>
                         {item.attributes.length ? (
-                          <ul className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                          <ul className="flex min-w-0 flex-wrap items-center gap-2">
                             {item.attributes.map((value, valueIndex) => (
-                              <li key={valueIndex} className="flex min-w-0 items-start gap-2 text-sm text-slate-700">
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                                <span className={`min-w-0 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</span>
-                              </li>
+                              <li key={valueIndex} className={`max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <p className="text-xs italic text-slate-400">Chưa có thuộc tính</p>}
+                        ) : <span className="text-xs italic text-slate-400">Chưa có thuộc tính</span>}
                       </section>
-                      <section className="min-w-0 p-4">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Phương thức</h4>
-                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] tabular-nums text-slate-500">{item.methods.length}</span>
-                        </div>
+                      <section className="flex min-w-0 flex-wrap items-center gap-2 p-3">
+                        <span className="inline-flex shrink-0 items-center rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800">Phương thức</span>
                         {item.methods.length ? (
-                          <ul className="space-y-2">
+                          <ul className="flex min-w-0 flex-wrap items-center gap-2">
                             {item.methods.map((value, valueIndex) => (
-                              <li key={valueIndex} className="flex min-w-0 items-start gap-2 text-sm text-slate-700">
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                                <span className={`min-w-0 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</span>
-                              </li>
+                              <li key={valueIndex} className={`max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</li>
                             ))}
                           </ul>
-                        ) : <p className="text-xs italic text-slate-400">Chưa có phương thức</p>}
+                        ) : <span className="text-xs italic text-slate-400">Chưa có phương thức</span>}
                       </section>
                     </div>
                   </>
