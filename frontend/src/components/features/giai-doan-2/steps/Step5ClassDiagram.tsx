@@ -126,7 +126,7 @@ export default function Step5ClassDiagram({
     <div className="space-y-3 pb-36 sm:pb-40">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title="Mô hình lớp" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-white [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-slate-800 [&>div:first-child_h3]:text-slate-800 [&>div:first-child]:mb-2 [&>div:first-child]:border-b [&>div:first-child]:border-slate-100"
+        title="" className="[&>div:first-child]:hidden"
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <SoftButton disabled={busy || !projectId} onClick={regenerate}>
@@ -140,10 +140,10 @@ export default function Step5ClassDiagram({
         }
       >
         <div className="mb-3 flex min-w-0 items-center gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center text-3xl font-bold leading-none tracking-tight text-emerald-900">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center text-3xl font-bold leading-none tracking-tight text-emerald-900">
             {umlClasses.length}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold text-slate-800">Lớp UML được tạo</div>
             <div className="mt-0.5 text-xs text-slate-500">
               {umlClasses.length > 0 ? "Các lớp và thành phần có thể chỉnh sửa trực tiếp bên dưới" : "Chưa có lớp nào được tạo"}
