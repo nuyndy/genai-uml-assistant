@@ -138,6 +138,15 @@ export default function Step5ClassDiagram({
               {umlClasses.length > 0 ? "Các lớp và thành phần có thể chỉnh sửa trực tiếp bên dưới" : "Chưa có lớp nào được tạo"}
             </div>
           </div>
+          <div className="ml-auto shrink-0">
+            <SoftButton disabled={busy || !projectId} onClick={regenerate}>
+              {busy
+                ? "Đang suy luận..."
+                : umlClasses.length > 0
+                  ? "↻ Sinh lại mô hình lớp"
+                  : "Sinh các lớp"}
+            </SoftButton>
+          </div>
         </div>
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
@@ -217,15 +226,6 @@ export default function Step5ClassDiagram({
             ))}
           </div>
         )}
-        <div className="mt-4 flex justify-end border-t border-slate-100 pt-3">
-          <SoftButton disabled={busy || !projectId} onClick={regenerate}>
-            {busy
-              ? "Đang suy luận..."
-              : umlClasses.length > 0
-                ? "↻ Sinh lại mô hình lớp"
-                : "Sinh các lớp"}
-          </SoftButton>
-        </div>
       </Card>}
 
       {(viewMode === "diagram" || viewMode === "all") && <Card compact allowOverflow className="!p-3">
