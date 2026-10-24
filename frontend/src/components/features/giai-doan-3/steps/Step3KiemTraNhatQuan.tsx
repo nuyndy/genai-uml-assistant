@@ -33,8 +33,8 @@ function Metric({ label, value, detail, tone = "neutral" }: {
         <p className="mt-1 text-xs leading-tight opacity-70">{detail}</p>
       </div>
       <div className="flex flex-wrap justify-between gap-3 border-t border-slate-200 pt-4">
-        <SoftButton onClick={() => onStepChange(2)}>Chỉnh sửa sai lệch</SoftButton>
-        <PrimaryButton onClick={() => onStepChange(2)}>Tiếp tục</PrimaryButton>
+        <SoftButton onClick={() => onStepChange(0)}>Quay lại</SoftButton>
+        <PrimaryButton onClick={() => onStepChange(1)}>Tiếp tục</PrimaryButton>
       </div>
     </div>
   );
