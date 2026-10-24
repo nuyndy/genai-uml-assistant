@@ -89,7 +89,7 @@ export default function Step5ClassDiagram({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-12">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
         title="Cấu hình các lớp"
@@ -103,17 +103,6 @@ export default function Step5ClassDiagram({
           </SoftButton>
         }
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Mô hình lớp</p>
-            <p className="mt-0.5 text-xs text-slate-500">Xem và chỉnh sửa tên lớp, thuộc tính và phương thức trước khi sinh biểu đồ.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.length} lớp</span>
-            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.reduce((sum, item) => sum + item.attributes.length, 0)} thuộc tính</span>
-            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.reduce((sum, item) => sum + item.methods.length, 0)} phương thức</span>
-          </div>
-        </div>
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
@@ -138,7 +127,6 @@ export default function Step5ClassDiagram({
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-700">{index + 1}</span>
                         <div className="min-w-0">
                           <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
-                          <p className="mt-0.5 text-xs text-slate-500">Lớp UML</p>
                         </div>
                       </div>
                       <button
