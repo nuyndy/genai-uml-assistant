@@ -45,8 +45,20 @@ export default function Step3KiemTraNhatQuan({
   onConsistencyCheck,
   stage3Message,
 }: Props) {
+  const missingDb = consistencyResult?.missing_in_database ?? [];
+  const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
+  const missingRelations = consistencyResult?.missing_relations ?? [];
+  const extraRelations = consistencyResult?.extra_relations ?? [];
+  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
+
   return (
     <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Metric label="Tổng sai lệch" value={consistencyResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues ? "warn" : "neutral"} />
+        <Metric label="Thiếu trong dữ liệu" value={consistencyResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
+        <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
+        <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
+      </div>
       <Card tone="emerald" title="Phạm vi quét nhất quán">
         <p className="mb-3 text-sm text-slate-600">
           Quét theo 8 quy tắc chính thức trong luồng hệ thống. Quy tắc chưa đủ dữ liệu sẽ được đánh dấu chưa thể xác minh, không tự động coi là đạt.
@@ -88,41 +100,27 @@ export default function Step3KiemTraNhatQuan({
         }
       >
         {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
-        {(() => {
-          const missingDb = consistencyResult?.missing_in_database ?? [];
-          const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
-          const missingRelations = consistencyResult?.missing_relations ?? [];
-          const extraRelations = consistencyResult?.extra_relations ?? [];
-          const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
-          return (
-            <div className="mt-4 space-y-4">
-              <p className="text-sm text-slate-600">
-                {consistencyResult
-                  ? consistencyResult.consistent
-                    ? "Không phát hiện sai lệch trong phạm vi kiểm tra."
-                    : "Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML."
-                  : "Chạy quét sai lệch để xem thống kê và danh sách vấn đề."}
-              </p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Metric label="Tổng sai lệch" value={consistencyResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues ? "warn" : "neutral"} />
-                <Metric label="Thiếu trong dữ liệu" value={consistencyResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
-                <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
-                <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-semibold">Kết quả quét sai lệch</p>
+          <p className="text-sm text-slate-600">
+            {consistencyResult
+              ? consistencyResult.consistent
+                ? "Không phát hiện sai lệch trong phạm vi kiểm tra."
+                : "Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML."
+              : "Chạy quét sai lệch để xem danh sách vấn đề."}
+          </p>
+          {consistencyResult && totalIssues > 0 && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-semibold">Danh sách sai lệch ({totalIssues})</p>
+              <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-3">
+                {missingDb.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
+                {missingPlantUml.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
+                {missingRelations.map((item: any, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
+                {extraRelations.map((item: any, index: number) => <div className="rounded-md bg-rose-50 p-2 text-sm" key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</div>)}
               </div>
-              {consistencyResult && totalIssues > 0 && (
-                <div>
-                  <p className="mb-2 text-sm font-semibold">Danh sách sai lệch ({totalIssues})</p>
-                  <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-3">
-                    {missingDb.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
-                    {missingPlantUml.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
-                    {missingRelations.map((item: any, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
-                    {extraRelations.map((item: any, index: number) => <div className="rounded-md bg-rose-50 p-2 text-sm" key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</div>)}
-                  </div>
-                </div>
-              )}
             </div>
-          );
-        })()}
+          )}
+        </div>
         <div className="relative mt-4 flex min-h-[320px] items-center justify-center overflow-hidden rounded-xl border bg-slate-50">
           {state.previewImageUrl ? (
             <img src={state.previewImageUrl} alt="Xem trước biểu đồ" className="h-auto max-w-full" />
