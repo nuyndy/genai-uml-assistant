@@ -119,13 +119,14 @@ export default function Step4InteractionDiagram({
                       <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">Vừa khung</button>
                       {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
                     </div>
+                    <button type="button" onClick={() => setCodeVisible(v => ({ ...v, [useCase.id]: !(v[useCase.id] ?? false) }))} className={`shrink-0 rounded-md border px-2 py-1.5 text-xs font-semibold ${(codeVisible[useCase.id] ?? false) ? "border-emerald-800 bg-emerald-800 text-white" : "border-emerald-200 bg-white text-emerald-900"}`}>Mã UML</button>
                     <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
                   </div>
 
-                  <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
+                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"}`}>
+                    <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? "lg:col-span-2" : ""}`}>
                       <div className="space-y-2">
                         <div className="max-h-[calc(100vh-245px)] min-h-[calc(100vh-270px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
@@ -134,10 +135,10 @@ export default function Step4InteractionDiagram({
                         </div>
                       </div>
                     </div>
-                    {diagram?.sourceCode && diagram.id !== undefined ? (
+                    {(codeVisible[useCase.id] ?? false) && diagram?.sourceCode && diagram.id !== undefined ? (
                       <div className="min-w-0 overflow-hidden rounded-xl bg-[#102d24]">
                         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
-                          <button type="button" onClick={() => setCodeVisible((v) => ({ ...v, [useCase.id]: !(v[useCase.id] ?? true) }))} className="text-xs font-semibold text-emerald-100">Mã UML {((codeVisible[useCase.id] ?? true) ? "−" : "+")}</button>
+                          <span className="text-xs font-semibold text-emerald-100">Mã UML</span>
                           {!editing && (
                             <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}>
                               ✎ Sửa mã
