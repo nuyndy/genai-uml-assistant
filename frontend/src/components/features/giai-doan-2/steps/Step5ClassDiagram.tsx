@@ -123,7 +123,7 @@ export default function Step5ClassDiagram({
   };
 
   return (
-    <div className="space-y-3 pb-20">
+    <div className="space-y-3 pb-36 sm:pb-40">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
         title="Mô hình lớp" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-white [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-slate-800 [&>div:first-child_h3]:text-slate-800 [&>div:first-child]:mb-2 [&>div:first-child]:border-b [&>div:first-child]:border-slate-100"
