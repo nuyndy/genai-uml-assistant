@@ -1,4 +1,4 @@
-import { Card, PrimaryButton, SoftButton, Notice, StatusBadge } from "../../../common/ui/primitives";
+import { Card, PrimaryButton, Notice, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -9,7 +9,6 @@ interface Props {
   consistencyResult: any;
   onConsistencyCheck: () => Promise<void>;
   stage3Message: string;
-  onStepChange: (step: number) => void;
 }
 
 function Metric({ label, value, detail, tone = "neutral" }: {
@@ -32,10 +31,6 @@ function Metric({ label, value, detail, tone = "neutral" }: {
         <p className="text-sm font-semibold leading-tight">{label}</p>
         <p className="mt-1 text-xs leading-tight opacity-70">{detail}</p>
       </div>
-      <div className="flex flex-wrap justify-between gap-3 border-t border-slate-200 pt-4">
-        <SoftButton onClick={() => onStepChange(0)}>Quay lại</SoftButton>
-        <PrimaryButton onClick={() => onStepChange(1)}>Tiếp tục</PrimaryButton>
-      </div>
     </div>
   );
 }
@@ -46,7 +41,6 @@ export default function Step3KiemTraNhatQuan({
   consistencyResult,
   onConsistencyCheck,
   stage3Message,
-  onStepChange,
 }: Props) {
   const missingDb = consistencyResult?.missing_in_database ?? [];
   const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
