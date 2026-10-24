@@ -111,6 +111,13 @@ export default function Step4InteractionDiagram({
                     <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
                       {DIAGRAM_TYPES.map(({ value, label }) => <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-2 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
                     </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button type="button" title="Thu nhỏ" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.max(50, (v[useCase.id] ?? 100) - 10)}))} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">−</button>
+                      <span className="min-w-10 text-center text-xs">{zoom[useCase.id] ?? 100}%</span>
+                      <button type="button" title="Phóng to" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.min(200, (v[useCase.id] ?? 100) + 10)}))} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">+</button>
+                      <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">Vừa khung</button>
+                      {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
+                    </div>
                     <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
@@ -119,15 +126,6 @@ export default function Step4InteractionDiagram({
                   <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
                     <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                       <div className="space-y-2">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-1">
-                            <button type="button" title="Thu nhỏ" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.max(50, (v[useCase.id] ?? 100) - 10)}))} className="rounded-md border px-2 py-1 text-xs">−</button>
-                            <span className="min-w-12 text-center text-xs text-slate-600">{zoom[useCase.id] ?? 100}%</span>
-                            <button type="button" title="Phóng to" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.min(200, (v[useCase.id] ?? 100) + 10)}))} className="rounded-md border px-2 py-1 text-xs">+</button>
-                            <button type="button" title="Vừa khung" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="rounded-md border px-2 py-1 text-xs">Vừa khung</button>
-                          </div>
-                          {diagram?.imageUrl && <a href={diagram.imageUrl} download={`${currentDiagramType}-${useCase.id}.svg`} className="rounded-md border px-2 py-1 text-xs text-emerald-800">↓ Tải ảnh về</a>}
-                        </div>
                         <div className="max-h-[calc(100vh-205px)] min-h-[calc(100vh-230px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
                             <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} showToolbar={false} />
