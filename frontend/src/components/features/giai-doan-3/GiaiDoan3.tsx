@@ -285,11 +285,6 @@ export default function GiaiDoan3({
           <Step2ChinhSuaCapNhat
             state={state}
             setState={setState}
-            onStepChange={onStepChange}
-            wrapClass={wrapClass}
-            singleLineClass={singleLineClass}
-            nextRelationId={nextRelationId}
-            nextClassId={nextClassId}
             consistencyResult={consistencyResult}
             busy={busy}
             onConsistencyCheck={runConsistencyCheck}
