@@ -108,7 +108,7 @@ export default function Step5ClassDiagram({
         ) : (
           <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-6">
             {umlClasses.map((item, index) => (
-              <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+              <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
                 {editingClassId === item.id ? (
                   <div className="p-4">
                     <ClassEditor
@@ -138,14 +138,14 @@ export default function Step5ClassDiagram({
                         <span aria-hidden="true">✎</span> Chỉnh sửa
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100 md:grid-cols-2 md:divide-x md:divide-y-0">
+                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100">
                       <section className="min-w-0 p-4">
                         <div className="mb-3 flex items-center justify-between gap-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Thuộc tính</h4>
                           <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] tabular-nums text-slate-500">{item.attributes.length}</span>
                         </div>
                         {item.attributes.length ? (
-                          <ul className="space-y-2">
+                          <ul className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
                             {item.attributes.map((value, valueIndex) => (
                               <li key={valueIndex} className="flex min-w-0 items-start gap-2 text-sm text-slate-700">
                                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
