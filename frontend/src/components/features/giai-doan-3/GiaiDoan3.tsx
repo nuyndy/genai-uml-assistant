@@ -82,6 +82,12 @@ export default function GiaiDoan3({
     }
   };
 
+  useEffect(() => {
+    if (step === 3 && !srsLoaded && !busy) {
+      void syncSrs();
+    }
+  }, [step, srsLoaded, busy, projectId]);
+
   const runConsistencyCheck = async () => {
     setBusy(true);
     setAiTaskLabel("Đang kiểm tra nhất quán UML...");
