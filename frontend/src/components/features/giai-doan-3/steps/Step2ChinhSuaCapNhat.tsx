@@ -17,11 +17,7 @@ export default function Step2ChinhSuaCapNhat({
   onConsistencyCheck,
   onSaveDiagram,
 }: Props) {
-  const missingDb = consistencyResult?.missing_in_database ?? [];
-  const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
-  const missingRelations = consistencyResult?.missing_relations ?? [];
-  const extraRelations = consistencyResult?.extra_relations ?? [];
-  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
+  const totalIssues = (consistencyResult?.missing_in_database?.length ?? 0) + (consistencyResult?.missing_in_plantuml?.length ?? 0) + (consistencyResult?.missing_relations?.length ?? 0) + (consistencyResult?.extra_relations?.length ?? 0);
   const hasResult = consistencyResult != null;
 
   return (
