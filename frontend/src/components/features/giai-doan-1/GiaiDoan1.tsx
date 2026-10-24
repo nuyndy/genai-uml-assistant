@@ -1115,14 +1115,70 @@ export default function GiaiDoan1({
         <h4 className="mb-2 font-bold">2.1 Biểu đồ lớp</h4>
         {state.classDiagramUrl ? <img src={state.classDiagramUrl} alt="Biểu đồ lớp" className="mx-auto my-3 max-w-full" /> : <p>Chưa có ảnh biểu đồ lớp được lưu.</p>}
         <h4 className="mb-2 mt-5 font-bold">2.2 Mô tả các lớp và mối quan hệ</h4>
-        {state.umlClasses.length ? <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-xs">
-          <thead><tr><th className="border border-slate-300 bg-slate-100 p-2">Tên lớp</th><th className="border border-slate-300 bg-slate-100 p-2">Thuộc tính</th><th className="border border-slate-300 bg-slate-100 p-2">Phương thức</th></tr></thead>
-          <tbody>{state.umlClasses.map((item) => <tr key={item.id}><td className="border border-slate-300 p-2 font-semibold">{item.name}</td><td className="border border-slate-300 p-2">{item.attributes.join("\n") || "—"}</td><td className="border border-slate-300 p-2">{item.methods.join("\n") || "—"}</td></tr>)}</tbody>
-        </table> : <p>Chưa có lớp trong Domain Model.</p>}
-        {state.relations.length > 0 && <table className="mt-3 w-full table-fixed border-collapse border border-slate-400 text-left text-xs">
-          <thead><tr><th className="border border-slate-300 bg-slate-100 p-2">Thành phần nguồn</th><th className="border border-slate-300 bg-slate-100 p-2">Mối quan hệ</th><th className="border border-slate-300 bg-slate-100 p-2">Thành phần đích</th></tr></thead>
-          <tbody>{state.relations.map((relation) => <tr key={relation.id}><td className="border border-slate-300 p-2">{relation.from}</td><td className="border border-slate-300 p-2">{relation.type}</td><td className="border border-slate-300 p-2">{relation.to}</td></tr>)}</tbody>
-        </table>}
+        {state.umlClasses.length ? (
+          <div className="space-y-5">
+            {state.umlClasses.map((item) => {
+              const classRelations = state.relations.filter(
+                (relation) => relation.from === item.name || relation.to === item.name,
+              );
+              const relatedClassNames = [...new Set(classRelations.map(
+                (relation) => relation.from === item.name ? relation.to : relation.from,
+              ))];
+              return (
+                <article key={item.id} className="break-inside-avoid">
+                  <h5 className="mb-2 font-bold">Lớp {item.name}</h5>
+                  <p className="mb-3">
+                    Lớp {item.name} đại diện cho một thực thể trong mô hình cấu trúc của hệ thống.
+                    Các thuộc tính mô tả dữ liệu của thực thể, các phương thức thể hiện những thao tác
+                    được định nghĩa cho lớp.
+                    {classRelations.length > 0
+                      ? ` Lớp có mối quan hệ với ${relatedClassNames.join(", ")}.`
+                      : " Hiện chưa có mối quan hệ nào được lưu cho lớp này."}
+                  </p>
+                  <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-xs leading-5">
+                    <tbody>
+                      <tr>
+                        <th className="w-[22%] border border-slate-300 bg-slate-100 p-2">Thuộc tính</th>
+                        <td className="border border-slate-300 p-2">
+                          {item.attributes.length ? (
+                            <ul className="list-disc space-y-1 pl-5">
+                              {item.attributes.map((attribute, index) => <li key={index} className="whitespace-pre-wrap">{attribute}</li>)}
+                            </ul>
+                          ) : "—"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-slate-300 bg-slate-100 p-2">Phương thức</th>
+                        <td className="border border-slate-300 p-2">
+                          {item.methods.length ? (
+                            <ul className="list-disc space-y-1 pl-5">
+                              {item.methods.map((method, index) => <li key={index} className="whitespace-pre-wrap">{method}</li>)}
+                            </ul>
+                          ) : "—"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-slate-300 bg-slate-100 p-2">Mối quan hệ</th>
+                        <td className="border border-slate-300 p-2">
+                          {classRelations.length ? (
+                            <ul className="list-disc space-y-1 pl-5">
+                              {classRelations.map((relation) => (
+                                <li key={relation.id}>
+                                  {relation.from === item.name ? relation.to : relation.from} — {relation.type}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : "—"}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </article>
+              );
+            })}
+          </div>
+        ) : <p>Chưa có lớp trong Domain Model.</p>}
+        {state.relations.length > 0 && <p className="mt-3 text-xs text-slate-600">Các mối quan hệ được mô tả tương ứng trong từng lớp ở trên.</p>}
       </section>
 
       <section>
