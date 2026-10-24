@@ -81,7 +81,7 @@ export default function Step4InteractionDiagram({
   };
 
   return (
-    <div className="space-y-3 pb-3">
+    <div className="space-y-3 bg-[#2F7D32] pb-3">
       <Card
         tone="emerald"
         title={undefined}
