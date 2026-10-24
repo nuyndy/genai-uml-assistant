@@ -21,6 +21,7 @@ interface SrsWordEditorProps {
     record: SpecificationRecord,
     content: FunctionalSpecification | NonFunctionalSpecification,
   ) => void;
+  appendixBContent?: ReactNode;
 }
 
 /**
@@ -186,6 +187,7 @@ export default function SrsWordEditor({
   functional,
   nonFunctional,
   onChangeMetadata,
+  appendixBContent,
 }: SrsWordEditorProps) {
   const patchMeta = (key: keyof SrsMetadata, value: string) =>
     onChangeMetadata({ ...metadata, [key]: value });
@@ -282,7 +284,7 @@ export default function SrsWordEditor({
           <SectionHeading>Phụ lục A. Thuật ngữ và từ viết tắt</SectionHeading>
           <p className="text-sm leading-6">{metadata.intro_definitions || "Chưa bổ sung thuật ngữ và từ viết tắt."}</p>
           <SectionHeading>Phụ lục B. Mô hình phân tích</SectionHeading>
-          <p className="text-sm leading-6">Các mô hình phân tích UML được quản lý và đồng bộ ở Giai đoạn 2 và Giai đoạn 3.</p>
+          {appendixBContent ?? <p className="text-sm leading-6">Các mô hình phân tích UML được quản lý và đồng bộ ở Giai đoạn 2 và Giai đoạn 3.</p>}
         </div>
         <footer className="mt-8 flex justify-between border-t border-slate-300 pt-3 text-xs text-slate-500">
           <span>{projectName || "Hệ thống"}</span>
