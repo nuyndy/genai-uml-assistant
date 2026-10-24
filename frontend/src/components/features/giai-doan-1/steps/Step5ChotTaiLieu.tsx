@@ -36,6 +36,7 @@ interface Props {
   setSrsMetadata: Dispatch<SetStateAction<SrsMetadata>>;
   setSrsSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
   appendixBContent?: ReactNode;
+  appendixUseCaseNames?: string[];
 }
 
 const SAVE_DEBOUNCE_MS = 800;
@@ -102,7 +103,7 @@ export default function Step5ChotTaiLieu({
     { label: "Phụ lục B. Mô hình phân tích", target: "Phụ lục B. Mô hình phân tích", level: 1 },
     { label: "1. Mô hình hóa chức năng", target: "1. Mô hình hóa chức năng", level: 2 },
     { label: "1.1 Danh sách tác nhân", target: "1.1 Danh sách tác nhân", level: 3 },
-    { label: "1.2 Biểu đồ Use Case tổng quan", target: "1.2 Biểu đồ Use Case tổng quan", level: 3 },
+    { label: "1.2 Biểu đồ Use Case tổng quan", target: "1.2 Biểu đồ Use Case tổng quan", level: 3 },\n    ...appendixUseCaseNames.map((name, index) => ({ label: `1.2.${index + 1} ${name}`, target: `1.2.${index + 1} ${name}`, level: 3 as const })),
     { label: "2. Mô hình hóa cấu trúc", target: "2. Mô hình hóa cấu trúc", level: 2 },
     { label: "2.1 Biểu đồ lớp", target: "2.1 Biểu đồ lớp", level: 3 },
     { label: "2.2 Mô tả các lớp và mối quan hệ", target: "2.2 Mô tả các lớp và mối quan hệ", level: 3 },
