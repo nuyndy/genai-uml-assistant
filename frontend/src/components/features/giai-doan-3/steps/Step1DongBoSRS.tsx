@@ -1,6 +1,8 @@
 import { useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 import { Card, Notice, SoftButton, StatusBadge } from "../../../common/ui/primitives";
+import SrsWordEditor from "../../../SrsWordEditor";
+import type { FunctionalSpecification, NonFunctionalSpecification, SrsMetadata, SpecificationRecord } from "../../../../services/requirementService";
 
 interface Props {
   srsLoaded: boolean;
@@ -10,6 +12,8 @@ interface Props {
   onSyncSrs: () => Promise<void>;
   stage3Message: string;
   state: any;
+  projectName?: string;
+  metadata?: SrsMetadata;
 }
 
 type TocItem = { label: string; id: string; level: 1 | 2 | 3 };
@@ -29,11 +33,11 @@ function TextTable({ headers, rows, emptyText }: { headers: string[]; rows: unkn
 
 function DocumentHeading({ children, level = 2 }: { children: ReactNode; level?: 2 | 3 }) {
   return level === 2
-    ? <h2 id={String(children)} className="mb-3 mt-8 scroll-mt-4 text-center text-base font-bold uppercase tracking-wide text-slate-950 first:mt-0">{children}</h2>
-    : <h3 id={String(children)} className="mb-2 mt-5 scroll-mt-4 text-[15px] font-bold text-slate-900">{children}</h3>;
+    ? <h2 id={String(children).trim()} className="mb-3 mt-8 scroll-mt-4 text-center text-base font-bold uppercase tracking-wide text-slate-950 first:mt-0">{children}</h2>
+    : <h3 id={String(children).trim()} className="mb-2 mt-5 scroll-mt-4 text-[15px] font-bold text-slate-900">{children}</h3>;
 }
 
-export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy, onSyncSrs, stage3Message, state }: Props) {
+export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy, onSyncSrs, stage3Message, state, projectName = "", metadata }: Props) {
   const documentRef = useRef<HTMLDivElement | null>(null);
   const actors = Array.isArray(state?.actors) ? state.actors : [];
   const useCases = Array.isArray(state?.useCases) ? state.useCases : [];
@@ -41,6 +45,22 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
   const relations = Array.isArray(state?.relations) ? state.relations : [];
   const sequences = Array.isArray(state?.interactions) ? state.interactions : [];
   const diagramUrl = state?.useCaseDiagramUrl || state?.previewImageUrl || "";
+  const srsMetadata: SrsMetadata = metadata ?? state?.srsMetadata ?? {
+    intro_purpose: "", intro_scope: "", intro_definitions: "", overview_user_classes: "",
+    overview_environment: "", appendix_notes: "",
+  };
+  const functional = (Array.isArray(state?.specs) ? state.specs : [])
+    .filter((record: any) => record?.type === "functional")
+    .map((record: SpecificationRecord & { value?: FunctionalSpecification }) => ({
+      ...record,
+      value: record.value ?? (() => { try { return JSON.parse(record.content) as FunctionalSpecification; } catch { return {} as FunctionalSpecification; } })(),
+    }));
+  const nonFunctional = (Array.isArray(state?.specs) ? state.specs : [])
+    .filter((record: any) => record?.type === "non_functional")
+    .map((record: SpecificationRecord & { value?: NonFunctionalSpecification }) => ({
+      ...record,
+      value: record.value ?? (() => { try { return JSON.parse(record.content) as NonFunctionalSpecification; } catch { return { items: [] }; } })(),
+    }));
   const toc: TocItem[] = useMemo(() => [
     { label: "Tài liệu SRS hiện có", id: "Nội dung SRS hiện có", level: 1 },
     { label: "Phụ lục B. Mô hình phân tích", id: "Phụ lục B. Mô hình phân tích", level: 1 },
@@ -92,38 +112,44 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
               <p className="mt-2 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">Chọn mục để cuộn đến phần tương ứng trong tài liệu.</p>
             </aside>
             <div ref={documentRef} className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3">
-              <article className="mx-auto min-h-full w-full max-w-[794px] bg-white px-6 py-10 shadow-md sm:px-[76px] sm:py-[72px]" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
-                <header className="mb-8 border-b border-slate-300 pb-3 text-center text-xs uppercase tracking-wide text-slate-600">Đặc tả yêu cầu phần mềm</header>
-                <DocumentHeading> NỘI DUNG SRS HIỆN CÓ </DocumentHeading>
-                <div data-doc-id="Nội dung SRS hiện có" className="mb-8 whitespace-pre-wrap break-words text-[13px] leading-6 text-slate-800">{srsMarkdown || "Tài liệu SRS chưa có nội dung."}</div>
-                <DocumentHeading>Phụ lục B. Mô hình phân tích</DocumentHeading>
-                <DocumentHeading level={3}>1. Mô hình hóa chức năng</DocumentHeading>
-                <DocumentHeading level={3}>1.1 Danh sách tác nhân</DocumentHeading>
-                <TextTable headers={["STT", "Tên tác nhân", "Mô tả tác nhân", "Vai trò", "Các nghiệp vụ chính"]} rows={actors.map((a: any, i: number) => [i + 1, val(a, "name", "actorName", "title"), val(a, "description"), val(a, "role"), val(a, "useCases", "mainActivities", "activities")])} emptyText="Chưa có dữ liệu tác nhân được lưu." />
-                <DocumentHeading level={3}>1.2 Biểu đồ Use Case tổng quan</DocumentHeading>
-                <TextTable headers={["STT", "Tên Use Case", "Tác nhân"]} rows={useCaseRows} emptyText="Chưa có Use Case được lưu." />
-                {diagramUrl && <figure className="my-4 text-center"><img src={diagramUrl} alt="Biểu đồ UML tổng quan" className="mx-auto max-h-[560px] max-w-full object-contain" /><figcaption className="mt-2 text-xs">Hình B.1. Biểu đồ mô hình tổng quan</figcaption></figure>}
-                {useCases.map((uc: any, i: number) => <section key={uc?.id ?? i} data-doc-id={`uc-${i}`} className="break-inside-avoid">
-                  <DocumentHeading level={3}>{`1.2.${i + 1} ${val(uc, "name", "title", "use_case_name")}`}</DocumentHeading>
-                  <p className="mb-2 text-sm font-bold">a. Biểu đồ Use Case</p>
-                  {uc?.diagramUrl || uc?.diagram_url ? <img src={uc.diagramUrl || uc.diagram_url} alt={`Biểu đồ Use Case ${i + 1}`} className="mx-auto my-3 max-h-[480px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ Use Case.</p>}
-                  <p className="mb-2 text-sm font-bold">b. Biểu đồ hoạt động</p>
-                  {uc?.activityDiagramUrl || uc?.activity_diagram_url ? <img src={uc.activityDiagramUrl || uc.activity_diagram_url} alt={`Biểu đồ hoạt động ${i + 1}`} className="mx-auto my-3 max-h-[480px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ hoạt động.</p>}
-                  <p className="mb-2 text-sm font-bold">c. Kịch bản Use Case</p>
-                  <TextTable headers={["Trường", "Nội dung"]} rows={[["Tên Use Case", val(uc, "name", "title", "use_case_name")], ["Tác nhân chính", val(uc, "primaryActor", "primary_actor", "actor")], ["Mô tả", val(uc, "description")], ["Tiền điều kiện", val(uc, "preconditions", "pre_conditions")], ["Đảm bảo tối thiểu", val(uc, "minimalGuarantees", "minimal_guarantee")], ["Hậu điều kiện", val(uc, "postconditions", "post_conditions")], ["Luồng chính", val(uc, "mainFlow", "main_flow", "steps")], ["Ngoại lệ", val(uc, "exceptions", "exception_flows", "alternative_flows")]]} emptyText="Chưa có kịch bản Use Case." />
-                </section>)}
-                <DocumentHeading level={3}>2. Mô hình hóa cấu trúc</DocumentHeading>
-                <DocumentHeading level={3}>2.1 Biểu đồ lớp</DocumentHeading>
-                {state?.previewImageUrl && <img src={state.previewImageUrl} alt="Biểu đồ lớp UML" className="mx-auto my-3 max-h-[560px] max-w-full object-contain" />}
-                {!state?.previewImageUrl && <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ lớp được lưu.</p>}
-                <DocumentHeading level={3}>2.2 Mô tả lớp và quan hệ</DocumentHeading>
-                <TextTable headers={["STT", "Tên lớp", "Thuộc tính", "Phương thức"]} rows={classRows} emptyText="Chưa có dữ liệu lớp được lưu." />
-                <TextTable headers={["STT", "Lớp nguồn", "Lớp đích", "Quan hệ"]} rows={relationRows} emptyText="Chưa có quan hệ lớp được lưu." />
-                <DocumentHeading level={3}>3. Mô hình hóa hành vi</DocumentHeading>
-                <DocumentHeading level={3}>3.1 Biểu đồ tuần tự</DocumentHeading>
-                {sequences.length ? sequences.map((seq: any, i: number) => <section key={seq?.id ?? i} className="my-4 break-inside-avoid"><h4 className="mb-2 text-sm font-bold">{`3.1.${i + 1} ${val(seq, "name", "title", "useCaseName")}`}</h4>{(seq?.imageUrl || seq?.image_url || seq?.diagramUrl) ? <img src={seq.imageUrl || seq.image_url || seq.diagramUrl} alt={`Biểu đồ tuần tự ${i + 1}`} className="mx-auto max-h-[560px] max-w-full object-contain" /> : <pre className="whitespace-pre-wrap break-words rounded border border-slate-200 p-3 text-xs">{val(seq, "source_code", "code", "description")}</pre>}</section>) : <p className="text-sm italic text-slate-500">Chưa có biểu đồ tuần tự được lưu.</p>}
-                <footer className="mt-8 flex justify-between border-t border-slate-300 pt-3 text-xs text-slate-500"><span>Tài liệu SRS</span><span>Phụ lục B · Mô hình phân tích</span></footer>
-              </article>
+              <div className="mx-auto min-h-full w-full max-w-[794px]">
+                <SrsWordEditor
+                  projectName={projectName}
+                  metadata={srsMetadata}
+                  functional={functional}
+                  nonFunctional={nonFunctional}
+                  onChangeMetadata={() => undefined}
+                  onChangeSpecification={() => undefined}
+                  appendixBContent={
+                    <div className="text-[15px] text-slate-900">
+                      <DocumentHeading level={3}>1. Mô hình hóa chức năng</DocumentHeading>
+                      <DocumentHeading level={3}>1.1 Danh sách tác nhân</DocumentHeading>
+                      <TextTable headers={["STT", "Tên tác nhân", "Mô tả tác nhân", "Vai trò", "Các nghiệp vụ chính"]} rows={actors.map((a: any, i: number) => [i + 1, val(a, "name", "actorName", "title"), val(a, "description"), val(a, "role"), val(a, "useCases", "mainActivities", "activities")])} emptyText="Chưa có dữ liệu tác nhân được lưu." />
+                      <DocumentHeading level={3}>1.2 Biểu đồ Use Case tổng quan</DocumentHeading>
+                      <TextTable headers={["STT", "Tên Use Case", "Tác nhân"]} rows={useCaseRows} emptyText="Chưa có Use Case được lưu." />
+                      {diagramUrl && <figure className="my-4 text-center"><img src={diagramUrl} alt="Biểu đồ Use Case tổng quan" className="mx-auto max-h-[560px] max-w-full object-contain" /><figcaption className="mt-2 text-xs">Hình B.1. Biểu đồ Use Case tổng quan</figcaption></figure>}
+                      {useCases.map((uc: any, i: number) => <section key={uc?.id ?? i} data-doc-id={`uc-${i}`} className="break-inside-avoid">
+                        <DocumentHeading level={3}>{`1.2.${i + 1} ${val(uc, "name", "title", "use_case_name")}`}</DocumentHeading>
+                        <p className="mb-2 text-sm font-bold">a. Biểu đồ Use Case</p>
+                        {uc?.diagramUrl || uc?.diagram_url ? <img src={uc.diagramUrl || uc.diagram_url} alt={`Biểu đồ Use Case ${i + 1}`} className="mx-auto my-3 max-h-[480px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ Use Case.</p>}
+                        <p className="mb-2 text-sm font-bold">b. Biểu đồ hoạt động</p>
+                        {uc?.activityDiagramUrl || uc?.activity_diagram_url ? <img src={uc.activityDiagramUrl || uc.activity_diagram_url} alt={`Biểu đồ hoạt động ${i + 1}`} className="mx-auto my-3 max-h-[480px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ hoạt động.</p>}
+                        <p className="mb-2 text-sm font-bold">c. Kịch bản Use Case</p>
+                        <TextTable headers={["Trường", "Nội dung"]} rows={[["Tên Use Case", val(uc, "name", "title", "use_case_name")], ["Tác nhân chính", val(uc, "primaryActor", "primary_actor", "actor")], ["Mô tả", val(uc, "description")], ["Tiền điều kiện", val(uc, "preconditions", "pre_conditions")], ["Đảm bảo tối thiểu", val(uc, "minimalGuarantees", "minimal_guarantee")], ["Hậu điều kiện", val(uc, "postconditions", "post_conditions")], ["Luồng chính", val(uc, "mainFlow", "main_flow", "steps")], ["Ngoại lệ", val(uc, "exceptions", "exception_flows", "alternative_flows")]]} emptyText="Chưa có kịch bản Use Case." />
+                      </section>)}
+                      <DocumentHeading level={3}>2. Mô hình hóa cấu trúc</DocumentHeading>
+                      <DocumentHeading level={3}>2.1 Biểu đồ lớp</DocumentHeading>
+                      {state?.previewImageUrl ? <img src={state.previewImageUrl} alt="Biểu đồ lớp UML" className="mx-auto my-3 max-h-[560px] max-w-full object-contain" /> : <p className="text-sm italic text-slate-500">Chưa có ảnh biểu đồ lớp được lưu.</p>}
+                      <DocumentHeading level={3}>2.2 Mô tả lớp và quan hệ</DocumentHeading>
+                      <TextTable headers={["STT", "Tên lớp", "Thuộc tính", "Phương thức"]} rows={classRows} emptyText="Chưa có dữ liệu lớp được lưu." />
+                      <TextTable headers={["STT", "Lớp nguồn", "Lớp đích", "Quan hệ"]} rows={relationRows} emptyText="Chưa có quan hệ lớp được lưu." />
+                      <DocumentHeading level={3}>3. Mô hình hóa hành vi</DocumentHeading>
+                      <DocumentHeading level={3}>3.1 Biểu đồ tuần tự</DocumentHeading>
+                      {sequences.length ? sequences.map((seq: any, i: number) => <section key={seq?.id ?? i} className="my-4 break-inside-avoid"><h4 className="mb-2 text-sm font-bold">{`3.1.${i + 1} ${val(seq, "name", "title", "useCaseName")}`}</h4>{(seq?.imageUrl || seq?.image_url || seq?.diagramUrl) ? <img src={seq.imageUrl || seq.image_url || seq.diagramUrl} alt={`Biểu đồ tuần tự ${i + 1}`} className="mx-auto max-h-[560px] max-w-full object-contain" /> : <pre className="whitespace-pre-wrap break-words rounded border border-slate-200 p-3 text-xs">{val(seq, "source_code", "code", "description")}</pre>}</section>) : <p className="text-sm italic text-slate-500">Chưa có biểu đồ tuần tự được lưu.</p>}
+                    </div>
+                  }
+                />
+              </div>    </article>
             </div>
           </div>
         ) : (
