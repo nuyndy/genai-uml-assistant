@@ -40,6 +40,7 @@ import {
   emptyNonFunctionalSpecification,
 } from "../../SpecificationEditor";
 import { inputClass, wrapClass } from "../../common/ui/primitives";
+import { getProjectUmlState } from "../../../services/umlService";
 
 interface Props {
   projectId?: number;
@@ -933,6 +934,86 @@ export default function GiaiDoan1({
       inputClass={inputClass}
     />
   );
+
+  // Tải trực tiếp mô hình UML đã lưu từ backend khi mở tài liệu SRS.
+  // Không phụ thuộc vào state trong bộ nhớ, vì state có thể rỗng sau khi mở lại dự án.
+  useEffect(() => {
+    if (!projectId || step !== 5) return;
+    let cancelled = false;
+    void getProjectUmlState(projectId).then((saved) => {
+      if (cancelled) return;
+      const actors = Array.isArray(saved?.actors) ? saved.actors : [];
+      const useCases = Array.isArray(saved?.use_cases) ? saved.use_cases : [];
+      const relations = Array.isArray(saved?.relations) ? saved.relations : [];
+      const diagrams = Array.isArray(saved?.diagrams) ? saved.diagrams : [];
+      const classes = Array.isArray(saved?.classes) ? saved.classes : [];
+      const classRelations = Array.isArray(saved?.class_relations) ? saved.class_relations : [];
+      const actorById = new Map(actors.map((item) => [item.id, item.name]));
+      const useCaseById = new Map(useCases.map((item) => [item.id, item.name]));
+      const classById = new Map(classes.map((item) => [item.id, item.name]));
+      const umlRelations = [
+        ...relations.flatMap((relation) => {
+          const from = actorById.get(relation.actor_id);
+          const to = useCaseById.get(relation.use_case_id);
+          return from && to ? [{ id: relation.id, from, to, type: relation.relation_type }] : [];
+        }),
+        ...classRelations.flatMap((relation) => {
+          const from = classById.get(relation.class_a_id);
+          const to = classById.get(relation.class_b_id);
+          return from && to ? [{ id: relation.id, from, to, type: relation.relation_type }] : [];
+        }),
+      ];
+      const useCaseDiagram = diagrams.filter((item) => item.type === "use_case" && item.use_case_id === null).at(-1);
+      const classDiagram = diagrams.filter((item) => item.type === "class" && item.use_case_id === null).at(-1);
+      const latestInteractions = new Map<string, (typeof diagrams)[number]>();
+      diagrams.forEach((item) => {
+        if (item.use_case_id === null || (item.type !== "sequence" && item.type !== "collaboration")) return;
+        const key = `${item.use_case_id}:${item.type}`;
+        const previous = latestInteractions.get(key);
+        if (!previous || previous.id < item.id) latestInteractions.set(key, item);
+      });
+      setState((previous) => ({
+        ...previous,
+        actors: actors.map((item) => ({
+          id: item.id, name: item.name, description: item.description ?? "",
+          role: item.role ?? "", mainBusinesses: item.main_businesses ?? "",
+        })),
+        usecases: useCases.map((item) => ({
+          id: item.id, name: item.name, description: "", specificationId: item.specification_id,
+        })),
+        scenarios: Object.fromEntries(useCases.filter((item) =>
+          (Array.isArray(item.main_flow) && item.main_flow.length) ||
+          (Array.isArray(item.alt_flow) && item.alt_flow.length) ||
+          (Array.isArray(item.exception_flow) && item.exception_flow.length)
+        ).map((item) => [item.id, {
+          mainFlow: Array.isArray(item.main_flow) ? item.main_flow : [],
+          altFlows: Array.isArray(item.alt_flow) ? item.alt_flow : [],
+          exceptions: Array.isArray(item.exception_flow) ? item.exception_flow : [],
+          preconditions: typeof item.preconditions === "string" ? item.preconditions.split("\\n").filter(Boolean) : [],
+          postconditions: typeof item.postconditions === "string" ? item.postconditions.split("\\n").filter(Boolean) : [],
+        }])),
+        useCaseDiagramUrl: useCaseDiagram?.image_url ?? null,
+        useCaseDiagramCode: useCaseDiagram?.source_code ?? null,
+        interactions: [...latestInteractions.values()].map((item) => ({
+          usecaseId: item.use_case_id as number,
+          type: item.type as "sequence" | "collaboration",
+          imageUrl: item.image_url,
+          sourceCode: item.source_code,
+        })),
+        umlClasses: classes.map((item) => ({
+          id: item.id, name: item.name,
+          attributes: Array.isArray(item.attributes) ? item.attributes : [],
+          methods: Array.isArray(item.methods) ? item.methods : [],
+        })),
+        classDiagramUrl: classDiagram?.image_url ?? null,
+        classDiagramCode: classDiagram?.source_code ?? null,
+        relations: umlRelations,
+      }));
+    }).catch((reason) => {
+      console.error("Không thể tải mô hình UML cho Phụ lục B:", reason);
+    });
+    return () => { cancelled = true; };
+  }, [projectId, step, setState]);
 
   const appendixBContent = (
     <div className="space-y-6 text-sm leading-6">
