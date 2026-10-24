@@ -90,7 +90,7 @@ export default function Step3KiemTraNhatQuan({
               </div>
             ) : (
               <>
-                <p className="mb-3 text-sm text-slate-600">Đã phát hiện {totalIssues} sai lệch giữa dữ liệu đã lưu và mã PlantUML.</p>
+                
                 <div className="max-h-36 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-slate-50 p-3">
                   {missingDb.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
                   {missingPlantUml.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
