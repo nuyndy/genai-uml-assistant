@@ -103,75 +103,91 @@ export default function Step5ClassDiagram({
           </SoftButton>
         }
       >
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-800">Mô hình lớp</p>
+            <p className="mt-0.5 text-xs text-slate-500">Xem và chỉnh sửa tên lớp, thuộc tính và phương thức trước khi sinh biểu đồ.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.length} lớp</span>
+            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.reduce((sum, item) => sum + item.attributes.length, 0)} thuộc tính</span>
+            <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">{umlClasses.reduce((sum, item) => sum + item.methods.length, 0)} phương thức</span>
+          </div>
+        </div>
         {umlClasses.length === 0 ? (
-          <EmptyState
-            icon="◫"
-            title="Chưa có lớp"
-          />
+          <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="overflow-x-auto rounded-2xl bg-slate-50/70">
-            <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">Lớp</th>
-                  <th className="px-4 py-3">Thuộc tính</th>
-                  <th className="px-4 py-3">Phương thức</th>
-                  <th className="px-4 py-3">Sửa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {umlClasses.map((item) =>
-                  editingClassId === item.id ? (
-                    <tr key={item.id} className="border-t border-slate-100">
-                      <td colSpan={4} className="p-4">
-                        <ClassEditor
-                          draft={draft}
-                          busy={busy}
-                          onChange={(next) => changeDraft(item.id, next)}
-                          onSave={() => void onSaveClass(item.id, draft)}
-                          onCancel={() => setEditingClassId(null)}
-                          onDelete={() => remove(item)}
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr key={item.id} className="border-t border-slate-100 align-top">
-                      <th className={`max-w-48 px-4 py-3 font-semibold text-slate-800 ${wrapClass}`}>
-                        {item.name}
-                      </th>
-                      <td className="min-w-0 px-4 py-3">
-                        <ul className="space-y-1">
-                          {item.attributes.map((value, index) => (
-                            <li key={index} className={`text-slate-600 ${wrapClass}`}>
-                              {value}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td className="min-w-0 px-4 py-3">
-                        <ul className="space-y-1">
-                          {item.methods.map((value, index) => (
-                            <li key={index} className={`text-slate-600 ${wrapClass}`}>
-                              {value}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => startEditing(item)}
-                          className="text-xs text-emerald-600 hover:underline disabled:opacity-50"
-                        >
-                          ✎ Sửa
-                        </button>
-                      </td>
-                    </tr>
-                  ),
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            {umlClasses.map((item, index) => (
+              <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+                {editingClassId === item.id ? (
+                  <div className="p-4">
+                    <ClassEditor
+                      draft={draft}
+                      busy={busy}
+                      onChange={(next) => changeDraft(item.id, next)}
+                      onSave={() => void onSaveClass(item.id, draft)}
+                      onCancel={() => setEditingClassId(null)}
+                      onDelete={() => remove(item)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex min-w-0 items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-700">{index + 1}</span>
+                        <div className="min-w-0">
+                          <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
+                          <p className="mt-0.5 text-xs text-slate-500">Lớp UML</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => startEditing(item)}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
+                      >
+                        <span aria-hidden="true">✎</span> Chỉnh sửa
+                      </button>
+                    </div>
+                    <div className="grid min-w-0 grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                      <section className="min-w-0 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Thuộc tính</h4>
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] tabular-nums text-slate-500">{item.attributes.length}</span>
+                        </div>
+                        {item.attributes.length ? (
+                          <ul className="space-y-2">
+                            {item.attributes.map((value, valueIndex) => (
+                              <li key={valueIndex} className="flex min-w-0 items-start gap-2 text-sm text-slate-700">
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                                <span className={`min-w-0 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : <p className="text-xs italic text-slate-400">Chưa có thuộc tính</p>}
+                      </section>
+                      <section className="min-w-0 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                          <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Phương thức</h4>
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] tabular-nums text-slate-500">{item.methods.length}</span>
+                        </div>
+                        {item.methods.length ? (
+                          <ul className="space-y-2">
+                            {item.methods.map((value, valueIndex) => (
+                              <li key={valueIndex} className="flex min-w-0 items-start gap-2 text-sm text-slate-700">
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                                <span className={`min-w-0 break-words [overflow-wrap:anywhere] ${wrapClass}`}>{value}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : <p className="text-xs italic text-slate-400">Chưa có phương thức</p>}
+                      </section>
+                    </div>
+                  </>
                 )}
-              </tbody>
-            </table>
+              </article>
+            ))}
           </div>
         )}
       </Card>}
