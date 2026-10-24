@@ -149,7 +149,7 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
                     </div>
                   }
                 />
-              </div>    </article>
+              </div>
             </div>
           </div>
         ) : (
