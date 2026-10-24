@@ -89,28 +89,30 @@ export default function Step5ClassDiagram({
   };
 
   return (
-    <div className="space-y-3 pb-16">
+    <div className="space-y-3 pb-20">
       {(viewMode === "configuration" || viewMode === "all") && <Card
         tone="emerald"
-        title="" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-800 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-4"
+        title="" className="[&>div:first-child]:rounded-xl [&>div:first-child]:bg-emerald-700 [&>div:first-child]:px-4 [&>div:first-child]:py-3 [&>div:first-child]:text-white [&>div:first-child_h3]:text-white [&>div:first-child]:mb-4"
         actions={
-          <SoftButton disabled={busy || !projectId} onClick={regenerate}>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-white">
+              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-white/60 bg-white/10 px-2 text-sm font-bold text-white">{umlClasses.length}</span>
+              <span className="text-sm font-semibold">lớp</span>
+            </div>
+            <SoftButton disabled={busy || !projectId} onClick={regenerate}>
             {busy
               ? "Đang suy luận..."
               : umlClasses.length > 0
                 ? "↻ Sinh lại mô hình lớp"
                 : "Sinh các lớp"}
-          </SoftButton>
+            </SoftButton>
+          </div>
         }
       >
-        <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-sm font-bold text-emerald-800 shadow-sm">{umlClasses.length}</span>
-          <span className="text-sm font-semibold text-slate-700">lớp</span>
-        </div>
         {umlClasses.length === 0 ? (
           <EmptyState icon="◫" title="Chưa có lớp" />
         ) : (
-          <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-8">
+          <div className="grid max-h-[68vh] grid-cols-1 gap-3 overflow-y-auto overscroll-contain pr-1 pb-10">
             {umlClasses.map((item, index) => (
               <article key={item.id} className="min-w-0 overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition hover:border-emerald-300 hover:shadow-md">
                 {editingClassId === item.id ? (
@@ -128,7 +130,7 @@ export default function Step5ClassDiagram({
                   <>
                     <div className="flex min-w-0 items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-700">{index + 1}</span>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-200/70 text-sm font-bold text-emerald-800">{index + 1}</span>
                         <div className="min-w-0">
                           <h3 className={`break-words text-sm font-semibold text-slate-800 ${wrapClass}`}>{item.name || "Lớp chưa đặt tên"}</h3>
                         </div>
