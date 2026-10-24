@@ -13,6 +13,30 @@ interface Props {
   onStepChange: (step: number) => void;
 }
 
+function Metric({ label, value, detail, tone = "neutral" }: {
+  label: string;
+  value: number | string;
+  detail: string;
+  tone?: "neutral" | "success" | "warn";
+}) {
+  const styles = {
+    neutral: "border-slate-200 bg-white text-slate-900",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    warn: "border-amber-200 bg-amber-50 text-amber-900",
+  };
+  return (
+    <div className={`flex min-w-0 items-center justify-start gap-3 rounded-xl border px-4 py-3 ${styles[tone]}`}>
+      <div className="flex h-14 w-16 shrink-0 items-center justify-center">
+        <p className="text-3xl font-bold leading-none tracking-tight sm:text-4xl">{value}</p>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold leading-tight">{label}</p>
+        <p className="mt-1 text-xs leading-tight opacity-70">{detail}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Step3KiemTraNhatQuan({
   state,
   busy,
@@ -80,11 +104,11 @@ export default function Step3KiemTraNhatQuan({
                     : "Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML."
                   : "Chưa chạy kiểm tra nhất quán."}
               </p>
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Tổng sai lệch</p><p className="mt-1 text-xl font-semibold">{consistencyResult ? totalIssues : "—"}</p></div>
-                <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Thiếu trong dữ liệu</p><p className="mt-1 text-xl font-semibold">{consistencyResult ? missingDb.length : "—"}</p></div>
-                <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Thiếu trong PlantUML</p><p className="mt-1 text-xl font-semibold">{consistencyResult ? missingPlantUml.length : "—"}</p></div>
-                <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Sai lệch quan hệ</p><p className="mt-1 text-xl font-semibold">{consistencyResult ? missingRelations.length + extraRelations.length : "—"}</p></div>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <Metric label="Tổng sai lệch" value={consistencyResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues ? "warn" : "neutral"} />
+                <Metric label="Thiếu trong dữ liệu" value={consistencyResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
+                <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
+                <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
               </div>
               {consistencyResult && totalIssues > 0 && (
                 <div className="mt-4">
