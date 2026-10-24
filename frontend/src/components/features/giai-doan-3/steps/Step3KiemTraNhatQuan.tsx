@@ -59,6 +59,7 @@ export default function Step3KiemTraNhatQuan({
       </div>
 
       <Card
+        className="mb-8"
         tone="emerald"
         title={<span className="text-xl sm:text-2xl">Kiểm tra tính nhất quán của sơ đồ</span>}
         actions={
