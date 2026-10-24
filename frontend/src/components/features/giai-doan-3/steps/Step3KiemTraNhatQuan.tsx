@@ -72,15 +72,6 @@ export default function Step3KiemTraNhatQuan({
           {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
 
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">Kết quả kiểm tra</p>
-              {hasResult && (
-                <StatusBadge tone={consistencyResult.consistent ? "success" : totalIssues > 0 ? "danger" : "info"}>
-                  {consistencyResult.consistent ? "Nhất quán" : totalIssues > 0 ? "Có sai lệch" : "Đã kiểm tra"}
-                </StatusBadge>
-              )}
-            </div>
-
             {!hasResult ? (
               <div className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-lg bg-slate-50 px-5 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm">
