@@ -133,9 +133,9 @@ export default function Step4InteractionDiagram({
                           </div>
                           {diagram?.imageUrl && <a href={diagram.imageUrl} download={`${currentDiagramType}-${useCase.id}.svg`} className="rounded-md border px-2 py-1 text-xs text-emerald-800">↓ Tải ảnh về</a>}
                         </div>
-                        <div className="max-h-[min(42vh,360px)] min-h-[220px] overflow-auto">
+                        <div className="max-h-[calc(100vh-205px)] min-h-[calc(100vh-230px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
-                            <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} />
+                            <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} showToolbar={false} />
                           </div>
                         </div>
                       </div>
