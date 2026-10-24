@@ -66,9 +66,9 @@ export const STAGES: Record<StageId, StageDef> = {
       { id: 1, label: "Actor và Use Case", hint: "Xác định tác nhân, use case và các quan hệ nghiệp vụ", icon: "◉" },
       { id: 2, label: "Kịch bản Use Case", hint: "Sinh, chỉnh sửa và lưu luồng chính, luồng phụ, ngoại lệ cho từng use case", icon: "≡" },
       { id: 3, label: "Biểu đồ Use Case", hint: "Sinh, chỉnh sửa mã PlantUML và render biểu đồ tổng quát", icon: "◎" },
-      { id: 4, label: "Domain Model và Class Diagram", hint: "Xây dựng lớp, thuộc tính, phương thức và quan hệ giữa các lớp", icon: "◫" },
-      { id: 5, label: "Biểu đồ tương tác", hint: "Sinh Sequence hoặc Communication Diagram cho từng use case", icon: "⇄" },
-      { id: 6, label: "Trạng thái và kiểm tra UML", hint: "Rà soát tính đầy đủ, nhất quán và truy vết của bộ mô hình", icon: "✓" },
+      { id: 4, label: "Cấu hình các lớp", hint: "Chỉnh sửa tên lớp, thuộc tính, phương thức và quan hệ giữa các lớp", icon: "◫" },
+      { id: 5, label: "Biểu đồ lớp", hint: "Sinh và xem biểu đồ lớp từ cấu hình lớp đã thiết lập", icon: "▤" },
+      { id: 6, label: "Biểu đồ tương tác", hint: "Sinh Sequence hoặc Communication Diagram cho từng use case", icon: "⇄" },
     ],
   },
 
