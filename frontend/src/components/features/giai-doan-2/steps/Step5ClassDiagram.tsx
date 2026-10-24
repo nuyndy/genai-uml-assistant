@@ -182,16 +182,16 @@ export default function Step5ClassDiagram({
           <SoftButton disabled={!classDiagramUrl} onClick={downloadImage}>↓ Tải ảnh về</SoftButton>
           <SoftButton disabled={!classDiagramCode} onClick={() => setShowCode((value) => !value)}>{showCode ? "Ẩn UML" : "Mã UML"}</SoftButton>
           <span className="mx-1 h-6 border-l border-slate-200" />
-          <SoftButton disabled={!classDiagramUrl || zoom <= 0.5} onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.25).toFixed(2))))}>−</SoftButton>
+          <SoftButton disabled={!classDiagramUrl || zoom <= 0.1} onClick={() => setZoom((value) => Math.max(0.1, Number((value - 0.1).toFixed(2))))}>−</SoftButton>
           <span className="min-w-12 text-center text-sm tabular-nums text-slate-600">{Math.round(zoom * 100)}%</span>
-          <SoftButton disabled={!classDiagramUrl || zoom >= 2.5} onClick={() => setZoom((value) => Math.min(2.5, Number((value + 0.25).toFixed(2))))}>+</SoftButton>
+          <SoftButton disabled={!classDiagramUrl || zoom >= 2.5} onClick={() => setZoom((value) => Math.min(2.5, Number((value + 0.1).toFixed(2))))}>+</SoftButton>
           <SoftButton disabled={!classDiagramUrl || zoom === 1} onClick={() => setZoom(1)}>Vừa khung</SoftButton>
           <div className="ml-auto shrink-0"><PrimaryButton disabled={busy || !classDiagramUrl || !classDiagramCode} onClick={onConfirmClassDiagram}>Lưu biểu đồ</PrimaryButton></div>
         </div>
         <div className={`grid min-w-0 items-start gap-3 ${showCode ? "grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,1fr)]" : "grid-cols-1"}`}>
           <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="relative flex h-[min(68vh,760px)] min-h-[360px] items-start justify-start overflow-auto bg-slate-50 p-3 sm:p-4">
-              {classDiagramUrl ? <div className="flex min-h-full w-full min-w-0 items-start justify-start"><img src={classDiagramUrl} alt="Biểu đồ lớp" draggable={false} style={{ width: `${zoom * 100}%`, height: "auto", maxWidth: "none", flexShrink: 0 }} className="block rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[360px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={regenerate}>Sinh biểu đồ</PrimaryButton></div></div>}
+            <div className="relative flex h-[min(68vh,760px)] min-h-[360px] items-center justify-center overflow-auto bg-slate-50 p-3 sm:p-4">
+              {classDiagramUrl ? <div className="flex min-h-full w-full min-w-0 items-center justify-center"><img src={classDiagramUrl} alt="Biểu đồ lớp" draggable={false} style={{ width: `${zoom * 100}%`, height: "auto", maxWidth: "none", flexShrink: 0 }} className="block rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[360px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={regenerate}>Sinh biểu đồ</PrimaryButton></div></div>}
             </div>
           </section>
           {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="min-h-0 flex-1 bg-[#102d24] p-3"><pre className="uml-code-panel h-full min-h-0 overflow-auto whitespace-pre-wrap break-words border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 [overflow-wrap:anywhere]">{classDiagramCode || "Mã PlantUML sẽ xuất hiện tại đây sau khi sinh biểu đồ."}</pre></div></section>}
