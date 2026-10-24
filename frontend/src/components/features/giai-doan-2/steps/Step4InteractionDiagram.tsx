@@ -65,6 +65,7 @@ export default function Step4InteractionDiagram({
   const [draft, setDraft] = useState("");
   const [page, setPage] = useState(0);
   const [codeVisible, setCodeVisible] = useState<Record<number, boolean>>({});
+  const [zoom, setZoom] = useState<Record<number, number>>({});
   const pageSize = 2;
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
@@ -85,27 +86,9 @@ export default function Step4InteractionDiagram({
         tone="emerald"
         title="Biểu đồ tương tác"
         actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-              {DIAGRAM_TYPES.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setDiagramType(value)}
-                  className={`rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-                    currentDiagramType === value
-                      ? "bg-emerald-800 text-white shadow-sm"
-                      : "text-slate-600 hover:bg-white"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <PrimaryButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>
-              {busy ? "Đang sinh..." : "Sinh biểu đồ cho tất cả"}
-            </PrimaryButton>
-          </div>
+          <PrimaryButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>
+            {busy ? "Đang sinh..." : "Sinh biểu đồ cho tất cả"}
+          </PrimaryButton>
         }
       >
         {scenarios.length === 0 ? (
@@ -130,6 +113,13 @@ export default function Step4InteractionDiagram({
                       {useCase.name}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+                        {DIAGRAM_TYPES.map(({ value, label }) => (
+                          <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                       {diagram?.imageUrl ? (
                         <span className="text-xs font-medium text-emerald-600">✓ Đã lưu biểu đồ</span>
                       ) : (
@@ -146,13 +136,21 @@ export default function Step4InteractionDiagram({
 
                   <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
                     <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
-                      <div className="max-h-[min(42vh,360px)] min-h-[220px] overflow-auto">
-                        <DiagramPreview
-                          imageUrl={diagram?.imageUrl ?? null}
-                          emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"}
-                          emptyHint="Biểu đồ được lưu riêng cho từng use case."
-                          downloadName={`${currentDiagramType}-${useCase.id}.svg`}
-                        />
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-1">
+                            <button type="button" title="Thu nhỏ" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.max(50, (v[useCase.id] ?? 100) - 10)}))} className="rounded-md border px-2 py-1 text-xs">−</button>
+                            <span className="min-w-12 text-center text-xs text-slate-600">{zoom[useCase.id] ?? 100}%</span>
+                            <button type="button" title="Phóng to" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.min(200, (v[useCase.id] ?? 100) + 10)}))} className="rounded-md border px-2 py-1 text-xs">+</button>
+                            <button type="button" title="Vừa khung" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="rounded-md border px-2 py-1 text-xs">Vừa khung</button>
+                          </div>
+                          {diagram?.imageUrl && <a href={diagram.imageUrl} download={`${currentDiagramType}-${useCase.id}.svg`} className="rounded-md border px-2 py-1 text-xs text-emerald-800">↓ Tải ảnh về</a>}
+                        </div>
+                        <div className="max-h-[min(42vh,360px)] min-h-[220px] overflow-auto">
+                          <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
+                            <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                     {diagram?.sourceCode && diagram.id !== undefined ? (
