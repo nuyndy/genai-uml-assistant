@@ -24,6 +24,7 @@ import Step3KiemTraNhatQuan from "./steps/Step3KiemTraNhatQuan";
 
 interface Props {
   projectId: number;
+  projectName: string;
   state: any;
   setState: (updater: (prev: any) => any) => void;
   step: number;
@@ -35,6 +36,7 @@ let nextClassId = 200;
 
 export default function GiaiDoan3({
   projectId,
+  projectName,
   state,
   setState,
   step,
@@ -296,7 +298,7 @@ export default function GiaiDoan3({
         {step === 3 && (
           <GiaiDoan1
             projectId={projectId}
-            projectName={state.projectName ?? state.name ?? ""}
+            projectName={projectName}
             state={state}
             setState={setState}
             step={5}
