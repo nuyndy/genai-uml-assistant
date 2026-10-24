@@ -59,6 +59,14 @@ export default function Step3KiemTraNhatQuan({
         <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
         <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
       </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onRenderAndSave}>
+          {busy ? "Đang xử lý..." : "Render và lưu sơ đồ"}
+        </SoftButton>
+        <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+          {busy ? "Đang xử lý..." : "Quét sai lệch"}
+        </PrimaryButton>
+      </div>
       <Card tone="emerald" title="Phạm vi quét nhất quán">
         <p className="mb-3 text-sm text-slate-600">
           Quét theo 8 quy tắc chính thức trong luồng hệ thống. Quy tắc chưa đủ dữ liệu sẽ được đánh dấu chưa thể xác minh, không tự động coi là đạt.
@@ -88,16 +96,6 @@ export default function Step3KiemTraNhatQuan({
       <Card
         tone="emerald"
         title="Quét và phát hiện sai lệch UML"
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onRenderAndSave}>
-              {busy ? "Đang xử lý..." : "Render và lưu sơ đồ"}
-            </SoftButton>
-            <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-              Quét sai lệch
-            </PrimaryButton>
-          </div>
-        }
       >
         {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
         <div className="mt-4">
