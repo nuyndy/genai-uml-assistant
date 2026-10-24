@@ -18,7 +18,7 @@ import {
   wrapClass,
 } from "../../common/ui/primitives";
 import ProgressOverlay from "../../common/ProgressOverlay";
-import Step1DongBoSRS from "./steps/Step1DongBoSRS";
+import GiaiDoan1 from "../giai-doan-1/GiaiDoan1";
 import Step2ChinhSuaCapNhat from "./steps/Step2ChinhSuaCapNhat";
 import Step3KiemTraNhatQuan from "./steps/Step3KiemTraNhatQuan";
 import Step4DuyetBaselineXuatTaiLieu from "./steps/Step4DuyetBaselineXuatTaiLieu";
@@ -298,16 +298,13 @@ export default function GiaiDoan3({
           />
         )}
         {step === 3 && (
-          <Step1DongBoSRS
-            srsLoaded={srsLoaded}
-            srsMarkdown={srsMarkdown}
-            srsSynced={state.srsSynced}
-            busy={busy}
-            onSyncSrs={syncSrs}
-            stage3Message={stage3Message}
-            state={state}
+          <GiaiDoan1
+            projectId={projectId}
             projectName={state.projectName ?? state.name ?? ""}
-            metadata={state.srsMetadata}
+            state={state}
+            setState={setState}
+            step={5}
+            onStepChange={() => undefined}
           />
         )}
         {step === 4 && (
