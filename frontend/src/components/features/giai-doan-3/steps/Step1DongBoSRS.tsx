@@ -19,12 +19,12 @@ export default function Step1DongBoSRS({
 }: Props) {
   return (
     <div className="space-y-6">
-      <Card tone="emerald" title="Đồng bộ SRS và UML">
+      <Card tone="emerald" title="Hoàn thiện tài liệu SRS">
         <p className="mb-4 text-sm text-slate-600">
-          Tải bản SRS hiện tại từ backend để rà soát trước khi chỉnh sửa và kiểm tra mô hình UML.
+          Tải tài liệu SRS hiện có từ backend để rà soát và hoàn thiện sau khi đã quét, xử lý sai lệch UML.
         </p>
         <SoftButton disabled={busy} onClick={onSyncSrs}>
-          {busy ? "Đang đồng bộ..." : "Tải / đồng bộ SRS"}
+          {busy ? "Đang đồng bộ..." : "Tải tài liệu SRS"}
         </SoftButton>
         {stage3Message && <Notice tone="info">{stage3Message}</Notice>}
         <div className="mt-4 space-y-2 text-sm">
