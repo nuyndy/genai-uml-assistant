@@ -991,19 +991,24 @@ export default function GiaiDoan1({
           role: item.role ?? "", mainBusinesses: item.main_businesses ?? "",
         })),
         usecases: useCases.map((item) => ({
-          id: item.id, name: item.name, description: "", specificationId: item.specification_id,
+          id: item.id, name: item.name, description: item.description ?? "", specificationId: item.specification_id,
         })),
-        scenarios: Object.fromEntries(useCases.filter((item) =>
-          (Array.isArray(item.main_flow) && item.main_flow.length) ||
-          (Array.isArray(item.alt_flow) && item.alt_flow.length) ||
-          (Array.isArray(item.exception_flow) && item.exception_flow.length)
-        ).map((item) => [item.id, {
-          mainFlow: Array.isArray(item.main_flow) ? item.main_flow : [],
-          altFlows: Array.isArray(item.alt_flow) ? item.alt_flow : [],
-          exceptions: Array.isArray(item.exception_flow) ? item.exception_flow : [],
-          preconditions: typeof item.preconditions === "string" ? item.preconditions.split("\\n").filter(Boolean) : [],
-          postconditions: typeof item.postconditions === "string" ? item.postconditions.split("\\n").filter(Boolean) : [],
-        }])),
+        // Lấy đầy đủ kịch bản gốc từ backend; các trường văn bản được lưu
+        // dưới dạng chuỗi nhiều dòng, còn các luồng là danh sách bước.
+        scenarios: Object.fromEntries(useCases.map((item) => {
+          const asLines = (value: string | null | undefined) =>
+            typeof value === "string" ? value.split("\\n").filter((line) => line.trim().length > 0) : [];
+          return [item.id, {
+            actor: asLines(item.actor),
+            description: asLines(item.description),
+            preconditions: asLines(item.preconditions),
+            mainFlow: Array.isArray(item.main_flow) ? item.main_flow : [],
+            altFlows: Array.isArray(item.alt_flow) ? item.alt_flow : [],
+            exceptions: Array.isArray(item.exception_flow) ? item.exception_flow : [],
+            minimalGuarantees: asLines(item.minimal_guarantees),
+            postconditions: asLines(item.postconditions),
+          }];
+        })),
         useCaseDiagramUrl: useCaseDiagram?.image_url ?? null,
         useCaseDiagramCode: useCaseDiagram?.source_code ?? null,
         useCaseDiagrams: [...latestUseCaseDiagrams.values()].map((item) => ({
