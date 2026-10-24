@@ -183,7 +183,6 @@ export default function Step4InteractionDiagram({
             })}
           </div>
         )}
-}
       </Card>
     </div>
   );
