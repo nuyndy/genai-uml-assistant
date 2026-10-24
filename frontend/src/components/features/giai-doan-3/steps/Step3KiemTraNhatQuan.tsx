@@ -59,13 +59,15 @@ export default function Step3KiemTraNhatQuan({
         <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
         <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
       </div>
-      <Card tone="emerald" title="Các quy tắc kiểm tra nhất quán">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">Các tiêu chí dùng để đánh giá mức độ nhất quán của mô hình UML.</p>
+      <Card
+        tone="emerald"
+        title="Các quy tắc kiểm tra nhất quán"
+        actions={
           <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
-            {busy ? "Đang quét..." : "Quét sơ đồ"}
+            {busy ? "Đang kiểm tra..." : "Kiểm tra"}
           </PrimaryButton>
-        </div>
+        }
+      >
         <div className="space-y-2">
           {[
             ["CON-001", "Mỗi yêu cầu có ít nhất một Use Case liên quan hoặc có lý do ngoại lệ."],
@@ -128,9 +130,9 @@ export default function Step3KiemTraNhatQuan({
           )}
         </div>
       </Card>
-      <div className="flex justify-between gap-3">
-        
-        
+      <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
+        <SoftButton onClick={() => onStepChange(0)}>Quay lại</SoftButton>
+        <PrimaryButton onClick={() => onStepChange(1)}>Tiếp tục</PrimaryButton>
       </div>
     </div>
   );
