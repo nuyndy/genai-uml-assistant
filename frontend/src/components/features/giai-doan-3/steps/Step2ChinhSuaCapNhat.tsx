@@ -1,6 +1,6 @@
 import EditorModule from "react-simple-code-editor";
 import type { ComponentType } from "react";
-import { Card, SoftButton } from "../../../common/ui/primitives";
+import { Card, PrimaryButton, SoftButton, StatusBadge } from "../../../common/ui/primitives";
 
 const CodeEditor = (
   (
@@ -24,6 +24,9 @@ interface Props {
   singleLineClass: string;
   nextRelationId: number;
   nextClassId: number;
+  consistencyResult: any;
+  busy: boolean;
+  onConsistencyCheck: () => Promise<void>;
 }
 
 export default function Step2ChinhSuaCapNhat({
@@ -33,6 +36,9 @@ export default function Step2ChinhSuaCapNhat({
   singleLineClass,
   nextRelationId,
   nextClassId,
+  consistencyResult,
+  busy,
+  onConsistencyCheck,
 }: Props) {
   const RELATION_TYPES = ["association", "include", "extend", "generalization"];
 
@@ -70,8 +76,58 @@ export default function Step2ChinhSuaCapNhat({
     return lines.join("\n");
   };
 
+  const missingDb = consistencyResult?.missing_in_database ?? [];
+  const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
+  const missingRelations = consistencyResult?.missing_relations ?? [];
+  const extraRelations = consistencyResult?.extra_relations ?? [];
+  const issues = [
+    ...missingDb.map((item: string) => ({ type: "Thiếu trong dữ liệu", detail: item })),
+    ...missingPlantUml.map((item: string) => ({ type: "Thiếu trong PlantUML", detail: item })),
+    ...missingRelations.map((item: any) => ({ type: "Thiếu quan hệ", detail: `${item.from} → ${item.to} (${item.type})` })),
+    ...extraRelations.map((item: any) => ({ type: "Quan hệ thừa", detail: `${item.from} → ${item.to} (${item.type})` })),
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
+      <Card
+        tone="emerald"
+        title="Khắc phục sai lệch UML"
+        actions={
+          <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
+            {busy ? "Đang kiểm tra..." : "Kiểm tra lại"}
+          </PrimaryButton>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Các vấn đề dưới đây được lấy từ lần kiểm tra ở Bước 1. Chỉnh sửa dữ liệu hoặc mã PlantUML ở các mục bên dưới, sau đó chọn “Kiểm tra lại”.
+          </p>
+          {!consistencyResult ? (
+            <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+              Chưa có kết quả từ Bước 1. Hãy quay lại Bước 1 và chạy kiểm tra trước khi khắc phục.
+            </div>
+          ) : issues.length === 0 ? (
+            <div className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">
+              Không còn sai lệch theo kết quả kiểm tra gần nhất. Hãy kiểm tra lại để xác nhận thay đổi mới nhất.
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <StatusBadge tone="danger">{issues.length} sai lệch cần xử lý</StatusBadge>
+                <StatusBadge tone="muted">Nguồn: Bước 1</StatusBadge>
+              </div>
+              <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-slate-50 p-3">
+                {issues.map((issue: { type: string; detail: string }, index: number) => (
+                  <div key={`${issue.type}-${index}`} className="rounded-lg border border-amber-100 bg-white p-3">
+                    <p className="text-xs font-semibold text-amber-800">{issue.type}</p>
+                    <p className="mt-1 break-words text-sm text-slate-700">{issue.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
       {/* Tác nhân */}
       <Card tone="emerald" title="Tác nhân">
         {state.actors.length === 0 ? (
