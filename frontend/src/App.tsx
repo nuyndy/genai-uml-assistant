@@ -268,7 +268,7 @@ function App() {
             
             {stage === 1 && <GiaiDoan1 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
             {stage === 2 && <GiaiDoan2 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} onReturnStage1={() => { setStage(1); setStep(1); }} />}
-            {stage === 3 && <GiaiDoan3 projectId={activeProject.id} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
+            {stage === 3 && <GiaiDoan3 projectId={activeProject.id} projectName={activeProject.name} state={workflow} setState={setWorkflow} step={step} onStepChange={setStep} />}
           </main>
         </ErrorBoundary>
       </div>
