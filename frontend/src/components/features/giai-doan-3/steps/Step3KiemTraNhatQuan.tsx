@@ -59,7 +59,7 @@ export default function Step3KiemTraNhatQuan({
       </div>
 
       <Card
-        className="mb-2"
+        className="mb-2 [&>div:first-child]:!flex-col [&>div:first-child>div:last-child]:!w-full [&>div:first-child>div:last-child]:!shrink"
         tone="emerald"
         actions={
           <>
