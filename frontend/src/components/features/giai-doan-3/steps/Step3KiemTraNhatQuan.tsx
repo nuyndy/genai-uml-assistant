@@ -1,4 +1,4 @@
-import { Card, SoftButton, PrimaryButton, Notice } from "../../../common/ui/primitives";
+import { Card, SoftButton, PrimaryButton, Notice, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {
   state: {
@@ -23,9 +23,37 @@ export default function Step3KiemTraNhatQuan({
 }: Props) {
   return (
     <div className="space-y-6">
+      <Card tone="emerald" title="Phạm vi quét nhất quán">
+        <p className="mb-3 text-sm text-slate-600">
+          Quét theo 8 quy tắc chính thức trong luồng hệ thống. Quy tắc chưa đủ dữ liệu sẽ được đánh dấu chưa thể xác minh, không tự động coi là đạt.
+        </p>
+        <div className="space-y-2">
+          {[
+            ["CON-001", "Mỗi yêu cầu có ít nhất một Use Case liên quan hoặc có lý do ngoại lệ."],
+            ["CON-002", "Mỗi Use Case có kịch bản và mục SRS tương ứng."],
+            ["CON-003", "Thông điệp Sequence tham chiếu được đến phương thức phù hợp trong Class Model."],
+            ["CON-004", "Tên Actor và thuật ngữ thống nhất với bảng thuật ngữ và alias."],
+            ["CON-005", "Liên kết truy vết không trỏ đến phần tử không tồn tại."],
+            ["CON-006", "Sơ đồ được đánh dấu đồng bộ khớp với mã PlantUML và mô hình đã lưu."],
+            ["CON-007", "Baseline ghi nhận các điểm lệch còn tồn tại và lý do chấp nhận."],
+            ["CON-008", "Mỗi yêu cầu chức năng/User Story có ít nhất một tiêu chí chấp nhận."],
+          ].map(([code, description]) => (
+            <div key={code} className="flex flex-col gap-1 rounded-lg border border-slate-200 p-3 sm:flex-row sm:items-start sm:gap-3">
+              <span className="shrink-0 text-xs font-semibold text-slate-700">{code}</span>
+              <span className="flex-1 text-sm text-slate-600">{description}</span>
+              <StatusBadge tone={consistencyResult && code === "CON-006" ? (consistencyResult.consistent ? "success" : "danger") : "muted"}>
+                {consistencyResult && code === "CON-006" ? (consistencyResult.consistent ? "Đã kiểm tra" : "Có sai lệch") : "Chưa xác minh"}
+              </StatusBadge>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <Card
         tone="emerald"
-        title="Kiểm tra nhất quán"
+        title="Kiểm tra nhất quán"      <Card
+        tone="emerald"
+        title="Quét và phát hiện sai lệch UML"
         actions={
           <div className="flex flex-wrap gap-2">
             <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onRenderAndSave}>
