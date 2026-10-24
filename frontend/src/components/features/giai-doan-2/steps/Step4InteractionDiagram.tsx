@@ -66,7 +66,7 @@ export default function Step4InteractionDiagram({
   const [page, setPage] = useState(0);
   const [codeVisible, setCodeVisible] = useState<Record<number, boolean>>({});
   const [zoom, setZoom] = useState<Record<number, number>>({});
-  const pageSize = 2;
+  const pageSize = 1;
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
 
@@ -183,16 +183,7 @@ export default function Step4InteractionDiagram({
             })}
           </div>
         )}
-        {scenarios.length > pageSize && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-            <span className="text-xs text-slate-500">Đang xem {page * pageSize + 1}–{Math.min((page + 1) * pageSize, scenarios.length)} / {scenarios.length} Use Case</span>
-            <div className="flex items-center gap-2">
-              <GhostButton disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>‹ Trước</GhostButton>
-              <span className="text-xs font-medium text-slate-600">{page + 1} / {pageCount}</span>
-              <GhostButton disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>Tiếp ›</GhostButton>
-            </div>
-          </div>
-        )}
+}
       </Card>
     </div>
   );
