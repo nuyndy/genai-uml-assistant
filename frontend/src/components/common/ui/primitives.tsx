@@ -455,26 +455,26 @@ export function DiagramPreview({
   emptyTitle,
   emptyHint,
   downloadName,
+  showToolbar = true,
 }: {
   imageUrl: string | null;
   emptyTitle: string;
   emptyHint?: string;
   downloadName?: string;
+  showToolbar?: boolean;
 }) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_-28px_rgba(10,51,35,0.45)]">
-      <div className="flex items-center justify-between gap-3 px-5 py-4">
-        <p className="text-sm font-medium text-slate-700">Xem trước</p>
-        {imageUrl && downloadName && (
-          <a
-            href={imageUrl}
-            download={downloadName}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700"
-          >
-            ⬇ Tải ảnh về
-          </a>
-        )}
-      </div>
+      {showToolbar && (
+        <div className="flex items-center justify-between gap-3 px-5 py-4">
+          <p className="text-sm font-medium text-slate-700">Xem trước</p>
+          {imageUrl && downloadName && (
+            <a href={imageUrl} download={downloadName} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700">
+              ⬇ Tải ảnh về
+            </a>
+          )}
+        </div>
+      )}
       <div className="flex min-h-[360px] items-center justify-center rounded-b-2xl bg-[radial-gradient(#cbd5d1_0.8px,transparent_0.8px)] bg-[length:18px_18px] p-6 sm:min-h-[440px] sm:p-8">
         {imageUrl ? (
           <img
