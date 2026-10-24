@@ -56,6 +56,7 @@ export default function Step5ChotTaiLieu({
   setSrsMetadata,
   setSrsSpecDrafts,
   appendixBContent,
+  appendixUseCaseNames = [],
 }: Props) {
   // Mỗi đặc tả có một bộ đếm riêng: chỉ lưu sau khi người dùng ngừng sửa.
   const saveTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
