@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Card,
   SoftButton,
@@ -63,6 +63,10 @@ export default function Step4InteractionDiagram({
   void onConfirm;
   const [editingUseCaseId, setEditingUseCaseId] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
+  const [page, setPage] = useState(0);
+  const pageSize = 2;
+  const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
+  const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
 
   const startEditing = (useCaseId: number, code: string) => {
     setDraft(code);
@@ -78,7 +82,7 @@ export default function Step4InteractionDiagram({
     <div className="space-y-3">
       <Card
         tone="emerald"
-        title="Sinh biểu đồ tương tác"
+        title="Biểu đồ tương tác"
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
@@ -110,7 +114,7 @@ export default function Step4InteractionDiagram({
           />
         ) : (
           <div className="space-y-3">
-            {scenarios.map((useCase) => {
+            {visibleScenarios.map((useCase) => {
               const diagram = interactions.find(
                 (item) => item.usecaseId === useCase.id && item.type === currentDiagramType,
               );
@@ -126,7 +130,7 @@ export default function Step4InteractionDiagram({
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       {diagram?.imageUrl ? (
-                        <span className="text-xs font-medium text-emerald-600">Đã render</span>
+                        <span className="text-xs font-medium text-emerald-600">✓ Đã lưu biểu đồ</span>
                       ) : (
                         <span className="text-xs text-slate-400">Chưa có biểu đồ</span>
                       )}
@@ -134,7 +138,7 @@ export default function Step4InteractionDiagram({
                         disabled={busy || !projectId}
                         onClick={() => void onGenerateSingle(useCase.id)}
                       >
-                        Sinh cho use case này
+                        ↻ Sinh lại biểu đồ
                       </SoftButton>
                     </div>
                   </div>
@@ -193,13 +197,17 @@ export default function Step4InteractionDiagram({
             })}
           </div>
         )}
+        {scenarios.length > pageSize && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+            <span className="text-xs text-slate-500">Đang xem {page * pageSize + 1}–{Math.min((page + 1) * pageSize, scenarios.length)} / {scenarios.length} Use Case</span>
+            <div className="flex items-center gap-2">
+              <GhostButton disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>‹ Trước</GhostButton>
+              <span className="text-xs font-medium text-slate-600">{page + 1} / {pageCount}</span>
+              <GhostButton disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>Tiếp ›</GhostButton>
+            </div>
+          </div>
+        )}
       </Card>
-
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        
-        
-      </div>
     </div>
   );
 }
