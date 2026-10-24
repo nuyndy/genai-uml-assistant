@@ -70,7 +70,7 @@ export default function GiaiDoan3({
       const document = await getSpecificationDocument(projectId);
       setSrsMarkdown(document.raw_markdown ?? "");
       setSrsLoaded(true);
-      setState((prev: any) => ({ ...prev, srsSynced: true }));
+      setState((prev: any) => ({ ...prev, srsMetadata: document.metadata, srsSynced: true }));
       setStage3Message("Đã tải tài liệu SRS từ backend.");
     } catch (error) {
       console.error("Không thể đồng bộ SRS:", error);
@@ -306,6 +306,8 @@ export default function GiaiDoan3({
             onSyncSrs={syncSrs}
             stage3Message={stage3Message}
             state={state}
+            projectName={state.projectName ?? state.name ?? ""}
+            metadata={state.srsMetadata}
           />
         )}
         {step === 4 && (
