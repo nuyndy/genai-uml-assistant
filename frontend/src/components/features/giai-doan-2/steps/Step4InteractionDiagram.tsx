@@ -84,12 +84,8 @@ export default function Step4InteractionDiagram({
     <div className="space-y-3">
       <Card
         tone="emerald"
-        title="Biểu đồ tương tác"
-        actions={
-          <PrimaryButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>
-            {busy ? "Đang sinh..." : "Sinh biểu đồ cho tất cả"}
-          </PrimaryButton>
-        }
+        title={undefined}
+        actions={null}
       >
         {scenarios.length === 0 ? (
           <EmptyState
@@ -108,30 +104,21 @@ export default function Step4InteractionDiagram({
                   key={useCase.id}
                   className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
                 >
-                  <div className="flex flex-nowrap items-center gap-3 overflow-x-auto border-b border-emerald-100 bg-emerald-50/60 px-3 py-2">
-                    <h3 className={`min-w-0 shrink-0 whitespace-nowrap font-semibold text-slate-900 ${wrapClass}`}>
-                      {useCase.name}
-                    </h3>
-                    <div className="flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap">
-                      <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
-                        {DIAGRAM_TYPES.map(({ value, label }) => (
-                          <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                      {diagram?.imageUrl ? (
-                        <span className="text-xs font-medium text-emerald-600">✓ Đã lưu biểu đồ</span>
-                      ) : (
-                        <span className="text-xs text-slate-400">Chưa có biểu đồ</span>
-                      )}
-                      <SoftButton
-                        disabled={busy || !projectId}
-                        onClick={() => void onGenerateSingle(useCase.id)}
-                      >
-                        ↻ Sinh lại biểu đồ
-                      </SoftButton>
+                  <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto border-b border-emerald-100 bg-emerald-50/60 px-3 py-2">
+                    <button type="button" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} className="shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-xs disabled:opacity-30">‹</button>
+                    <h3 className="shrink-0 whitespace-nowrap text-sm font-semibold text-slate-900">{useCase.name}</h3>
+                    <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))} className="shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-xs disabled:opacity-30">›</button>
+                    <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
+                      {DIAGRAM_TYPES.map(({ value, label }) => <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-2 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>{label}</button>)}
                     </div>
+                    <button type="button" title="Thu nhỏ" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.max(50, (v[useCase.id] ?? 100) - 10)}))} className="shrink-0 rounded-md border px-2 py-1.5 text-xs">−</button>
+                    <span className="shrink-0 text-xs">{zoom[useCase.id] ?? 100}%</span>
+                    <button type="button" title="Phóng to" onClick={() => setZoom(v => ({...v, [useCase.id]: Math.min(200, (v[useCase.id] ?? 100) + 10)}))} className="shrink-0 rounded-md border px-2 py-1.5 text-xs">+</button>
+                    <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="shrink-0 whitespace-nowrap rounded-md border px-2 py-1.5 text-xs">Vừa khung</button>
+                    {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="shrink-0 whitespace-nowrap rounded-md border px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
+                    <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
+                    <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
+                    <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
                   </div>
 
                   <div className="grid min-w-0 grid-cols-1 gap-3 p-3 lg:grid-cols-2">
