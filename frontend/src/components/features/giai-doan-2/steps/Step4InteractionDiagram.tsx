@@ -108,12 +108,12 @@ export default function Step4InteractionDiagram({
                   key={useCase.id}
                   className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/60 px-4 py-3">
-                    <h3 className={`min-w-0 break-words font-semibold text-slate-900 ${wrapClass}`}>
+                  <div className="flex flex-nowrap items-center gap-3 overflow-x-auto border-b border-emerald-100 bg-emerald-50/60 px-3 py-2">
+                    <h3 className={`min-w-0 shrink-0 whitespace-nowrap font-semibold text-slate-900 ${wrapClass}`}>
                       {useCase.name}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+                    <div className="flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap">
+                      <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
                         {DIAGRAM_TYPES.map(({ value, label }) => (
                           <button key={value} type="button" onClick={() => setDiagramType(value)} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${currentDiagramType === value ? "bg-emerald-800 text-white" : "text-slate-600 hover:bg-emerald-50"}`}>
                             {label}
