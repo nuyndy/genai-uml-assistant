@@ -90,6 +90,12 @@ export interface InteractionDiagram {
   sourceCode?: string;
 }
 
+/** Sơ đồ Use Case được lưu riêng cho từng Use Case (nếu có). */
+export interface UseCaseDiagram {
+  usecaseId: number;
+  imageUrl: string | null;
+}
+
 /** Biểu đồ hoạt động được lưu cho từng Use Case. */
 export interface ActivityDiagram {
   usecaseId: number;
