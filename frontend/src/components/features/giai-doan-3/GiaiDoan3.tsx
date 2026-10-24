@@ -82,11 +82,8 @@ export default function GiaiDoan3({
     }
   };
 
-  useEffect(() => {
-    if (step === 3 && !srsLoaded && !busy) {
-      void syncSrs();
-    }
-  }, [step, srsLoaded, busy, projectId]);
+  // Bước 3 của Giai đoạn 3 dùng trực tiếp màn hình Bước 5 Giai đoạn 1,
+  // vì vậy dữ liệu SRS và trạng thái lưu được quản lý bởi GiaiDoan1.
 
   const runConsistencyCheck = async () => {
     setBusy(true);
