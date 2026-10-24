@@ -131,7 +131,7 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
                 <h3 className="text-base font-semibold text-slate-900">Mục lục SRS</h3>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">3 cấp</span>
               </div>
-              <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1" aria-label="Đi đến mục">
+              <nav className="min-h-0 flex-1 space-y-1 overflow-y-scroll pr-1" aria-label="Đi đến mục">
                 {toc.map((item, index) => <button key={`${item.level}-${item.id}-${index}`} type="button" onClick={() => jumpTo(item.id)} title={item.label}
                   className={`block w-full rounded-md px-1.5 py-1 text-left text-xs leading-4 transition hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-2 focus-visible:outline-emerald-600 ${item.level === 1 ? "mt-1.5 border-b border-slate-100 font-bold text-slate-900" : item.level === 2 ? "pl-3 pr-1.5 font-medium text-slate-700" : "pl-5 pr-1.5 text-slate-500"}`}>
                   <span className="mr-1.5 text-[10px] text-slate-400">{item.level === 1 ? "▰" : item.level === 2 ? "•" : "↳"}</span>
@@ -152,7 +152,7 @@ export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy
               </div>
               <p className="mt-1.5 shrink-0 text-[10px] leading-4 text-slate-400">Chọn một mục để cuộn đến đúng phần trong tài liệu.</p>
             </aside>
-            <div ref={documentRef} className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
+            <div ref={documentRef} className="h-full min-h-0 min-w-0 overflow-y-scroll overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor
                 projectName={projectName}
                 metadata={srsMetadata}
