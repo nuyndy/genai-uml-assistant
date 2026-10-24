@@ -95,29 +95,28 @@ export default function Step3KiemTraNhatQuan({
           const extraRelations = consistencyResult?.extra_relations ?? [];
           const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
           return (
-            <div className="mt-4 rounded-xl border border-slate-200 p-4 text-sm">
-              <p className="font-medium">Kết quả kiểm tra</p>
-              <p className="mt-1 text-slate-600">
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-slate-600">
                 {consistencyResult
                   ? consistencyResult.consistent
                     ? "Không phát hiện sai lệch trong phạm vi kiểm tra."
                     : "Đã phát hiện sai lệch giữa mô hình lưu trữ và mã PlantUML."
-                  : "Chưa chạy kiểm tra nhất quán."}
+                  : "Chạy quét sai lệch để xem thống kê và danh sách vấn đề."}
               </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Metric label="Tổng sai lệch" value={consistencyResult ? totalIssues : "—"} detail="Tất cả vấn đề phát hiện" tone={totalIssues ? "warn" : "neutral"} />
                 <Metric label="Thiếu trong dữ liệu" value={consistencyResult ? missingDb.length : "—"} detail="Phần tử thiếu trong dữ liệu đã lưu" />
                 <Metric label="Thiếu trong PlantUML" value={consistencyResult ? missingPlantUml.length : "—"} detail="Phần tử thiếu trong mã sơ đồ" />
                 <Metric label="Sai lệch quan hệ" value={consistencyResult ? missingRelations.length + extraRelations.length : "—"} detail="Quan hệ thiếu hoặc thừa" />
               </div>
               {consistencyResult && totalIssues > 0 && (
-                <div className="mt-4">
-                  <p className="mb-2 font-medium">Danh sách sai lệch ({totalIssues})</p>
-                  <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 p-3">
-                    {missingDb.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
-                    {missingPlantUml.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
-                    {missingRelations.map((item: any, index: number) => <div className="rounded-md bg-amber-50 p-2" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
-                    {extraRelations.map((item: any, index: number) => <div className="rounded-md bg-rose-50 p-2" key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</div>)}
+                <div>
+                  <p className="mb-2 text-sm font-semibold">Danh sách sai lệch ({totalIssues})</p>
+                  <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-3">
+                    {missingDb.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
+                    {missingPlantUml.map((item: string, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
+                    {missingRelations.map((item: any, index: number) => <div className="rounded-md bg-amber-50 p-2 text-sm" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
+                    {extraRelations.map((item: any, index: number) => <div className="rounded-md bg-rose-50 p-2 text-sm" key={`er-${index}`}>Quan hệ thừa: {item.from} → {item.to} ({item.type})</div>)}
                   </div>
                 </div>
               )}
