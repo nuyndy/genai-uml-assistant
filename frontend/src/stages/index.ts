@@ -95,12 +95,6 @@ export const STAGES: Record<StageId, StageDef> = {
         hint: "Tải, rà soát và hoàn thiện SRS theo yêu cầu và mô hình đã đồng bộ",
         icon: "▤",
       },
-      {
-        id: 4,
-        label: "Chốt baseline và xuất tài liệu",
-        hint: "Xác nhận phiên bản thống nhất rồi xuất tài liệu chính thức",
-        icon: "↓",
-      },
     ],
   },
 };
