@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Card, SoftButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
@@ -43,7 +43,7 @@ function DocumentTable({ headers, rows }: { headers: string[]; rows: Array<Array
   );
 }
 
-function SectionTitle({ children, id }: { children: React.ReactNode; id: string }) {
+function SectionTitle({ children, id }: { children: ReactNode; id: string }) {
   return <h2 id={id} className="scroll-mt-6 border-b border-slate-200 pb-2 pt-6 text-xl font-bold text-slate-900">{children}</h2>;
 }
 
