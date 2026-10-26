@@ -1,6 +1,6 @@
 import { Card, SoftButton, EmptyState } from "../../../common/ui/primitives";
 import type { RequirementCoverageAnalysis, RequirementCoverageSuggestion, RequirementRecord } from "../../../common/services/requirementService";
-import type { RawRequirement } from "../../../../types/workflow";
+import type { RawRequirement } from "../../../common/types/workflow";
 
 interface Props {
   projectId?: number;

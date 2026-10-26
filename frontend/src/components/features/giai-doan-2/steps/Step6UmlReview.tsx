@@ -1,4 +1,4 @@
-import type { WorkflowState } from "../../../../types/workflow";
+import type { WorkflowState } from "../../../common/types/workflow";
 import { Card } from "../../../common/ui/primitives";
 
 interface Props { state: WorkflowState; }

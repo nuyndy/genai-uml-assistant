@@ -6,8 +6,8 @@ import Stepper from "./components/common/Stepper";
 import GiaiDoan1 from "./components/features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "./components/features/giai-doan-2/GiaiDoan2";
 import GiaiDoan3 from "./components/features/giai-doan-3/GiaiDoan3";
-import { emptyWorkflow, type WorkflowState } from "./types/workflow";
-import type { StageId } from "./stages";
+import { emptyWorkflow, type WorkflowState } from "./components/common/types/workflow";
+import type { StageId } from "./components/common/stages";
 import "./index.css";
 
 export function Demo() {

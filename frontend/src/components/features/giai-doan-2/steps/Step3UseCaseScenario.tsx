@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { GhostButton, PrimaryButton, EmptyState, SoftButton } from "../../../common/ui/primitives";
-import type { Scenario } from "../../../../types/workflow";
+import type { Scenario } from "../../../common/types/workflow";
 
 interface ScenarioUseCase {
   id: number;

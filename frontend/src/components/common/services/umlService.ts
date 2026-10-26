@@ -1,6 +1,6 @@
 import { apiFetch } from "./api";
-import type { InteractionType, Scenario } from "../../../types/workflow";
-import type { SpecType } from "../../../types/workflow";
+import type { InteractionType, Scenario } from "../types/workflow";
+import type { SpecType } from "../types/workflow";
 
 export interface SpecificationForUml {
   id: number;

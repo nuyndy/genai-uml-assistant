@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, SoftButton, PrimaryButton } from "../../../common/ui/primitives";
-import { imageExtension } from "../../../../utils/imageExtension";
+import { imageExtension } from "../../../common/utils/imageExtension";
 
 interface Props {
   imageUrl: string | null;

@@ -1,4 +1,4 @@
-import type { ExportFormat } from "../../../../types/workflow";
+import type { ExportFormat } from "../../../common/types/workflow";
 import { Card, SegmentedControl, SoftButton, Notice, PrimaryButton, StatusBadge } from "../../../common/ui/primitives";
 
 interface Props {

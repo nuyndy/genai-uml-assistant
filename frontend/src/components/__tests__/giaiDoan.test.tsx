@@ -6,7 +6,7 @@ import Stepper from "../common/Stepper";
 import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
 import GiaiDoan3 from "../features/giai-doan-3/GiaiDoan3";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
 import { vi } from "vitest";
 
 /**

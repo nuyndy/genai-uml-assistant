@@ -5,7 +5,7 @@ import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
 import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
 import GiaiDoanStepper from "../common/GiaiDoanStepper";
 import Stepper from "../common/Stepper";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
 
 vi.mock("../common/services/requirementService", () => ({
   listProjectRequirements: vi.fn().mockResolvedValue([]),

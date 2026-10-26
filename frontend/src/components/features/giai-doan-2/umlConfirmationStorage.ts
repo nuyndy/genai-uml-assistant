@@ -1,4 +1,4 @@
-import type { WorkflowState } from "../../../types/workflow";
+import type { WorkflowState } from "../../common/types/workflow";
 
 export const UML_CONFIRMATION_FLAGS = [
   "actorsUseCasesConfirmed",

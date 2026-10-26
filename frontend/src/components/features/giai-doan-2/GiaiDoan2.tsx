@@ -5,7 +5,7 @@ import type {
   Scenario,
   UmlClass,
   WorkflowState,
-} from "../../../types/workflow";
+} from "../../common/types/workflow";
 import {
   readUmlConfirmations,
   writeUmlConfirmations,

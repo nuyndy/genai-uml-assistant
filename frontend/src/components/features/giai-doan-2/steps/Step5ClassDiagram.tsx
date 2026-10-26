@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { imageExtension } from "../../../../utils/imageExtension";
+import { imageExtension } from "../../../common/utils/imageExtension";
 import {
   Card,
   SoftButton,
@@ -12,7 +12,7 @@ import {
   inputClass,
   singleLineClass,
 } from "../../../common/ui/primitives";
-import type { UmlClass } from "../../../../types/workflow";
+import type { UmlClass } from "../../../common/types/workflow";
 
 interface ClassDraft {
   name: string;

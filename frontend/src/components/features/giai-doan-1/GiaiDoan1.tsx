@@ -28,7 +28,7 @@ import {
   type UserStory,
   type UserStoryDraft,
 } from "../../common/services/requirementService";
-import type { RawRequirement, SpecDoc, WorkflowState } from "../../../types/workflow";
+import type { RawRequirement, SpecDoc, WorkflowState } from "../../common/types/workflow";
 import Step1NhapYeuCau from "./steps/Step1NhapYeuCau";
 import Step2PhanTichYeuCau from "./steps/Step2PhanTichYeuCau";
 import Step3UserStory from "./steps/Step3UserStory";

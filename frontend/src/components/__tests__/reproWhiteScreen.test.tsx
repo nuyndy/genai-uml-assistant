@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useState } from "react";
 import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
 
 /**
  * Payload ĐÚNG NHƯ backend FastAPI trả về từ GET /api/projects/{id}/uml-state

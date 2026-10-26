@@ -3,8 +3,8 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import Stepper from "../common/Stepper";
 import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
-import { STAGES, type StageId } from "../../stages";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
+import { STAGES, type StageId } from "../common/stages";
 
 vi.mock("../common/services/umlService", () => ({
   getProjectUmlState: vi.fn().mockResolvedValue({

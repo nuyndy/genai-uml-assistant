@@ -9,10 +9,10 @@ import {
   listProjects,
   type Project,
 } from "./components/home/projectStore";
-import { STAGES, type StageId } from "./stages";
+import { STAGES, type StageId } from "./components/common/stages";
 import { StageBackdrop } from "./components/common/ui/primitives";
 import ErrorBoundary from "./components/common/ErrorBoundary";
-import { emptyWorkflow, type WorkflowState } from "./types/workflow";
+import { emptyWorkflow, type WorkflowState } from "./components/common/types/workflow";
 
 function App() {
   const { user, loading, logout } = useAuth();

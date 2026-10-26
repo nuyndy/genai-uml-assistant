@@ -7,7 +7,7 @@ import {
   EmptyState,
   DiagramPreview,
 } from "../../../common/ui/primitives";
-import type { InteractionType } from "../../../../types/workflow";
+import type { InteractionType } from "../../../common/types/workflow";
 
 interface ScenarioUseCase {
   id: number;

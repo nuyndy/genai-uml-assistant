@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
 import Stepper from "../common/Stepper";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
 import type {
   RequirementCoverageAnalysis,
   RequirementPayload,

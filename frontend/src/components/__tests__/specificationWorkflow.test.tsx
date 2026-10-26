@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { useState } from "react";
 import GiaiDoan1 from "../features/giai-doan-1/GiaiDoan1";
 import Stepper from "../common/Stepper";
-import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
+import { emptyWorkflow, type WorkflowState } from "../common/types/workflow";
 import type { SpecificationRecord, UserStory } from "../common/services/requirementService";
 
 const mocked = vi.hoisted(() => {
