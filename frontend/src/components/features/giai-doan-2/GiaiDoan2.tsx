@@ -40,7 +40,7 @@ import {
   type ProjectSpecificationRecord,
   type ProjectUmlState,
   type UseCaseRecord,
-} from "../../../services/umlService";
+} from "../../common/services/umlService";
 import {
   Card,
   Notice,

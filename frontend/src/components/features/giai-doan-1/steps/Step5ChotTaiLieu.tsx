@@ -13,7 +13,7 @@ import type {
   NonFunctionalSpecification,
   SpecificationRecord,
   SrsMetadata,
-} from "../../../../services/requirementService";
+} from "../../../common/services/requirementService";
 
 type SpecDraft = FunctionalSpecification | NonFunctionalSpecification;
 

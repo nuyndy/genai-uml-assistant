@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "../AuthContext";
 // ---------------------------------------------------------------------------
 // Mock lớp service để không gọi mạng thật.
 // ---------------------------------------------------------------------------
-vi.mock("../../services/authService", () => ({
+vi.mock("../../components/common/services/authService", () => ({
   API_BASE: "http://localhost:8000",
   authHeaders: vi.fn(() => ({})),
   loginWithGoogle: vi.fn(),
@@ -20,7 +20,7 @@ import {
   fetchCurrentUser,
   loginWithGoogle,
   type AuthUser,
-} from "../../services/authService";
+} from "../../components/common/services/authService";
 
 const mockLoginWithGoogle = vi.mocked(loginWithGoogle);
 const mockFetchCurrentUser = vi.mocked(fetchCurrentUser);

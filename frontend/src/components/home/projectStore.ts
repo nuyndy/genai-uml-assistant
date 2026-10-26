@@ -1,4 +1,4 @@
-import { apiFetch } from "../../services/api";
+import { apiFetch } from "../common/services/api";
 
 export interface Project {
   id: number;

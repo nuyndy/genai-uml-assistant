@@ -27,7 +27,7 @@ import {
   type SrsMetadata,
   type UserStory,
   type UserStoryDraft,
-} from "../../../services/requirementService";
+} from "../../common/services/requirementService";
 import type { RawRequirement, SpecDoc, WorkflowState } from "../../../types/workflow";
 import Step1NhapYeuCau from "./steps/Step1NhapYeuCau";
 import Step2PhanTichYeuCau from "./steps/Step2PhanTichYeuCau";
@@ -40,7 +40,7 @@ import {
   emptyNonFunctionalSpecification,
 } from "../../SpecificationEditor";
 import { inputClass, wrapClass } from "../../common/ui/primitives";
-import { getProjectUmlState } from "../../../services/umlService";
+import { getProjectUmlState } from "../../common/services/umlService";
 
 interface Props {
   projectId?: number;

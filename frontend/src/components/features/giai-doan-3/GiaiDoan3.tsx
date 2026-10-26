@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { attachDiagramToDoc, renderDiagram } from "../../../services/aiService";
+import { attachDiagramToDoc, renderDiagram } from "../../common/services/aiService";
 import {
   getSpecificationDocument,
   exportSpecificationDocument,
-} from "../../../services/requirementService";
+} from "../../common/services/requirementService";
 import {
   generateClassDiagram,
   listProjectDiagrams,
@@ -12,7 +12,7 @@ import {
   createProjectBaseline,
   approveProjectBaseline,
   checkProjectUmlConsistency,
-} from "../../../services/umlService";
+} from "../../common/services/umlService";
 import {
   singleLineClass,
   wrapClass,

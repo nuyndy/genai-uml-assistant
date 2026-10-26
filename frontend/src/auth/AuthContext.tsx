@@ -10,8 +10,8 @@ import {
   fetchCurrentUser,
   loginWithGoogle,
   type AuthUser,
-} from "../services/authService";
-import { AUTH_EXPIRED_EVENT } from "../services/api";
+} from "../components/common/services/authService";
+import { AUTH_EXPIRED_EVENT } from "../components/common/services/api";
 
 interface AuthContextValue {
   user: AuthUser | null;

@@ -12,7 +12,7 @@ import {
   type NonFunctionalSpecification,
   type SpecificationRecord,
   type UserStory,
-} from "../../../../services/requirementService";
+} from "../../../common/services/requirementService";
 
 type SpecDraft = FunctionalSpecification | NonFunctionalSpecification;
 type SpecKind = "functional" | "non_functional";

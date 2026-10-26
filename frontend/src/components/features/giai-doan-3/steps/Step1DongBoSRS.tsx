@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 import { Card, EmptyState, SoftButton } from "../../../common/ui/primitives";
 import SrsWordEditor from "../../../SrsWordEditor";
-import type { FunctionalSpecification, NonFunctionalSpecification, SrsMetadata, SpecificationRecord } from "../../../../services/requirementService";
+import type { FunctionalSpecification, NonFunctionalSpecification, SrsMetadata, SpecificationRecord } from "../../../common/services/requirementService";
 
 interface Props {
   srsLoaded: boolean;

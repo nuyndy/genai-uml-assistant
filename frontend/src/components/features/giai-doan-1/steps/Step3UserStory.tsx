@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../../types/workflow";
-import { improveUserStory, saveRequirementUserStory, updateUserStory, type UserStory, type UserStoryDraft } from "../../../../services/requirementService";
+import { improveUserStory, saveRequirementUserStory, updateUserStory, type UserStory, type UserStoryDraft } from "../../../common/services/requirementService";
 
 interface Props {
   projectId?: number;

@@ -1,4 +1,4 @@
-import type { FunctionalSpecification, NonFunctionalSpecification } from "../services/requirementService";
+import type { FunctionalSpecification, NonFunctionalSpecification } from "./common/services/requirementService";
 import { inputClass } from "./common/ui/primitives";
 
 export type FunctionalSpecificationTab = "overview" | "flows" | "business-data";

@@ -7,7 +7,7 @@ import GiaiDoanStepper from "../common/GiaiDoanStepper";
 import Stepper from "../common/Stepper";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 
-vi.mock("../../services/requirementService", () => ({
+vi.mock("../common/services/requirementService", () => ({
   listProjectRequirements: vi.fn().mockResolvedValue([]),
   listProjectUserStories: vi.fn().mockResolvedValue([]),
   listProjectSpecifications: vi.fn().mockResolvedValue([]),
@@ -39,7 +39,7 @@ vi.mock("../../services/requirementService", () => ({
   previewProjectUserStories: vi.fn(),
 }));
 
-vi.mock("../../services/umlService", () => ({
+vi.mock("../common/services/umlService", () => ({
   getProjectUmlState: vi.fn().mockResolvedValue({
     actors: [],
     use_cases: [],
@@ -121,7 +121,7 @@ describe("Chuyển giai đoạn lớn trong workspace", () => {
   });
 
   it("vẫn hiện Bước 1 khi API nạp dữ liệu thất bại", async () => {
-    const { getProjectUmlState } = await import("../../services/umlService");
+    const { getProjectUmlState } = await import("../common/services/umlService");
     vi.mocked(getProjectUmlState).mockRejectedValueOnce(
       new Error("Không kết nối được server"),
     );

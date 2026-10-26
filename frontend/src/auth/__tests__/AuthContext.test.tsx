@@ -2,10 +2,10 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, useAuth } from "../AuthContext";
-import type { AuthUser } from "../../services/authService";
-import { AUTH_EXPIRED_EVENT } from "../../services/api";
+import type { AuthUser } from "../../components/common/services/authService";
+import { AUTH_EXPIRED_EVENT } from "../../components/common/services/api";
 
-vi.mock("../../services/authService", () => ({
+vi.mock("../../components/common/services/authService", () => ({
   API_BASE: "http://localhost:8000",
   authHeaders: vi.fn(() => ({})),
   loginWithGoogle: vi.fn(),
@@ -19,7 +19,7 @@ import {
   clearToken,
   fetchCurrentUser,
   loginWithGoogle,
-} from "../../services/authService";
+} from "../../components/common/services/authService";
 
 const mockFetchCurrentUser = vi.mocked(fetchCurrentUser);
 const mockLoginWithGoogle = vi.mocked(loginWithGoogle);

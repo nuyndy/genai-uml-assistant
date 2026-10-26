@@ -2,7 +2,7 @@ import { Card, EmptyState, PrimaryButton, RemoveButton, SoftButton, StatusBadge,
 import RequirementFormFields from "../../../step1/RequirementFormFields";
 import type { RequirementInput } from "../../../step1/types";
 import type { RawRequirement } from "../../../../types/workflow";
-import type { RequirementRecord, RequirementCoverageAnalysis } from "../../../../services/requirementService";
+import type { RequirementRecord, RequirementCoverageAnalysis } from "../../../common/services/requirementService";
 
 interface Props {
   newRequirement: RawRequirement;

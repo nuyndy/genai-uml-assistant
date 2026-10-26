@@ -8,7 +8,7 @@ import type {
   RequirementCoverageAnalysis,
   RequirementPayload,
   RequirementRecord,
-} from "../../services/requirementService";
+} from "../common/services/requirementService";
 
 const mocked = vi.hoisted(() => {
   const requirement: RequirementRecord = {
@@ -80,7 +80,7 @@ const mocked = vi.hoisted(() => {
   };
 });
 
-vi.mock("../../services/requirementService", () => ({
+vi.mock("../common/services/requirementService", () => ({
   analyzeProjectRequirementsBatch: mocked.analyzeProjectRequirementsBatch,
   checkProjectRequirementCoverage: mocked.checkProjectRequirementCoverage,
   confirmProjectRequirementsBatch: mocked.confirmProjectRequirementsBatch,

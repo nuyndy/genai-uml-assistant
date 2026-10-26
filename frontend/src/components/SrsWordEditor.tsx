@@ -5,7 +5,7 @@ import type {
   NonFunctionalSpecification,
   SrsMetadata,
   SpecificationRecord,
-} from "../services/requirementService";
+} from "./common/services/requirementService";
 
 export interface SrsWordSpecEntry<T> extends SpecificationRecord {
   value: T;

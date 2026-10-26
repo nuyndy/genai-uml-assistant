@@ -6,7 +6,7 @@ import GiaiDoan2 from "../features/giai-doan-2/GiaiDoan2";
 import { emptyWorkflow, type WorkflowState } from "../../types/workflow";
 import { STAGES, type StageId } from "../../stages";
 
-vi.mock("../../services/umlService", () => ({
+vi.mock("../common/services/umlService", () => ({
   getProjectUmlState: vi.fn().mockResolvedValue({
     actors: [],
     use_cases: [],

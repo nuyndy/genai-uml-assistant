@@ -13,7 +13,7 @@ import { vi } from "vitest";
  * Giai đoạn 2 tự nạp đặc tả từ database; test phải cấp một đặc tả chức năng
  * để màn hình không rơi vào trạng thái "dự án chưa có đặc tả chức năng".
  */
-vi.mock("../../services/umlService", () => ({
+vi.mock("../common/services/umlService", () => ({
   getProjectUmlState: vi.fn().mockResolvedValue({
     actors: [],
     use_cases: [],

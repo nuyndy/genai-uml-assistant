@@ -29,7 +29,7 @@ const { backendUmlState } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("../../services/umlService", () => ({
+vi.mock("../common/services/umlService", () => ({
   getProjectUmlState: vi.fn().mockResolvedValue(backendUmlState),
   listProjectSpecificationsForUml: vi.fn().mockResolvedValue([
     {
@@ -72,7 +72,7 @@ describe("Giai đoạn 2 nạp dữ liệu thật từ backend", () => {
   });
 
   it("đọc kịch bản từ main_flow/alt_flow/exception_flow của backend", async () => {
-    const { getProjectUmlState } = await import("../../services/umlService");
+    const { getProjectUmlState } = await import("../common/services/umlService");
     vi.mocked(getProjectUmlState).mockResolvedValueOnce({
       ...backendUmlState,
       use_cases: [
@@ -108,7 +108,7 @@ describe("Giai đoạn 2 nạp dữ liệu thật từ backend", () => {
 
 describe("Giai đoạn 2 khi dự án chưa có đặc tả", () => {
   it("hiện thông báo hướng dẫn thay vì trắng màn hình", async () => {
-    const { listProjectSpecificationsForUml } = await import("../../services/umlService");
+    const { listProjectSpecificationsForUml } = await import("../common/services/umlService");
     vi.mocked(listProjectSpecificationsForUml).mockResolvedValueOnce([]);
     render(<Harness />);
     expect(await screen.findByText(/Dự án chưa có đặc tả/)).toBeTruthy();
@@ -116,7 +116,7 @@ describe("Giai đoạn 2 khi dự án chưa có đặc tả", () => {
   });
 
   it("chỉ có đặc tả phi chức năng thì báo cần bổ sung đặc tả chức năng", async () => {
-    const { listProjectSpecificationsForUml } = await import("../../services/umlService");
+    const { listProjectSpecificationsForUml } = await import("../common/services/umlService");
     vi.mocked(listProjectSpecificationsForUml).mockResolvedValueOnce([
       {
         id: 200,
@@ -140,7 +140,7 @@ describe("Giai đoạn 2 khi dự án chưa có đặc tả", () => {
 
 describe("Giai đoạn 2 khi API lỗi", () => {
   it("hiện thông báo lỗi, không trắng màn hình", async () => {
-    const { getProjectUmlState } = await import("../../services/umlService");
+    const { getProjectUmlState } = await import("../common/services/umlService");
     vi.mocked(getProjectUmlState).mockRejectedValueOnce(new Error("Mất kết nối server"));
     render(<Harness />);
     expect(await screen.findByText(/Không thể tải dữ liệu UML/)).toBeTruthy();

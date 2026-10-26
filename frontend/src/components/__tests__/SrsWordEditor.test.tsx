@@ -8,7 +8,7 @@ import type {
   NonFunctionalSpecification,
   SrsMetadata,
   SpecificationRecord,
-} from "../../services/requirementService";
+} from "../common/services/requirementService";
 
 const metadata: SrsMetadata = {
   intro_purpose: "Mục đích",

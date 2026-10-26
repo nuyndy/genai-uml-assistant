@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AuthUser } from "../../services/authService";
+import type { AuthUser } from "../common/services/authService";
 import { createProject, deleteProject, type Project } from "./projectStore";
 
 interface Props {

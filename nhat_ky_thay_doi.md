@@ -53,3 +53,12 @@ Dùng Git để revert commit này, hoặc chuyển các tệp từ `_cho_xoa/<�
 - `frontend/src/components/SpecificationDocument.tsx`: được `SpecificationDocument.test.tsx` sử dụng; giữ lại.
 - Không chỉnh sửa hay di chuyển tệp trong `frontend/src/components/features` vì đây là thư mục được bảo vệ.
 - Kiểm thử build/test chưa được chạy trong môi trường này; cần để CI hoặc môi trường local xác nhận sau khi đồng bộ nhánh.
+
+
+## Đợt tái cấu trúc services vào common
+
+- Chuyển các module dịch vụ từ `frontend/src/services/` sang `frontend/src/components/common/services/`, bao gồm cả các bài test nằm trong `__tests__`.
+- Cập nhật import và mock trong App flow, HomePage, các bước giai đoạn và các test có tham chiếu đến service.
+- Cập nhật đường dẫn import kiểu dữ liệu workflow trong `umlService.ts` do vị trí thư mục thay đổi.
+- Giữ nguyên nội dung nghiệp vụ của các service; thay đổi chủ yếu là vị trí tệp và đường dẫn import.
+- Build và test chưa được chạy trong môi trường chỉnh sửa; cần xác nhận bằng CI hoặc chạy `npm test` và `npm run build` trong `frontend/`.
