@@ -28,3 +28,28 @@
 ## Khôi phục
 
 Dùng Git để revert commit này, hoặc chuyển các tệp từ `_cho_xoa/<đường dẫn cũ>` về đường dẫn cũ. Không có tệp nào bị xóa vĩnh viễn.
+
+
+## Đợt rà soát theo luồng import từ Main / App / HomePage / các GiaiDoan
+
+- Căn cứ: import graph của `frontend/src/main.tsx`, `App.tsx`, `HomePage.tsx` và các component giai đoạn; kiểm tra thêm các import trong bộ test hiện có.
+- Quy tắc: chỉ lưu trữ các tệp ngoài thư mục được bảo vệ khi không tìm thấy tham chiếu từ luồng ứng dụng hiện hành hoặc test; không xóa vĩnh viễn.
+- Các tệp đã chuyển vào `_cho_xoa/` trong đợt này:
+
+| Đường dẫn cũ | Đường dẫn lưu trữ | Lý do |
+|---|---|---|
+| `frontend/src/stages/step1_1.ts` | `_cho_xoa/frontend/src/stages/step1_1.ts` | Định nghĩa bước trùng lặp; `stages/index.ts` khai báo cấu hình bước đang được App và các Stepper sử dụng; không thấy import tệp riêng này. |
+| `frontend/src/stages/step1_2.ts` | `_cho_xoa/frontend/src/stages/step1_2.ts` | Định nghĩa bước trùng lặp; không thấy import tệp riêng này. |
+| `frontend/src/stages/step1_3.ts` | `_cho_xoa/frontend/src/stages/step1_3.ts` | Định nghĩa bước trùng lặp; không thấy import tệp riêng này. |
+| `frontend/src/stages/step1_4.ts` | `_cho_xoa/frontend/src/stages/step1_4.ts` | Định nghĩa bước trùng lặp; không thấy import tệp riêng này. |
+| `frontend/src/stages/step1_5.ts` | `_cho_xoa/frontend/src/stages/step1_5.ts` | Định nghĩa bước trùng lặp; không thấy import tệp riêng này. |
+| `frontend/src/components/step2/Buoc2PhanTichYeuCau.tsx` | `_cho_xoa/frontend/src/components/step2/Buoc2PhanTichYeuCau.tsx` | Component cũ không được tham chiếu bởi luồng Main/App/feature hiện tại hoặc test đã rà soát. |
+| `frontend/src/components/step4/Buoc4DacTa.tsx` | `_cho_xoa/frontend/src/components/step4/Buoc4DacTa.tsx` | Component cũ không được tham chiếu bởi luồng Main/App/feature hiện tại hoặc test đã rà soát. |
+
+## Tệp giữ nguyên sau khi rà soát
+
+- `frontend/src/stages/index.ts`: đang được `App.tsx`, `Stepper.tsx` và `GiaiDoanStepper.tsx` sử dụng.
+- `frontend/src/components/step1/RequirementFormFields.tsx` và `frontend/src/components/step1/types.ts`: được `Step1NhapYeuCau.tsx` sử dụng; giữ nguyên để không phải sửa thư mục được bảo vệ.
+- `frontend/src/components/SpecificationDocument.tsx`: được `SpecificationDocument.test.tsx` sử dụng; giữ lại.
+- Không chỉnh sửa hay di chuyển tệp trong `frontend/src/components/features` vì đây là thư mục được bảo vệ.
+- Kiểm thử build/test chưa được chạy trong môi trường này; cần để CI hoặc môi trường local xác nhận sau khi đồng bộ nhánh.
