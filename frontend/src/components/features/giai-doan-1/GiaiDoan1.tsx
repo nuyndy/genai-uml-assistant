@@ -354,11 +354,6 @@ export default function GiaiDoan1({
       setRequirements((previous) => [...previous, record]);
       resetCoverage();
       setRequirementValues((previous) => ({ ...previous, [created.id]: newRequirement }));
-      setAnalyses((previous) => {
-        const next = { ...previous };
-        delete next[created.id];
-        return next;
-      });
       setNewRequirement(emptyRequirement());
       setState((previous) => ({
         ...previous,
@@ -381,11 +376,6 @@ export default function GiaiDoan1({
       setRequirements((previous) => previous.filter((item) => item.id !== requirementId));
       resetCoverage();
       setRequirementValues((previous) => {
-        const next = { ...previous };
-        delete next[requirementId];
-        return next;
-      });
-      setAnalyses((previous) => {
         const next = { ...previous };
         delete next[requirementId];
         return next;
