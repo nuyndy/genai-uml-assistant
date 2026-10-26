@@ -55,9 +55,38 @@ def _build_options(json_response: bool) -> dict[str, object]:
     return options
 
 
-def generate_content(prompt: str, *, json_response: bool = False) -> str:
+def _find_installed_fallback(base_url: str, requested_model: str, timeout: int) -> str | None:
+    """Tìm model Qwen nhỏ đã cài để ứng dụng vẫn chạy trên máy RAM hạn chế."""
+    request = Request(f"{base_url}/api/tags", headers={"Accept": "application/json"})
+    try:
+        with urlopen(request, timeout=min(timeout, 10)) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, OSError, TimeoutError, socket.timeout, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+    models = data.get("models", []) if isinstance(data, dict) else []
+    installed = {
+        item.get("name")
+        for item in models
+        if isinstance(item, dict) and isinstance(item.get("name"), str)
+    }
+    # Ưu tiên model nhẹ phù hợp máy 8GB; chỉ chọn model đã có trên máy.
+    candidates = ("qwen2.5:1.5b", "qwen3:1.7b", "qwen2.5:3b")
+    for candidate in candidates:
+        if candidate != requested_model and candidate in installed:
+            return candidate
+    return None
+
+
+def generate_content(
+    prompt: str,
+    *,
+    json_response: bool = False,
+    _model_override: str | None = None,
+    _allow_fallback: bool = True,
+) -> str:
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-    model = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+    model = _model_override or os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
     timeout = _parse_timeout()
 
     payload: dict[str, object] = {
@@ -96,9 +125,22 @@ def generate_content(prompt: str, *, json_response: bool = False) -> str:
             message = ""
         suffix = f": {message}" if message else ""
         if exc.code == 404:
+            # Nếu model cấu hình chưa được cài, tự dùng model Qwen nhỏ hơn
+            # đã có sẵn trên máy. Không tải model ngầm để tránh tiêu tốn RAM/dung lượng.
+            if _allow_fallback:
+                fallback_model = _find_installed_fallback(base_url, model, timeout)
+                if fallback_model:
+                    return generate_content(
+                        prompt,
+                        json_response=json_response,
+                        _model_override=fallback_model,
+                        _allow_fallback=False,
+                    )
             raise AIServiceError(
-                f"Không tìm thấy model Ollama '{model}'. Tải model bằng "
-                f"`ollama pull {model}`{suffix}"
+                f"Không tìm thấy model Ollama '{model}'. "
+                f"Không tìm thấy model Qwen dự phòng đã cài. Hãy chạy "
+                f"`ollama pull qwen2.5:1.5b` (phù hợp máy RAM 8GB) "
+                f"hoặc `ollama pull {model}`, rồi thử lại{suffix}"
             ) from exc
         raise AIServiceError(
             f"Ollama từ chối yêu cầu (HTTP {exc.code}){suffix}"
