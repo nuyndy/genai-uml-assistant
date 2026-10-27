@@ -415,45 +415,34 @@ export default function GiaiDoan1({
     .map(([index]) => Number(index))
     .filter((index) => !addedCoverageSuggestions.includes(index));
 
-  const addSelectedCoverageSuggestions = async () => {
-    if (!projectId || !coverageAnalysis || selectedCoverageIndexes.length === 0) return;
-    const selectedSuggestions: RequirementCoverageSuggestion[] = selectedCoverageIndexes
-      .map((index) => coverageAnalysis.suggestions[index])
-      .filter((suggestion): suggestion is RequirementCoverageSuggestion => suggestion !== undefined);
-    if (selectedSuggestions.length !== selectedCoverageIndexes.length) {
-      setError("Danh sách chức năng đề xuất không còn hợp lệ. Hãy kiểm tra lại.");
+  const addCoverageSuggestion = async (index: number) => {
+    if (!projectId || !coverageAnalysis || busy || addedCoverageSuggestions.includes(index)) return;
+    const suggestion = coverageAnalysis.suggestions[index];
+    if (!suggestion) {
+      setError("Gợi ý chức năng không còn hợp lệ. Hãy kiểm tra lại.");
       return;
     }
     setBusy(true);
     setError("");
     try {
-      const created = await createProjectRequirementsBatch(
-        projectId,
-        selectedSuggestions.map(
-          ({ actor, action, target_object, purpose, pre_conditions, business_rules }) => ({
-            actor,
-            action,
-            target_object,
-            purpose,
-            pre_conditions,
-            business_rules,
-          }),
-        ),
-      );
+      const created = await createProjectRequirementsBatch(projectId, [{
+        actor: suggestion.actor,
+        action: suggestion.action,
+        target_object: suggestion.target_object,
+        purpose: suggestion.purpose,
+        pre_conditions: suggestion.pre_conditions,
+        business_rules: suggestion.business_rules,
+      }]);
       setRequirements((previous) => [...previous, ...created]);
       setRequirementValues((previous) => ({
         ...previous,
         ...Object.fromEntries(created.map((item) => [item.id, parseRequirement(item.content)])),
       }));
-      setAddedCoverageSuggestions((previous) => [...previous, ...selectedCoverageIndexes]);
+      setAddedCoverageSuggestions((previous) => previous.includes(index) ? previous : [...previous, index]);
       setCoverageAddedCount((previous) => previous + created.length);
-      setSelectedCoverageSuggestions((previous) => {
-        const next = { ...previous };
-        selectedCoverageIndexes.forEach((index) => { next[index] = false; });
-        return next;
-      });
+      setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: false }));
     } catch (reason) {
-      setError(`Không thể lưu các chức năng đã chọn: ${formatError(reason)}`);
+      setError(`Không thể thêm chức năng được chọn: ${formatError(reason)}`);
     } finally {
       setBusy(false);
     }
@@ -863,10 +852,13 @@ export default function GiaiDoan1({
       selectedCoverageSuggestions={selectedCoverageSuggestions}
       selectedCoverageIndexes={selectedCoverageIndexes}
       onCheckCoverage={checkRequirementCoverage}
-      onToggleCoverageSuggestion={(index, selected) =>
-        setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: selected }))
-      }
-      onAddSelectedCoverage={() => void addSelectedCoverageSuggestions()}
+      onToggleCoverageSuggestion={(index, selected) => {
+        if (selected) {
+          void addCoverageSuggestion(index);
+        } else {
+          setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: false }));
+        }
+      }}
       busy={busy}
       loaded={loaded}
       error={error}
