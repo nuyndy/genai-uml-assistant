@@ -160,6 +160,7 @@ export default function GiaiDoan1({
   const [newRequirement, setNewRequirement] = useState(state.rawRequirement);
   const [stories, setStories] = useState<UserStory[]>([]);
   const [storyDrafts, setStoryDrafts] = useState<Record<number, UserStoryDraft>>({});
+  const [editedStoryDraftIds, setEditedStoryDraftIds] = useState<number[]>([]);
   const [storyDraftsEdited, setStoryDraftsEdited] = useState(false);
   const [loadingStoryDrafts, setLoadingStoryDrafts] = useState(false);
   const [specifications, setSpecifications] = useState<SpecificationRecord[]>(
@@ -464,17 +465,25 @@ export default function GiaiDoan1({
     setError("");
     try {
       const result = await previewProjectUserStories(projectId);
-      setStoryDrafts(
-        Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
+      const generatedDrafts = Object.fromEntries(
+        result.results.map((story) => [story.requirement_id, story]),
       );
-      setStoryDraftsEdited(false);
+      setStoryDrafts((previous) => {
+        const next = { ...generatedDrafts };
+        // Giữ nguyên các User Story người dùng đã tự chỉnh, không để AI ghi đè.
+        editedStoryDraftIds.forEach((requirementId) => {
+          if (previous[requirementId]) next[requirementId] = previous[requirementId];
+        });
+        return next;
+      });
+      setStoryDraftsEdited(editedStoryDraftIds.length > 0);
     } catch (reason) {
       setError(`Không thể tạo bản nháp user story: ${formatError(reason)}`);
     } finally {
       setLoadingStoryDrafts(false);
       setAiTaskLabel("");
     }
-  }, [projectId]);
+  }, [projectId, editedStoryDraftIds]);
 
   // Không tự gọi AI khi vào Bước 3 hoặc khi danh sách yêu cầu thay đổi.
   // Người dùng chủ động bấm nút hoàn thiện để AI xử lý các yêu cầu hiện tại.
@@ -494,11 +503,17 @@ export default function GiaiDoan1({
     setStoryDrafts((previous) => ({
       ...previous,
       [requirementId]: {
-        ...previous[requirementId],
         requirement_id: requirementId,
+        role: previous[requirementId]?.role ?? "",
+        feature: previous[requirementId]?.feature ?? "",
+        benefit: previous[requirementId]?.benefit ?? "",
+        acceptance_criteria: previous[requirementId]?.acceptance_criteria ?? "",
         [field]: value,
       },
     }));
+    setEditedStoryDraftIds((previous) =>
+      previous.includes(requirementId) ? previous : [...previous, requirementId],
+    );
     setStoryDraftsEdited(true);
   };
 
