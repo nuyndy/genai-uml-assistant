@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../common/types/workflow";
-import { saveRequirementUserStory, type UserStory, type UserStoryDraft } from "../../../common/services/requirementService";
+import { saveRequirementUserStory, updateUserStory, improveUserStory, type UserStory, type UserStoryDraft } from "../../../common/services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -45,6 +45,27 @@ export default function Step3UserStory({
   const [activeDraftIndex, setActiveDraftIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+  const [savedStoryDrafts, setSavedStoryDrafts] = useState<Record<number, UserStoryDraft>>({});
+  const [savingSavedStory, setSavingSavedStory] = useState(false);
+  const [improvingSavedStory, setImprovingSavedStory] = useState(false);
+  const orderedSavedStories = [...savedStories].sort((a, b) => a.id - b.id);
+  const activeSavedStory = orderedSavedStories[activeDraftIndex];
+  const activeSavedDraft: UserStoryDraft | undefined = activeSavedStory
+    ? savedStoryDrafts[activeSavedStory.id] ?? {
+        requirement_id: activeSavedStory.requirement_id ?? 0,
+        role: activeSavedStory.role ?? "",
+        feature: activeSavedStory.feature ?? "",
+        benefit: activeSavedStory.benefit ?? "",
+        acceptance_criteria: activeSavedStory.acceptance_criteria ?? "",
+      }
+    : undefined;
+  const changeSavedDraft = (field: Exclude<keyof UserStoryDraft, "requirement_id">, value: string) => {
+    if (!activeSavedStory || !activeSavedDraft) return;
+    setSavedStoryDrafts((previous) => ({
+      ...previous,
+      [activeSavedStory.id]: { ...activeSavedDraft, [field]: value },
+    }));
+  };
   const orderedDrafts = [...draftRequirements].reverse();
   const activeDraftRequirement = orderedDrafts[activeDraftIndex];
   const total = draftRequirements.length;
@@ -54,64 +75,77 @@ export default function Step3UserStory({
     <div className="space-y-2">
       {allRequirementsConfirmed ? (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
             <div>
-              <h2 className="text-sm font-semibold text-emerald-950">Danh sách User Story đã xác nhận</h2>
-              <p className="mt-1 text-sm text-emerald-800">Đang hiển thị đầy đủ {savedStories.length} User Story đã lưu của dự án.</p>
+              <h2 className="text-sm font-semibold text-emerald-950">User Story đã duyệt</h2>
+              <p className="mt-1 text-sm text-emerald-800">{orderedSavedStories.length ? `Thẻ ${Math.min(activeDraftIndex + 1, orderedSavedStories.length)} / ${orderedSavedStories.length}` : "Chưa có User Story"} · Có thể chỉnh sửa, sinh lại bằng AI và lưu thay đổi.</p>
             </div>
-            <PrimaryButton onClick={() => onStepChange(4)}>
-              Tiếp tục đến Bước 4: Đặc tả
-            </PrimaryButton>
+            <PrimaryButton onClick={() => onStepChange(4)}>Tiếp tục đến Bước 4: Đặc tả</PrimaryButton>
           </div>
-          {savedStories.length === 0 ? (
+          {orderedSavedStories.length === 0 ? (
             <Card title="Chưa có User Story được lưu">
               <EmptyState title="Không tìm thấy User Story" hint="Kiểm tra lại dữ liệu User Story đã lưu của dự án." />
             </Card>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-              {[...savedStories].sort((a, b) => a.id - b.id).map((story, index) => {
-                const rawValue = requirementValues[story.requirement_id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
-                const criteria = (story.acceptance_criteria ?? "").split(/\\n|\n/).filter((item) => item.trim());
-                return (
-                  <article key={story.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-start gap-2 border-b border-slate-100 bg-slate-50/60 px-3 py-2">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-[11px] font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">US-{String(story.id).padStart(3, "0")} · REQ-{String(story.requirement_id).padStart(3, "0")}</p>
-                        <h3 className={`mt-1 break-words text-sm font-semibold leading-5 text-slate-900 ${textWrap}`}>{story.feature?.trim() || "User Story chưa có tiêu đề"}</h3>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                          <StatusBadge tone="success">Đã xác nhận</StatusBadge>
-                        </div>
-                        <p className={`mt-1 text-xs leading-4 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {requirementTitle(rawValue)} — {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
-                      </div>
-                    </div>
-                    <div className="grid gap-2 p-3 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs font-semibold text-slate-500">VAI TRÒ</p>
-                        <p className={`mt-1 whitespace-pre-wrap break-words text-sm text-slate-800 ${textWrap}`}>{story.role || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-slate-500">CHỨC NĂNG</p>
-                        <p className={`mt-1 whitespace-pre-wrap break-words text-sm text-slate-800 ${textWrap}`}>{story.feature || "—"}</p>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <p className="text-xs font-semibold text-slate-500">LỢI ÍCH / MỤC ĐÍCH</p>
-                        <p className={`mt-1 whitespace-pre-wrap break-words text-sm text-slate-800 ${textWrap}`}>{story.benefit || "—"}</p>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <p className="text-xs font-semibold text-slate-500">TIÊU CHÍ CHẤP NHẬN</p>
-                        {criteria.length ? (
-                          <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm text-slate-800">
-                            {criteria.map((criterion, criterionIndex) => <li key={criterionIndex} className={`whitespace-pre-wrap break-words ${textWrap}`}>{criterion}</li>)}
-                          </ol>
-                        ) : <p className="mt-1 text-sm text-slate-500">Chưa có tiêu chí chấp nhận.</p>}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
+          ) : activeSavedStory && activeSavedDraft ? (
+            <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">US-{String(activeSavedStory.id).padStart(3, "0")} · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
+                  <h3 className="mt-1 text-sm font-semibold text-slate-900">{activeSavedDraft.feature.trim() || "User Story chưa có tiêu đề"}</h3>
+                  <div className="mt-1"><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <SoftButton disabled={activeDraftIndex <= 0 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
+                  <SoftButton disabled={activeDraftIndex >= orderedSavedStories.length - 1 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1))}>Sau →</SoftButton>
+                </div>
+              </div>
+              <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
+                Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
+              </div>
+              <div className="grid gap-3 p-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-slate-700">Vai trò *
+                  <input value={activeSavedDraft.role} onChange={(event) => changeSavedDraft("role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">Chức năng *
+                  <textarea value={activeSavedDraft.feature} onChange={(event) => changeSavedDraft("feature", event.target.value)} rows={2} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *
+                  <textarea value={activeSavedDraft.benefit} onChange={(event) => changeSavedDraft("benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *
+                  <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={5} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
+                </label>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 p-3">
+                <SoftButton disabled={busy || savingSavedStory || improvingSavedStory} onClick={() => void (async () => {
+                  setImprovingSavedStory(true); setActionMessage("");
+                  try {
+                    const improved = await improveUserStory(activeSavedStory.id);
+                    onStorySaved(improved);
+                    setSavedStoryDrafts((previous) => { const next = { ...previous }; delete next[activeSavedStory.id]; return next; });
+                    setActionMessage("AI đã hoàn thiện User Story.");
+                  } catch (reason) { setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại User Story bằng AI."); }
+                  finally { setImprovingSavedStory(false); }
+                })()}>{improvingSavedStory ? "AI đang sinh..." : "Sinh / hoàn thiện bằng AI"}</SoftButton>
+                <PrimaryButton disabled={busy || savingSavedStory || improvingSavedStory || ![activeSavedDraft.role, activeSavedDraft.feature, activeSavedDraft.benefit, activeSavedDraft.acceptance_criteria].every((value) => value.trim())} onClick={() => void (async () => {
+                  setSavingSavedStory(true); setActionMessage("");
+                  try {
+                    const updated = await updateUserStory(activeSavedStory.id, {
+                      role: activeSavedDraft.role,
+                      feature: activeSavedDraft.feature,
+                      benefit: activeSavedDraft.benefit,
+                      acceptance_criteria: activeSavedDraft.acceptance_criteria,
+                    });
+                    onStorySaved(updated);
+                    setSavedStoryDrafts((previous) => { const next = { ...previous }; delete next[activeSavedStory.id]; return next; });
+                    setActionMessage("Đã lưu thay đổi User Story.");
+                  } catch (reason) { setActionMessage(reason instanceof Error ? reason.message : "Không thể lưu User Story."); }
+                  finally { setSavingSavedStory(false); }
+                })()}>{savingSavedStory ? "Đang lưu..." : "Lưu thay đổi"}</PrimaryButton>
+                {actionMessage && <p role="status" className="text-sm text-slate-600">{actionMessage}</p>}
+              </div>
+            </article>
+          ) : null}
         </div>
       ) : total === 0 ? (
         <Card title="Chưa có yêu cầu để rà soát">
