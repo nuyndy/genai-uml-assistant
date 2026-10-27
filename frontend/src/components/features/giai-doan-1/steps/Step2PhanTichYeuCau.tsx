@@ -1,5 +1,5 @@
 import { Card, SoftButton, EmptyState } from "../../../common/ui/primitives";
-import type { RequirementCoverageAnalysis, RequirementCoverageSuggestion, RequirementRecord } from "../../../common/services/requirementService";
+import type { RequirementCoverageAnalysis, RequirementRecord } from "../../../common/services/requirementService";
 import type { RawRequirement } from "../../../common/types/workflow";
 
 interface Props {
@@ -11,7 +11,6 @@ interface Props {
   addedCoverageSuggestions: number[];
   coverageAddedCount: number;
   selectedCoverageSuggestions: Record<number, boolean>;
-  selectedCoverageIndexes: number[];
   onCheckCoverage: () => void;
   onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
   busy: boolean;
@@ -54,7 +53,6 @@ export default function Step2PhanTichYeuCau({
   addedCoverageSuggestions,
   coverageAddedCount,
   selectedCoverageSuggestions,
-  selectedCoverageIndexes,
   onCheckCoverage,
   onToggleCoverageSuggestion,
   onAddSelectedCoverage,
