@@ -37,3 +37,6 @@ qwen2.5:3b`. Configure `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and
 `http://localhost:11434`, `qwen2.5:3b`, and 900 seconds.
 
 Run `005_functional_consolidation_checkpoint.sql` once to enable resumable functional-requirement consolidation. The API stores each completed batch separately and reuses those batches on retry while the project's User Stories remain unchanged. Existing official FRs are only replaced after all batches pass validation.
+
+
+Run `006_functional_consolidation_progress.sql` after migration 005 to add live status fields for the FR consolidation overlay. The frontend polls the status endpoint and displays the current batch, completed batches, and the current backend activity (for example, waiting for Ollama, validating traceability, or saving results).
