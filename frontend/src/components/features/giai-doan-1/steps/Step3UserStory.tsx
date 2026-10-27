@@ -16,7 +16,7 @@ interface Props {
   error: string;
   allStoryDraftsReady: boolean;
   allRequirementsConfirmed: boolean;
-  generateStoryDrafts: () => void;
+  generateStoryDrafts: (requirementId?: number) => void;
   changeStoryDraft: (requirementId: number, field: Exclude<keyof UserStoryDraft, "requirement_id">, value: string) => void;
   confirmAll: () => void;
   onStepChange: (step: number) => void;
@@ -102,9 +102,20 @@ export default function Step3UserStory({
         </Card>
       ) : (
         <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
-          <SoftButton disabled={busy || loadingStoryDrafts} onClick={() => void generateStoryDrafts()}>
-            {loadingStoryDrafts ? "Đang tạo bản nháp..." : "Yêu cầu AI hoàn thiện US"}
-          </SoftButton>
+          <div className="flex flex-wrap gap-2">
+            <SoftButton
+              disabled={busy || loadingStoryDrafts || !activeDraftRequirement}
+              onClick={() => activeDraftRequirement && void generateStoryDrafts(activeDraftRequirement.id)}
+            >
+              {loadingStoryDrafts ? "Đang hoàn thiện..." : "Hoàn thiện UC hiện tại"}
+            </SoftButton>
+            <PrimaryButton
+              disabled={busy || loadingStoryDrafts || total === 0}
+              onClick={() => void generateStoryDrafts()}
+            >
+              {loadingStoryDrafts ? "Đang hoàn thiện..." : "Hoàn thiện tất cả UC"}
+            </PrimaryButton>
+          </div>
         }>
           {loadingStoryDrafts ? (
             <div role="status" aria-live="polite" className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
