@@ -101,7 +101,7 @@ Quy tắc:
 - Mỗi FR phải có source_user_story_ids là danh sách ID US nguồn; chỉ dùng ID trong đầu vào. Một FR có thể truy về nhiều US, một US có thể liên quan nhiều FR.
 - Bao phủ tất cả US liên quan; không bịa quy tắc, số liệu, dữ liệu hay tích hợp. Thiếu căn cứ ghi "Cần xác nhận".
 - Mã FR tuần tự FR-001, FR-002,... không phụ thuộc ID US.
-- Trả về duy nhất JSON {{"items":[...]}} gồm các trường: function_code, function_name, description, actors, process, input_data, processing_rules, output_data, acceptance_criteria, business_rules, field_mapping, source_user_story_ids.
+- Trả về duy nhất JSON {{"items":[...]}} gồm các trường: function_code, function_name, description, actors, process, input_data, processing_rules, output_data, acceptance_criteria, business_rules, field_mapping, source_user_story_ids. Mỗi phần tử field_mapping có field_name, data_type, required (boolean), validation_rule.
 - Mỗi FR có ít nhất 2 bước process và 2 tiêu chí chấp nhận nếu đầu vào cho phép; danh sách không có căn cứ phải ghi rõ "Cần xác nhận".
 - Dùng tiếng Việt rõ ràng; không tạo trường đặc trưng Use Case như tiền/hậu điều kiện, luồng chính/thay thế/ngoại lệ.
 - Rà soát không trùng FR, mã tuần tự, truy vết US và JSON hợp lệ trước khi trả lời.
