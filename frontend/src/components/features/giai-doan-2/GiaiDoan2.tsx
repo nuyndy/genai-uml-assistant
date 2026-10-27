@@ -569,6 +569,11 @@ export default function GiaiDoan2({
                 result.results.map((item) => [
                   item.use_case_id,
                   {
+                    actor: item.actor,
+                    description: item.description,
+                    preconditions: item.preconditions,
+                    minimalGuarantees: item.minimal_guarantees,
+                    postconditions: item.postconditions,
                     mainFlow: item.main_flow,
                     altFlows: item.alt_flow,
                     exceptions: item.exception_flow,
