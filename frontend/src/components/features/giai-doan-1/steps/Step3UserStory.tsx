@@ -38,6 +38,8 @@ export default function Step3UserStory({
   changeStoryDraft,
   generateStoryDrafts,
   onStorySaved,
+  confirmAll,
+  allStoryDraftsReady,
   requirementTitle,
   wrapClass,
   inputClass,
@@ -168,6 +170,7 @@ export default function Step3UserStory({
             <SoftButton disabled={!activeDraftRequirement || busy || loadingStoryDrafts} onClick={() => { if (activeDraftRequirement) void generateStoryDrafts(activeDraftRequirement.id); }}>Hoàn thiện User Story này bằng AI</SoftButton>
             <PrimaryButton disabled={!activeDraftRequirement || !storyDrafts[activeDraftRequirement.id] || ![storyDrafts[activeDraftRequirement.id]?.role, storyDrafts[activeDraftRequirement.id]?.feature, storyDrafts[activeDraftRequirement.id]?.benefit, storyDrafts[activeDraftRequirement.id]?.acceptance_criteria].every((v) => Boolean(v?.trim())) || busy || saving} onClick={() => void (async () => { if (!activeDraftRequirement) return; setSaving(true); setActionMessage(""); try { const saved = await saveRequirementUserStory(activeDraftRequirement.id, storyDrafts[activeDraftRequirement.id]); onStorySaved(saved); setActionMessage("Đã lưu US-" + String(saved.id).padStart(3, "0") + "."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
             <PrimaryButton disabled={busy || loadingStoryDrafts || draftRequirements.length === 0} onClick={() => void generateStoryDrafts()}>Hoàn thiện tất cả User Story bằng AI</PrimaryButton>
+            <PrimaryButton disabled={!allStoryDraftsReady || busy || loadingStoryDrafts || saving} onClick={() => confirmAll()}>Duyệt tất cả User Story</PrimaryButton>
           </div>
               {(orderedDrafts[activeDraftIndex] ? [orderedDrafts[activeDraftIndex]] : []).map((item) => {
                 const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
