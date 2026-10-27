@@ -85,9 +85,25 @@ def _specification_data(db: Session, project_id: int) -> list[SpecificationRecor
         .order_by(Specification.type, Specification.id)
         .all()
     )
+    has_consolidated_fr = any(
+        item.project_id == project_id and item.type == "functional" and item.user_story_id is None
+        for item, _ in rows
+    )
     return [
-        _spec_record(item, feature or (json.loads(item.content).get("function_name", "Đặc tả phi chức năng") if item.type == "functional" else "Đặc tả phi chức năng"))
+        _spec_record(
+            item,
+            feature or (
+                json.loads(item.content).get("function_name", "Đặc tả phi chức năng")
+                if item.type == "functional"
+                else "Đặc tả phi chức năng"
+            ),
+        )
         for item, feature in rows
+        if not (
+            has_consolidated_fr
+            and item.type == "functional"
+            and item.user_story_id is not None
+        )
     ]
 
 
