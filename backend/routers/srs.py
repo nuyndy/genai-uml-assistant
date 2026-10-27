@@ -86,7 +86,7 @@ def _specification_data(db: Session, project_id: int) -> list[SpecificationRecor
         .all()
     )
     return [
-        _spec_record(item, feature or "Đặc tả phi chức năng")
+        _spec_record(item, feature or (json.loads(item.content).get("function_name", "Đặc tả phi chức năng") if item.type == "functional" else "Đặc tả phi chức năng"))
         for item, feature in rows
     ]
 
