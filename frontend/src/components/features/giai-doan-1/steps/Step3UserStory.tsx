@@ -164,7 +164,7 @@ export default function Step3UserStory({
           ) : (
             <div className="space-y-3">
               
-          <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/70 p-2">
+          <div className="flex flex-nowrap items-center gap-1 overflow-x-auto rounded-md border border-emerald-200 bg-emerald-50/70 p-1 [&_button]:!whitespace-nowrap [&_button]:!px-2 [&_button]:!py-1 [&_button]:!text-xs">
             <SoftButton disabled={activeDraftIndex === 0 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
             <SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton>
             <SoftButton disabled={!activeDraftRequirement || busy || loadingStoryDrafts} onClick={() => { if (activeDraftRequirement) void generateStoryDrafts(activeDraftRequirement.id); }}>Hoàn thiện User Story này bằng AI</SoftButton>
