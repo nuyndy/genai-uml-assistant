@@ -79,18 +79,27 @@ class UseCaseRecord(BaseModel):
 
 
 class UseCaseScenarioSuggestion(BaseModel):
+    # Sinh đủ thông tin đặc tả kịch bản, không chỉ ba luồng xử lý.
+    actor: list[str] = Field(min_length=1)
+    description: list[str] = Field(min_length=1)
+    preconditions: list[str] = Field(min_length=1)
+    minimal_guarantees: list[str] = Field(min_length=1)
+    postconditions: list[str] = Field(min_length=1)
     main_flow: list[str] = Field(min_length=1)
-    alt_flow: list[str]
-    exception_flow: list[str]
+    alt_flow: list[str] = Field(default_factory=list)
+    exception_flow: list[str] = Field(default_factory=list)
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    @field_validator("main_flow", "alt_flow", "exception_flow")
+    @field_validator(
+        "actor", "description", "preconditions", "minimal_guarantees",
+        "postconditions", "main_flow", "alt_flow", "exception_flow",
+    )
     @classmethod
     def validate_nonempty_lines(cls, values: list[str]) -> list[str]:
         cleaned = [value.strip() for value in values]
         if any(not value for value in cleaned):
-            raise ValueError("Các bước kịch bản không được để trống.")
+            raise ValueError("Các trường kịch bản không được chứa dòng trống.")
         return cleaned
 
 
