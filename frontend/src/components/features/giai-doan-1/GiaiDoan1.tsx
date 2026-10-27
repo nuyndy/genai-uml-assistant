@@ -448,6 +448,53 @@ export default function GiaiDoan1({
     }
   };
 
+  const addSelectedCoverageSuggestions = async () => {
+    if (!projectId || !coverageAnalysis || busy) return;
+    const indexes = selectedCoverageIndexes.filter(
+      (index) => coverageAnalysis.suggestions[index] && !addedCoverageSuggestions.includes(index),
+    );
+    if (indexes.length === 0) {
+      setError("Vui lòng chọn ít nhất một chức năng chưa được thêm.");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    try {
+      const payloads = indexes.map((index) => {
+        const suggestion = coverageAnalysis.suggestions[index];
+        return {
+          actor: suggestion.actor,
+          action: suggestion.action,
+          target_object: suggestion.target_object,
+          purpose: suggestion.purpose,
+          pre_conditions: suggestion.pre_conditions,
+          business_rules: suggestion.business_rules,
+        };
+      });
+      const created = await createProjectRequirementsBatch(projectId, payloads);
+      setRequirements((previous) => [...previous, ...created]);
+      setRequirementValues((previous) => ({
+        ...previous,
+        ...Object.fromEntries(created.map((item) => [item.id, parseRequirement(item.content)])),
+      }));
+      setAddedCoverageSuggestions((previous) => [
+        ...previous,
+        ...indexes.filter((index) => !previous.includes(index)),
+      ]);
+      setCoverageAddedCount((previous) => previous + created.length);
+      setSelectedCoverageSuggestions((previous) => {
+        const next = { ...previous };
+        indexes.forEach((index) => { next[index] = false; });
+        return next;
+      });
+    } catch (reason) {
+      setError(`Không thể thêm các chức năng được chọn: ${formatError(reason)}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const generateStoryDrafts = useCallback(async (requirementId?: number) => {
     if (!projectId) return;
     setLoadingStoryDrafts(true);
@@ -485,7 +532,11 @@ export default function GiaiDoan1({
     void generateStoryDrafts();
   }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step, storyDraftsEdited]);
 
-  const regenerateStoryDrafts = () => {
+  const regenerateStoryDrafts = (requirementId?: number) => {
+    if (requirementId !== undefined) {
+      void generateStoryDrafts(requirementId);
+      return;
+    }
     if (storyDraftsEdited && !window.confirm(
       "Tạo lại User Story sẽ thay thế các chỉnh sửa chưa xác nhận. Bạn có muốn tiếp tục?",
     )) return;
