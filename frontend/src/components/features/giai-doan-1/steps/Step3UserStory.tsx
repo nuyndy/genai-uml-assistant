@@ -96,26 +96,7 @@ export default function Step3UserStory({
                   <h3 className="mt-1 text-sm font-semibold text-slate-900">{activeSavedDraft.feature.trim() || "User Story chưa có tiêu đề"}</h3>
                   <div className="mt-1"><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
                 </div>
-
-              </div>
-              <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
-                Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
-              </div>
-              <div className="grid gap-3 p-4 sm:grid-cols-2">
-                <label className="block text-sm font-medium text-slate-700">Vai trò *
-                  <input value={activeSavedDraft.role} onChange={(event) => changeSavedDraft("role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} />
-                </label>
-                <label className="block text-sm font-medium text-slate-700">Chức năng *
-                  <textarea value={activeSavedDraft.feature} onChange={(event) => changeSavedDraft("feature", event.target.value)} rows={2} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
-                </label>
-                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *
-                  <textarea value={activeSavedDraft.benefit} onChange={(event) => changeSavedDraft("benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
-                </label>
-                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *
-                  <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={5} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
-                </label>
-              </div>
-              <div className="flex flex-nowrap items-center gap-1 overflow-x-auto border-t border-slate-100 bg-slate-50/50 p-1 [&_button]:!whitespace-nowrap [&_button]:!px-2 [&_button]:!py-1 [&_button]:!text-xs">
+                              <div className="flex flex-nowrap items-center gap-1 overflow-x-auto p-0 [&_button]:!whitespace-nowrap [&_button]:!px-2 [&_button]:!py-1 [&_button]:!text-xs">
                 <SoftButton disabled={activeDraftIndex <= 0 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
                 <SoftButton disabled={activeDraftIndex >= orderedSavedStories.length - 1 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1))}>Sau →</SoftButton>
                 <SoftButton disabled={busy || savingSavedStory || improvingSavedStory} onClick={() => void (async () => {
@@ -127,7 +108,7 @@ export default function Step3UserStory({
                     setActionMessage("AI đã hoàn thiện User Story.");
                   } catch (reason) { setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại User Story bằng AI."); }
                   finally { setImprovingSavedStory(false); }
-                })()}>{improvingSavedStory ? "AI đang sinh..." : "Sinh / hoàn thiện bằng AI"}</SoftButton>
+                })()}>{improvingSavedStory ? "AI đang sinh..." : "Sinh AI"}</SoftButton>
                 <PrimaryButton disabled={busy || savingSavedStory || improvingSavedStory || ![activeSavedDraft.role, activeSavedDraft.feature, activeSavedDraft.benefit, activeSavedDraft.acceptance_criteria].every((value) => value.trim())} onClick={() => void (async () => {
                   setSavingSavedStory(true); setActionMessage("");
                   try {
@@ -145,7 +126,25 @@ export default function Step3UserStory({
                 })()}>{savingSavedStory ? "Đang lưu..." : "Lưu thay đổi"}</PrimaryButton>
                 {actionMessage && <p role="status" className="text-sm text-slate-600">{actionMessage}</p>}
               </div>
-            </article>
+              <div className="hidden">
+              <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
+                Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
+              </div>
+              <div className="grid gap-3 p-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-slate-700">Vai trò *
+                  <input value={activeSavedDraft.role} onChange={(event) => changeSavedDraft("role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">Chức năng *
+                  <textarea value={activeSavedDraft.feature} onChange={(event) => changeSavedDraft("feature", event.target.value)} rows={2} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *
+                  <textarea value={activeSavedDraft.benefit} onChange={(event) => changeSavedDraft("benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                </label>
+                <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *
+                  <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={5} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
+                </label>
+              </div>
+           </article>
           ) : null}
         </div>
       ) : total === 0 ? (
