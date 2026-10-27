@@ -33,7 +33,6 @@ export default function Step3UserStory({
   storyDrafts,
   loadingStoryDrafts,
   busy,
-  allStoryDraftsReady,
   allRequirementsConfirmed,
   generateStoryDrafts,
   changeStoryDraft,
@@ -101,9 +100,9 @@ export default function Step3UserStory({
           <div className="mt-4 flex justify-start"></div>
         </Card>
       ) : (
-        <Card tone="emerald" title="Bản nháp User Story" subtitle="Chỉ dùng AI khi bạn chủ động yêu cầu. Nếu vừa bổ sung hoặc sửa yêu cầu ở Bước 2, hãy nhấn nút để AI tạo/hoàn thiện các trường User Story theo danh sách yêu cầu hiện tại." actions={
+        <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
           <SoftButton disabled={busy || loadingStoryDrafts} onClick={() => void generateStoryDrafts()}>
-            {loadingStoryDrafts ? "AI đang hoàn thiện các trường..." : "AI hoàn thiện các trường"}
+            {loadingStoryDrafts ? "Đang tạo bản nháp..." : "Yêu cầu AI hoàn thiện US"}
           </SoftButton>
         }>
           {loadingStoryDrafts ? (
