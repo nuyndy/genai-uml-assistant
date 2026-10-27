@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, PrimaryButton, EmptyState, SoftButton, StatusBadge, wrapClass as defaultWrapClass } from "../../../common/ui/primitives";
 import type { RawRequirement } from "../../../common/types/workflow";
-import { improveUserStory, saveRequirementUserStory, updateUserStory, type UserStory, type UserStoryDraft } from "../../../common/services/requirementService";
+import { saveRequirementUserStory, updateUserStory, type UserStory, type UserStoryDraft } from "../../../common/services/requirementService";
 
 interface Props {
   projectId?: number;
@@ -45,7 +45,6 @@ export default function Step3UserStory({
   const [activeSavedIndex, setActiveSavedIndex] = useState(0);
   const [savedEdits, setSavedEdits] = useState<Record<number, UserStory>>({});
   const [saving, setSaving] = useState(false);
-  const [improving, setImproving] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
   const orderedDrafts = [...draftRequirements].reverse();
   const activeDraftRequirement = orderedDrafts[activeDraftIndex];
@@ -75,7 +74,7 @@ export default function Step3UserStory({
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 <StatusBadge tone="neutral">{activeSavedIndex + 1}/{orderedSavedStories.length}</StatusBadge>
                 <StatusBadge tone={activeSavedStoryDirty ? "warn" : "success"}>{activeSavedStoryDirty ? "Chưa lưu thay đổi" : "Đã lưu"}</StatusBadge>
-                <SoftButton disabled={busy || improving} onClick={() => void (async () => { setImproving(true); setActionMessage(""); try { const result = await improveUserStory(activeSavedStory.id); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("AI đã hoàn thiện và lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "AI chưa thể hoàn thiện User Story."); } finally { setImproving(false); } })()}>{improving ? "AI đang hoàn thiện..." : "Tạo lại bản nháp bằng AI"}</SoftButton>
+                
               </div>
             </div>
             <div className="grid gap-3 p-4 sm:grid-cols-2">
@@ -87,7 +86,7 @@ export default function Step3UserStory({
             <div className="flex flex-col gap-2 bg-emerald-100/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
               <SoftButton disabled={activeSavedIndex === 0 || saving} onClick={() => { setActiveSavedIndex((i) => Math.max(0, i - 1)); setActionMessage(""); }}>← Trước</SoftButton>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <PrimaryButton disabled={saving || improving} onClick={() => void (async () => { setSaving(true); setActionMessage(""); try { const result = await updateUserStory(activeSavedStory.id, { role: activeSavedStory.role, feature: activeSavedStory.feature, benefit: activeSavedStory.benefit, acceptance_criteria: activeSavedStory.acceptance_criteria }); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("Đã lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
+                <PrimaryButton disabled={saving} onClick={() => void (async () => { setSaving(true); setActionMessage(""); try { const result = await updateUserStory(activeSavedStory.id, { role: activeSavedStory.role, feature: activeSavedStory.feature, benefit: activeSavedStory.benefit, acceptance_criteria: activeSavedStory.acceptance_criteria }); setSavedEdits((prev) => ({ ...prev, [result.id]: result })); setActionMessage("Đã lưu User Story."); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
                 <SoftButton disabled={activeSavedIndex >= orderedSavedStories.length - 1 || saving} onClick={() => { setActiveSavedIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1)); setActionMessage(""); }}>Sau →</SoftButton>
               </div>
             </div>
