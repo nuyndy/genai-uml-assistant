@@ -31,7 +31,7 @@ def strip_code_fence(text: str) -> str:
 
 def _parse_timeout() -> int:
     try:
-        timeout = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "300"))
+        timeout = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "600"))
     except ValueError as exc:
         raise AIServiceError("OLLAMA_TIMEOUT_SECONDS phải là số giây nguyên.") from exc
     if timeout <= 0:
