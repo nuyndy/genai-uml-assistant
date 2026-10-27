@@ -135,7 +135,7 @@ export default function Step3UserStory({
                       </div>
                     </div>
                     {!story ? (
-                      <div className="p-4 sm:p-5"><p className="text-sm text-amber-800">Chưa có bản nháp cho yêu cầu này. Hãy tạo lại bản nháp bằng AI.</p></div>
+                      <div className="p-4 sm:p-5"><p className="text-sm text-amber-800">Chưa có bản nháp cho yêu cầu này. Chọn “Hoàn thiện UC này bằng AI” để tạo bản nháp riêng, hoặc “Hoàn thiện tất cả UC bằng AI” để bổ sung các bản nháp còn thiếu.</p></div>
                     ) : (
                       <div className="grid gap-3 p-4 sm:grid-cols-2">
                         <label className="block text-sm font-medium text-slate-700">Vai trò <span className="text-rose-600">*</span>
