@@ -14,7 +14,6 @@ interface Props {
   selectedCoverageIndexes: number[];
   onCheckCoverage: () => void;
   onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
-  onAddSelectedCoverage: () => void;
   busy: boolean;
   loaded: boolean;
   error: string;
@@ -104,8 +103,7 @@ export default function Step2PhanTichYeuCau({
                   </label>;
                 })}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-slate-500">Đã chọn {selectedCoverageIndexes.length} chức năng để thêm. Gợi ý chưa chọn sẽ không được lưu.</p>
-                  <SoftButton disabled={busy || selectedCoverageIndexes.length === 0} onClick={onAddSelectedCoverage}>Thêm chức năng đã chọn</SoftButton>
+                  <p className="text-xs text-slate-500">Tích chọn một gợi ý để tự động thêm ngay vào danh sách yêu cầu.</p>
                 </div>
               </div>
             )}
