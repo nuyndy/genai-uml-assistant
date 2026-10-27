@@ -959,6 +959,7 @@ export default function GiaiDoan1({
       allStoryDraftsReady={allStoryDraftsReady}
       allRequirementsConfirmed={allRequirementsConfirmed}
       changeStoryDraft={changeStoryDraft}
+      generateStoryDrafts={generateStoryDrafts}
       confirmAll={confirmAll}
       onStepChange={onStepChange}
       requirementTitle={requirementTitle}
