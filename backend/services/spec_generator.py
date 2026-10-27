@@ -79,7 +79,7 @@ QUY TẮC BẮT BUỘC:
 
 
 def build_consolidated_functional_specs_prompt(user_stories: list[UserStoryPrompt]) -> str:
-    """Sinh prompt gọn cho bước tổng hợp US thành FR, giữ nguyên yêu cầu nghiệp vụ và truy vết."""
+    """Prompt gọn để tổng hợp User Story thành FR có truy vết."""
     stories = [
         {
             "id": story.id,
@@ -91,21 +91,15 @@ def build_consolidated_functional_specs_prompt(user_stories: list[UserStoryPromp
         for story in user_stories
     ]
     context = json.dumps(stories, ensure_ascii=False, separators=(",", ":"))
-    return f"""Vai trò: Chuyên gia phân tích yêu cầu phần mềm.
-Nhiệm vụ: Tổng hợp các User Story đầu vào thành danh sách FR nghiệp vụ độc lập, rõ ràng, kiểm thử được và không trùng lặp.
+    return f"""Bạn là chuyên gia phân tích yêu cầu phần mềm. Tổng hợp các User Story dưới đây thành danh sách FR nghiệp vụ độc lập, cụ thể, kiểm thử được và không trùng lặp.
+US: {context}
 
-User Story (JSON):
-{context}
-
-Quy tắc nghiệp vụ:
-- Đọc và đối chiếu tất cả US trong đầu vào trước khi quyết định gộp/tách; không máy móc tạo một FR cho mỗi US.
-- Gộp các US cùng mục tiêu nghiệp vụ; tách các hành vi độc lập. Bao phủ mọi US liên quan.
-- Mỗi FR phải có source_user_story_ids chứa ID hợp lệ từ đầu vào; một FR có thể liên kết nhiều US và một US có thể liên kết nhiều FR.
-- Không bịa nghiệp vụ, số liệu, dữ liệu, tích hợp hoặc quy định. Thiếu căn cứ thì ghi "Cần xác nhận".
-- Mã FR tuần tự FR-001, FR-002,...; dùng tiếng Việt rõ ràng.
-- Mỗi FR gồm: function_code, function_name, description, actors, process, input_data, processing_rules, output_data, acceptance_criteria, business_rules, field_mapping, source_user_story_ids.
-- field_mapping là danh sách object gồm field_name, data_type, required (boolean), validation_rule.
-- Nếu đầu vào đủ căn cứ, mỗi FR có ít nhất 2 bước process và 2 tiêu chí chấp nhận kiểm thử được.
-- Không thêm các trường của Use Case như tiền/hậu điều kiện hoặc luồng chính/thay thế/ngoại lệ.
-- Chỉ tạo FR có căn cứ từ US; với thông tin thiếu, nêu rõ "Cần xác nhận" trong trường liên quan.
+Quy tắc:
+- Đối chiếu tất cả US trước khi gộp/tách; không mặc định mỗi US là một FR. Gộp cùng mục tiêu nghiệp vụ, tách hành vi độc lập.
+- Bao phủ mọi US liên quan. source_user_story_ids chỉ chứa ID có trong đầu vào; một FR có thể liên kết nhiều US và ngược lại.
+- Mã FR tuần tự FR-001, FR-002,...; viết tiếng Việt rõ ràng.
+- Mỗi FR có các trường: function_code, function_name, description, actors, process, input_data, processing_rules, output_data, acceptance_criteria, business_rules, field_mapping, source_user_story_ids. field_mapping gồm field_name, data_type, required (boolean), validation_rule.
+- Khi đủ căn cứ, có ít nhất 2 bước process và 2 tiêu chí chấp nhận kiểm thử được.
+- Không bịa nghiệp vụ, số liệu, dữ liệu hoặc tích hợp; thiếu thông tin ghi "Cần xác nhận".
+- Không thêm trường đặc trưng Use Case (tiền/hậu điều kiện, luồng chính/thay thế/ngoại lệ).
 """
