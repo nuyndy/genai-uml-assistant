@@ -197,9 +197,10 @@ def consolidate_project_functional_specifications(
         logger.exception("Could not load user stories for functional consolidation")
         raise HTTPException(status_code=500, detail="Không thể đọc User Story của dự án.") from exc
 
-    # Giữ prompt ngắn để model cục bộ xử lý nhanh hơn; mỗi lượt tối đa 5 US.
-    # Tổng hợp từng nhóm rồi ghép kết quả, không cần sinh lại User Story.
-    batch_size = 5
+    # Qwen2.5:3B chạy cục bộ khá chậm; nhóm 5 US có thể vượt timeout 300 giây.
+    # Giảm kích thước nhóm để prompt ngắn hơn và hạn chế timeout.
+    # Lưu ý: tổng hợp theo nhóm không thể so sánh trùng lặp giữa các nhóm.
+    batch_size = 2
     generated_items: list[FunctionalSpecification] = []
     try:
         for start in range(0, len(stories), batch_size):
