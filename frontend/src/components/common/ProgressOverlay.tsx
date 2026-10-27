@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 interface ProgressOverlayProps {
   label: string;
+  details?: string;
 }
 
 function formatElapsed(totalSeconds: number): string {
@@ -18,7 +19,7 @@ function formatElapsed(totalSeconds: number): string {
   return `${seconds} giây`;
 }
 
-export default function ProgressOverlay({ label }: ProgressOverlayProps) {
+export default function ProgressOverlay({ label, details }: ProgressOverlayProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -42,7 +43,12 @@ export default function ProgressOverlay({ label }: ProgressOverlayProps) {
       aria-label={label}
     >
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <p className="mb-4 text-center text-sm font-semibold text-slate-800">{label}</p>
+        <p className="mb-3 text-center text-sm font-semibold text-slate-800">{label}</p>
+        {details && (
+          <p className="mb-4 text-center text-sm leading-6 text-slate-600" role="status" aria-live="polite">
+            {details}
+          </p>
+        )}
         <div
           className="h-2 overflow-hidden rounded-full bg-violet-100"
           role="progressbar"
