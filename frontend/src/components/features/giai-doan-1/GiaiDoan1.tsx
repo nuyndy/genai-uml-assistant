@@ -196,7 +196,6 @@ export default function GiaiDoan1({
   const [srsSpecDrafts, setSrsSpecDrafts] = useState<
     Record<number, FunctionalSpecification | NonFunctionalSpecification>
   >({});
-  const storyPreviewKey = useRef("");
   const autoGenerationAttempts = useRef(new Set<string>());
   const generationInFlight = useRef(new Set<string>());
 
@@ -205,7 +204,6 @@ export default function GiaiDoan1({
     () => requirements.filter((item) => item.status === "draft"),
     [requirements],
   );
-  const draftIdsKey = draftRequirements.map((item) => item.id).join(",");
   const allStoryDraftsReady =
     draftRequirements.length > 0 &&
     draftRequirements.every((item) => {
@@ -478,15 +476,8 @@ export default function GiaiDoan1({
     }
   }, [projectId]);
 
-  useEffect(() => {
-    if (step !== 3 || !loaded || !projectId || !draftIdsKey) return;
-    const key = `${projectId}:${draftIdsKey}`;
-    if (storyPreviewKey.current === key) return;
-    // Không tự ghi đè bản nháp đã chỉnh sửa khi danh sách yêu cầu thay đổi.
-    if (storyDraftsEdited) return;
-    storyPreviewKey.current = key;
-    void generateStoryDrafts();
-  }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step, storyDraftsEdited]);
+  // Không tự gọi AI khi vào Bước 3 hoặc khi danh sách yêu cầu thay đổi.
+  // Người dùng chủ động bấm nút hoàn thiện để AI xử lý các yêu cầu hiện tại.
 
   const regenerateStoryDrafts = () => {
     if (storyDraftsEdited && !window.confirm(
