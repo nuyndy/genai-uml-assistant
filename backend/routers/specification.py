@@ -632,7 +632,7 @@ def list_project_specifications(
         SpecificationRecord(
             id=specification.id,
             user_story_id=specification.user_story_id,
-            feature=feature or "Đặc tả phi chức năng",
+            feature=feature or (json.loads(specification.content).get("function_name", "Đặc tả phi chức năng") if specification.type == "functional" else "Đặc tả phi chức năng"),
             type=specification.type,
             content=specification.content,
             version=specification.version,
