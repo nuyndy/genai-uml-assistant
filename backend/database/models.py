@@ -91,14 +91,6 @@ class Specification(Base):
             sqlite_where=user_story_id.is_not(None),
             postgresql_where=user_story_id.is_not(None),
         ),
-        Index(
-            "uq_specification_project_type",
-            "project_id",
-            "type",
-            unique=True,
-            sqlite_where=project_id.is_not(None),
-            postgresql_where=project_id.is_not(None),
-        ),
     )
 
 
