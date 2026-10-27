@@ -1670,6 +1670,11 @@ def generate_use_case_scenario(
     if specification is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả liên quan.")
     result = _generate_scenario_for(use_case, specification)
+    use_case.actor = "\\n".join(result.actor)
+    use_case.description = "\\n".join(result.description)
+    use_case.preconditions = "\\n".join(result.preconditions)
+    use_case.minimal_guarantees = "\\n".join(result.minimal_guarantees)
+    use_case.postconditions = "\\n".join(result.postconditions)
     use_case.main_flow = _encode_lines(result.main_flow)
     use_case.alt_flow = _encode_lines(result.alt_flow)
     use_case.exception_flow = _encode_lines(result.exception_flow)
@@ -1726,8 +1731,10 @@ def generate_project_use_case_scenarios_batch(
         "tên use case và đặc tả tương ứng. Mỗi main_flow có ít nhất một bước. "
         "Không bịa dữ kiện; ghi rõ điểm cần xác nhận nếu thông tin chưa đủ. "
         "Trả JSON theo schema: {\"results\":[{\"use_case_id\":1,"
-        "\"main_flow\":[\"...\"],\"alt_flow\":[\"...\"],"
-        "\"exception_flow\":[\"...\"]}]}. "
+        "\"actor\":[\"...\"],\"description\":[\"...\"],"
+        "\"preconditions\":[\"...\"],\"minimal_guarantees\":[\"...\"],"
+        "\"postconditions\":[\"...\"],\"main_flow\":[\"...\"],"
+        "\"alt_flow\":[],\"exception_flow\":[]}]}. "
         f"Phải trả ĐÚNG {len(valid_ids)} kết quả, mỗi kết quả ứng với một "
         "USE_CASE_ID sau và dùng nguyên giá trị số đó làm use_case_id: "
         f"{', '.join(str(use_case_id) for use_case_id in valid_ids)}.\n\n"
@@ -1750,6 +1757,11 @@ def generate_project_use_case_scenarios_batch(
                 use_case_id=item.use_case_id,
                 name=matched.name,
                 specification_id=matched.specification_id,
+                actor=item.actor,
+                description=item.description,
+                preconditions=item.preconditions,
+                minimal_guarantees=item.minimal_guarantees,
+                postconditions=item.postconditions,
                 main_flow=item.main_flow,
                 alt_flow=item.alt_flow,
                 exception_flow=item.exception_flow,
@@ -1768,6 +1780,11 @@ def generate_project_use_case_scenarios_batch(
             use_case_id=use_case_id,
             name=use_case.name,
             specification_id=use_case.specification_id,
+            actor=fallback.actor,
+            description=fallback.description,
+            preconditions=fallback.preconditions,
+            minimal_guarantees=fallback.minimal_guarantees,
+            postconditions=fallback.postconditions,
             main_flow=fallback.main_flow,
             alt_flow=fallback.alt_flow,
             exception_flow=fallback.exception_flow,
@@ -1778,6 +1795,11 @@ def generate_project_use_case_scenarios_batch(
     try:
         for item in ordered_results:
             use_case = by_id[item.use_case_id]
+            use_case.actor = "\\n".join(item.actor)
+            use_case.description = "\\n".join(item.description)
+            use_case.preconditions = "\\n".join(item.preconditions)
+            use_case.minimal_guarantees = "\\n".join(item.minimal_guarantees)
+            use_case.postconditions = "\\n".join(item.postconditions)
             use_case.main_flow = _encode_lines(item.main_flow)
             use_case.alt_flow = _encode_lines(item.alt_flow)
             use_case.exception_flow = _encode_lines(item.exception_flow)
