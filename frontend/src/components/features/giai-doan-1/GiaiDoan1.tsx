@@ -448,19 +448,27 @@ export default function GiaiDoan1({
     }
   };
 
-  const generateStoryDrafts = useCallback(async () => {
+  const generateStoryDrafts = useCallback(async (requirementId?: number) => {
     if (!projectId) return;
     setLoadingStoryDrafts(true);
-    setAiTaskLabel("Đang tạo bản nháp User Story...");
+    setAiTaskLabel(requirementId ? "Đang hoàn thiện User Story hiện tại..." : "Đang hoàn thiện tất cả User Story...");
     setError("");
     try {
       const result = await previewProjectUserStories(projectId);
-      setStoryDrafts(
-        Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
-      );
-      setStoryDraftsEdited(false);
+      if (requirementId !== undefined) {
+        const currentDraft = result.results.find((story) => story.requirement_id === requirementId);
+        if (!currentDraft) {
+          throw new Error("Không tìm thấy bản nháp cho yêu cầu đang mở.");
+        }
+        setStoryDrafts((previous) => ({ ...previous, [requirementId]: currentDraft }));
+      } else {
+        setStoryDrafts(
+          Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
+        );
+        setStoryDraftsEdited(false);
+      }
     } catch (reason) {
-      setError(`Không thể tạo bản nháp user story: ${formatError(reason)}`);
+      setError(`Không thể hoàn thiện User Story: ${formatError(reason)}`);
     } finally {
       setLoadingStoryDrafts(false);
       setAiTaskLabel("");
