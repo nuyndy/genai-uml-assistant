@@ -509,9 +509,14 @@ export default function GiaiDoan1({
         }
         setStoryDrafts((previous) => ({ ...previous, [requirementId]: currentDraft }));
       } else {
-        setStoryDrafts(
-          Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
-        );
+        // Chỉ tạo bản nháp cho các yêu cầu chưa có User Story; giữ nguyên bản đã tạo/chỉnh sửa.
+        setStoryDrafts((previous) => {
+          const next = { ...previous };
+          result.results.forEach((story) => {
+            if (!next[story.requirement_id]) next[story.requirement_id] = story;
+          });
+          return next;
+        });
         setStoryDraftsEdited(false);
       }
     } catch (reason) {
@@ -523,14 +528,17 @@ export default function GiaiDoan1({
   }, [projectId]);
 
   useEffect(() => {
-    if (step !== 3 || !loaded || !projectId || !draftIdsKey) return;
-    const key = `${projectId}:${draftIdsKey}`;
+    if (step !== 3 || !loaded || !projectId || !draftIdsKey || storyDraftsEdited) return;
+    const missingIds = draftRequirements
+      .filter((item) => !storyDrafts[item.id])
+      .map((item) => item.id);
+    if (missingIds.length === 0) return;
+    const key = `${projectId}:${missingIds.join(",")}`;
     if (storyPreviewKey.current === key) return;
-    // Không tự ghi đè bản nháp đã chỉnh sửa khi danh sách yêu cầu thay đổi.
-    if (storyDraftsEdited) return;
     storyPreviewKey.current = key;
+    // Sinh tự động một lần cho các UC chưa có bản nháp; không tạo lại các US đã có.
     void generateStoryDrafts();
-  }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step, storyDraftsEdited]);
+  }, [draftIdsKey, draftRequirements, generateStoryDrafts, loaded, projectId, step, storyDrafts, storyDraftsEdited]);
 
   const regenerateStoryDrafts = (requirementId?: number) => {
     if (requirementId !== undefined) {
