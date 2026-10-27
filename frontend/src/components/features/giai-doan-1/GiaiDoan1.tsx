@@ -850,7 +850,6 @@ export default function GiaiDoan1({
       loadingCoverage={loadingCoverage}
       addedCoverageSuggestions={addedCoverageSuggestions}
       selectedCoverageSuggestions={selectedCoverageSuggestions}
-      selectedCoverageIndexes={selectedCoverageIndexes}
       onCheckCoverage={checkRequirementCoverage}
       onToggleCoverageSuggestion={(index, selected) => {
         if (selected) {
