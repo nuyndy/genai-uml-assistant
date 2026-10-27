@@ -623,13 +623,13 @@ export default function GiaiDoan1({
     story: UserStory,
     regenerate = false,
     skipRegenerationConfirmation = false,
-  ) => {
-    if (!projectId) return;
+  ): Promise<boolean> => {
+    if (!projectId) return false;
     const requestKey = `${projectId}:functional:${story.id}`;
-    if (generationInFlight.current.has(requestKey)) return;
+    if (generationInFlight.current.has(requestKey)) return false;
     if (regenerate && !skipRegenerationConfirmation && !window.confirm(
       "AI sẽ thay thế toàn bộ nội dung đặc tả hiện tại, kể cả các chỉnh sửa chưa lưu. Bạn có muốn tiếp tục?",
-    )) return;
+    )) return false;
     generationInFlight.current.add(requestKey);
     setGeneratingStories((previous) => ({ ...previous, [story.id]: true }));
     setBusy(true);
@@ -655,8 +655,10 @@ export default function GiaiDoan1({
         return next;
       });
       await refreshSrsDocument();
+      return true;
     } catch (reason) {
       setError(`Không thể sinh đặc tả chức năng: ${formatError(reason)}`);
+      return false;
     } finally {
       generationInFlight.current.delete(requestKey);
       setGeneratingStories((previous) => ({ ...previous, [story.id]: false }));
@@ -722,13 +724,13 @@ export default function GiaiDoan1({
   const createNonFunctionalSpecification = useCallback(async (
     regenerate = false,
     skipRegenerationConfirmation = false,
-  ) => {
-    if (!projectId) return;
+  ): Promise<boolean> => {
+    if (!projectId) return false;
     const requestKey = `${projectId}:non_functional`;
-    if (generationInFlight.current.has(requestKey)) return;
+    if (generationInFlight.current.has(requestKey)) return false;
     if (regenerate && !skipRegenerationConfirmation && !window.confirm(
       "AI sẽ thay thế toàn bộ nội dung đặc tả hiện tại, kể cả các chỉnh sửa chưa lưu. Bạn có muốn tiếp tục?",
-    )) return;
+    )) return false;
     generationInFlight.current.add(requestKey);
     setGeneratingNonFunctional(true);
     setBusy(true);
@@ -743,8 +745,10 @@ export default function GiaiDoan1({
         return next;
       });
       await refreshSrsDocument();
+      return true;
     } catch (reason) {
       setError(`Không thể sinh đặc tả phi chức năng: ${formatError(reason)}`);
+      return false;
     } finally {
       generationInFlight.current.delete(requestKey);
       setGeneratingNonFunctional(false);
