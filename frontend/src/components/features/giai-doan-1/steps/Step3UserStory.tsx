@@ -68,7 +68,7 @@ export default function Step3UserStory({
               <EmptyState title="Không tìm thấy User Story" hint="Kiểm tra lại dữ liệu User Story đã lưu của dự án." />
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
               {[...savedStories].sort((a, b) => a.id - b.id).map((story, index) => {
                 const rawValue = requirementValues[story.requirement_id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
                 const criteria = (story.acceptance_criteria ?? "").split(/\\n|\n/).filter((item) => item.trim());
