@@ -34,6 +34,6 @@ Functional and non-functional specification generation uses the local Ollama
 service. Start Ollama and install the selected model with `ollama pull
 qwen2.5:3b`. Configure `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and
 `OLLAMA_TIMEOUT_SECONDS` as needed; defaults are
-`http://localhost:11434`, `qwen2.5:3b`, and 300 seconds.
+`http://localhost:11434`, `qwen2.5:3b`, and 900 seconds.
 
 Run `005_functional_consolidation_checkpoint.sql` once to enable resumable functional-requirement consolidation. The API stores each completed batch separately and reuses those batches on retry while the project's User Stories remain unchanged. Existing official FRs are only replaced after all batches pass validation.
