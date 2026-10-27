@@ -196,16 +196,6 @@ export default function Step4DacTa({
               )) : <p className="px-2 py-3 text-xs text-slate-500">Chưa có FR.</p>}
             </div>
           )}
-          {kind === "functional" && stories.length > 0 && functionalItems.length === 0 && (
-            <div className="mb-3">
-              <PrimaryButton
-                disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
-                onClick={() => void generateFunctionalSpecification(stories[0])}
-              >
-                Tạo đặc tả chức năng từ User Story
-              </PrimaryButton>
-            </div>
-          )}
           <button type="button" onClick={() => chooseKind("non_functional")} aria-pressed={kind === "non_functional"}
             className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "non_functional" ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
@@ -229,6 +219,18 @@ export default function Step4DacTa({
                 {regeneratingAll ? <><span className="animate-spin">⟳</span> Đang sinh lại...</> : "Sinh lại toàn bộ"}
               </button>
               <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Sinh lại tất cả FR và NFR bằng AI.</p>
+            </div>
+          )}
+          {kind === "functional" && stories.length > 0 && functionalItems.length === 0 && (
+            <div className="mt-auto pt-3">
+              <button
+                type="button"
+                disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
+                onClick={() => void generateFunctionalSpecification(stories[0])}
+                className="flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-[#2F7D32] px-2 py-3 text-center text-sm font-semibold leading-5 text-white shadow-sm transition hover:bg-[#43A047] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span className="whitespace-normal break-words">Tạo đặc tả chức năng từ User Story</span>
+              </button>
             </div>
           )}
         </aside>
