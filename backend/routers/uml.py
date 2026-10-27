@@ -67,9 +67,20 @@ logger = logging.getLogger(__name__)
 
 
 def _require_approved_specifications(db: Session, project_id: int) -> None:
-    """Chặn bắt đầu/chỉnh sửa mô hình UML nếu FR/NFR chưa được duyệt."""
+    """Chỉ kiểm tra bộ đặc tả đang có hiệu lực của dự án.
+
+    Khi đã có FR tổng hợp cấp dự án (user_story_id=None), các FR cũ gắn
+    riêng từng User Story là dữ liệu legacy và không được dùng để chặn UML.
+    NFR vẫn được kiểm tra theo trạng thái duyệt như bình thường.
+    """
     rows = (
-        db.query(Specification.id, Specification.type, SpecificationApproval.status)
+        db.query(
+            Specification.id,
+            Specification.type,
+            Specification.user_story_id,
+            Specification.project_id,
+            SpecificationApproval.status,
+        )
         .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
         .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
         .outerjoin(
@@ -87,11 +98,27 @@ def _require_approved_specifications(db: Session, project_id: int) -> None:
             status_code=409,
             detail="Chưa có đặc tả FR/NFR cho dự án; chưa thể bắt đầu mô hình hóa UML.",
         )
+
+    has_consolidated_functional = any(
+        row.type == "functional"
+        and row.user_story_id is None
+        and row.project_id == project_id
+        for row in rows
+    )
+    active_rows = [
+        row for row in rows
+        if not (
+            has_consolidated_functional
+            and row.type == "functional"
+            and row.user_story_id is not None
+        )
+    ]
+
     missing_types = sorted(
-        {"functional", "non_functional"} - {row.type for row in rows}
+        {"functional", "non_functional"} - {row.type for row in active_rows}
     )
     pending_ids = sorted(
-        row.id for row in rows if row.status != "approved"
+        row.id for row in active_rows if row.status != "approved"
     )
     if missing_types or pending_ids:
         raise HTTPException(
