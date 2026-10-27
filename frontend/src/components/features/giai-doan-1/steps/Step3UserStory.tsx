@@ -74,18 +74,18 @@ export default function Step3UserStory({
                 const criteria = (story.acceptance_criteria ?? "").split(/\\n|\n/).filter((item) => item.trim());
                 return (
                   <article key={story.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
+                    <div className="flex items-start gap-2 border-b border-slate-100 bg-slate-50/60 px-3 py-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-[11px] font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">US-{String(story.id).padStart(3, "0")} · REQ-{String(story.requirement_id).padStart(3, "0")}</p>
                         <h3 className={`mt-1 break-words text-sm font-semibold leading-5 text-slate-900 ${textWrap}`}>{story.feature?.trim() || "User Story chưa có tiêu đề"}</h3>
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
                           <StatusBadge tone="success">Đã xác nhận</StatusBadge>
                         </div>
-                        <p className={`mt-2 text-xs leading-4 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {requirementTitle(rawValue)} — {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
+                        <p className={`mt-1 text-xs leading-4 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {requirementTitle(rawValue)} — {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
                       </div>
                     </div>
-                    <div className="grid gap-3 p-4 sm:grid-cols-2">
+                    <div className="grid gap-2 p-3 sm:grid-cols-2">
                       <div>
                         <p className="text-xs font-semibold text-slate-500">VAI TRÒ</p>
                         <p className={`mt-1 whitespace-pre-wrap break-words text-sm text-slate-800 ${textWrap}`}>{story.role || "—"}</p>
