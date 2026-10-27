@@ -27,13 +27,10 @@ interface Props {
 
 export default function Step3UserStory({
   draftRequirements,
-  confirmedRequirementsCount,
-  savedStories,
   requirementValues,
   storyDrafts,
   loadingStoryDrafts,
   busy,
-  allStoryDraftsReady,
   allRequirementsConfirmed,
   changeStoryDraft,
   generateStoryDrafts,
@@ -47,11 +44,6 @@ export default function Step3UserStory({
   const orderedDrafts = [...draftRequirements].reverse();
   const activeDraftRequirement = orderedDrafts[activeDraftIndex];
   const total = draftRequirements.length;
-  const generatedCount = draftRequirements.filter((item) => Boolean(storyDrafts[item.id])).length;
-  const readyCount = draftRequirements.filter((item) => {
-    const story = storyDrafts[item.id];
-    return Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
-  }).length;
   const textWrap = wrapClass || defaultWrapClass;
 
   return (
