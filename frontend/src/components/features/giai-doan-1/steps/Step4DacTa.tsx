@@ -224,7 +224,23 @@ export default function Step4DacTa({
         <section className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-2xl">
           {kind === "functional" ? (
             !activeStory ? (
-              <Card title="Danh sách FR"><EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." /></Card>
+              stories.length === 0 ? (
+                <Card title="Danh sách FR">
+                  <EmptyState title="Chưa có User Story" hint="Hãy hoàn tất Bước 3 để tạo các đặc tả chức năng." />
+                </Card>
+              ) : (
+                <Card title="Danh sách FR">
+                  <EmptyState title="Chưa có đặc tả chức năng" hint={`Đã có ${stories.length} User Story nhưng chưa có FR được tổng hợp. Bạn có thể tạo đặc tả chức năng từ các User Story hiện có ngay tại đây.`} />
+                  <div className="mt-4">
+                    <PrimaryButton
+                      disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
+                      onClick={() => void generateFunctionalSpecification(stories[0])}
+                    >
+                      Tạo đặc tả chức năng từ User Story
+                    </PrimaryButton>
+                  </div>
+                </Card>
+              )
             ) : (
               <article className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-3 py-2">
