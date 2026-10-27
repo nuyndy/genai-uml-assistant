@@ -93,10 +93,9 @@ export default function Step3UserStory({
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">US-{String(activeSavedStory.id).padStart(3, "0")} · REQ-{String(activeSavedStory.requirement_id ?? 0).padStart(3, "0")}</p>
-                  <h3 className="mt-1 text-sm font-semibold text-slate-900">{activeSavedDraft.feature.trim() || "User Story chưa có tiêu đề"}</h3>
-                  <div className="mt-1"><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
+                  <div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-semibold text-slate-900">{activeSavedDraft.feature.trim() || "User Story chưa có tiêu đề"}</h3><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
                 </div>
-                              <div className="flex flex-nowrap items-center gap-1 overflow-x-auto p-0 [&_button]:!whitespace-nowrap [&_button]:!px-2 [&_button]:!py-1 [&_button]:!text-xs">
+                              <div className="flex flex-nowrap items-center gap-1 overflow-x-auto p-0 [&_button]:!whitespace-nowrap [&_button]:!px-1.5 [&_button]:!py-0.5 [&_button]:!text-xs">
                 <SoftButton disabled={activeDraftIndex <= 0 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
                 <SoftButton disabled={activeDraftIndex >= orderedSavedStories.length - 1 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1))}>Sau →</SoftButton>
                 <SoftButton disabled={busy || savingSavedStory || improvingSavedStory} onClick={() => void (async () => {
@@ -127,21 +126,21 @@ export default function Step3UserStory({
                 {actionMessage && <p role="status" className="text-sm text-slate-600">{actionMessage}</p>}
               </div>
               </div>
-              <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
+              <div className="border-b border-slate-100 px-2 py-1.5 text-xs leading-4 text-slate-600">
                 Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
               </div>
-              <div className="grid gap-3 p-4 sm:grid-cols-2">
+              <div className="grid gap-2 p-2 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-slate-700">Vai trò *
-                  <input value={activeSavedDraft.role} onChange={(event) => changeSavedDraft("role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} />
+                  <input value={activeSavedDraft.role} onChange={(event) => changeSavedDraft("role", event.target.value)} className={`${inputClass} mt-1 bg-white`} />
                 </label>
                 <label className="block text-sm font-medium text-slate-700">Chức năng *
-                  <textarea value={activeSavedDraft.feature} onChange={(event) => changeSavedDraft("feature", event.target.value)} rows={2} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                  <textarea value={activeSavedDraft.feature} onChange={(event) => changeSavedDraft("feature", event.target.value)} rows={1} className={`${inputClass} mt-1 bg-white ${textWrap}`} />
                 </label>
                 <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Lợi ích / mục đích *
-                  <textarea value={activeSavedDraft.benefit} onChange={(event) => changeSavedDraft("benefit", event.target.value)} rows={3} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} />
+                  <textarea value={activeSavedDraft.benefit} onChange={(event) => changeSavedDraft("benefit", event.target.value)} rows={2} className={`${inputClass} mt-1 bg-white ${textWrap}`} />
                 </label>
                 <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Tiêu chí chấp nhận *
-                  <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={5} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
+                  <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={3} className={`${inputClass} mt-1 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
                 </label>
               </div>
            </article>
@@ -177,7 +176,7 @@ export default function Step3UserStory({
                 const storyReady = Boolean(savedDraft && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
                 return (
                   <article key={item.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-start gap-2 border-b border-slate-100 bg-slate-50/60 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/60 px-2 py-1">
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-[11px] font-bold text-emerald-800">{String(activeDraftIndex + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center justify-between gap-2">
