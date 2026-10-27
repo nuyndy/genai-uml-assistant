@@ -540,17 +540,6 @@ export default function GiaiDoan1({
     void generateStoryDrafts();
   }, [draftIdsKey, draftRequirements, generateStoryDrafts, loaded, projectId, step, storyDrafts, storyDraftsEdited]);
 
-  const regenerateStoryDrafts = (requirementId?: number) => {
-    if (requirementId !== undefined) {
-      void generateStoryDrafts(requirementId);
-      return;
-    }
-    if (storyDraftsEdited && !window.confirm(
-      "Tạo lại User Story sẽ thay thế các chỉnh sửa chưa xác nhận. Bạn có muốn tiếp tục?",
-    )) return;
-    void generateStoryDrafts();
-  };
-
   const changeStoryDraft = (
     requirementId: number,
     field: Exclude<keyof UserStoryDraft, "requirement_id">,
@@ -949,7 +938,6 @@ export default function GiaiDoan1({
       error={error}
       allStoryDraftsReady={allStoryDraftsReady}
       allRequirementsConfirmed={allRequirementsConfirmed}
-      generateStoryDrafts={regenerateStoryDrafts}
       changeStoryDraft={changeStoryDraft}
       confirmAll={confirmAll}
       onStepChange={onStepChange}
