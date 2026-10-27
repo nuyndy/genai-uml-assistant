@@ -31,10 +31,10 @@ interface Props {
   generatingNonFunctional: boolean;
   busy: boolean;
   error?: string;
-  generateFunctionalSpecification: (story: UserStory, regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<void>;
+  generateFunctionalSpecification: (story: UserStory, regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<boolean>;
   saveSpecification: (specification: SpecificationRecord, content: SpecDraft) => Promise<void>;
   approveSpecification: (specification: SpecificationRecord) => Promise<void>;
-  createNonFunctionalSpecification: (regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<void>;
+  createNonFunctionalSpecification: (regenerate?: boolean, skipRegenerationConfirmation?: boolean) => Promise<boolean>;
   onStepChange: (step: number) => void;
   wrapClass: string;
   inputClass?: string;
@@ -120,11 +120,24 @@ export default function Step4DacTa({
     setRegeneratingAll(true);
     setActionMessage("");
     try {
+      const failedStoryIds: number[] = [];
       for (const story of stories) {
-        await generateFunctionalSpecification(story, true, true);
+        const succeeded = await generateFunctionalSpecification(story, true, true);
+        if (!succeeded) failedStoryIds.push(story.id);
       }
-      await createNonFunctionalSpecification(true, true);
-      setActionMessage("Đã gửi yêu cầu sinh lại toàn bộ FR/NFR.");
+
+      const nfrSucceeded = await createNonFunctionalSpecification(true, true);
+      const failures: string[] = [];
+      if (failedStoryIds.length > 0) {
+        failures.push(`FR thất bại ở User Story: ${failedStoryIds.map((id) => `US-${String(id).padStart(3, "0")}`).join(", ")}`);
+      }
+      if (!nfrSucceeded) failures.push("NFR thất bại");
+
+      setActionMessage(
+        failures.length > 0
+          ? `Đã chạy xong nhưng chưa sinh thành công toàn bộ. ${failures.join(". ")}. Xem thông báo lỗi phía trên và thử lại các mục lỗi.`
+          : `Đã sinh lại thành công ${stories.length} FR và 1 NFR.`,
+      );
     } catch (reason) {
       setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại toàn bộ FR/NFR.");
     } finally {
