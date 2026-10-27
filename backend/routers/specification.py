@@ -197,18 +197,25 @@ def consolidate_project_functional_specifications(
         logger.exception("Could not load user stories for functional consolidation")
         raise HTTPException(status_code=500, detail="Không thể đọc User Story của dự án.") from exc
 
+    # Giữ prompt ngắn để model cục bộ xử lý nhanh hơn; mỗi lượt tối đa 5 US.
+    # Tổng hợp từng nhóm rồi ghép kết quả, không cần sinh lại User Story.
+    batch_size = 5
+    generated_items: list[FunctionalSpecification] = []
     try:
-        generated = generate_json(
-            build_consolidated_functional_specs_prompt(stories),
-            FunctionalSpecificationBatch,
-        )
+        for start in range(0, len(stories), batch_size):
+            story_batch = stories[start : start + batch_size]
+            batch_result = generate_json(
+                build_consolidated_functional_specs_prompt(story_batch),
+                FunctionalSpecificationBatch,
+            )
+            generated_items.extend(batch_result.items)
     except AIServiceError as exc:
-        logger.exception("AI failed to consolidate functional specifications")
+        logger.exception("AI failed to consolidate functional specifications batch")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     valid_story_ids = {story.id for story in stories}
     normalized_items: list[FunctionalSpecification] = []
-    for index, item in enumerate(generated.items, start=1):
+    for index, item in enumerate(generated_items, start=1):
         item.function_code = f"FR-{index:03d}"
         item.source_user_story_ids = sorted(set(item.source_user_story_ids) & valid_story_ids)
         if not item.source_user_story_ids:
