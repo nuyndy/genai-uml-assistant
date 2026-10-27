@@ -244,7 +244,8 @@ export default function Step4DacTa({
                 <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
                     <p className={`text-sm font-bold uppercase tracking-wide text-emerald-800 ${wrapClass}`}>FR · {activeFunctionalValue.function_code || `FR-${String(activeIndex + 1).padStart(3, "0")}`}{activeSpecification ? ` · SPEC-${String(activeSpecification.id).padStart(3, "0")}` : ""}</p>
-                    <h2 className={`text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>\n                    <p className="w-full text-xs text-slate-500">Tổng hợp từ: {(activeFunctional?.sourceIds ?? []).map((id) => `US-${String(id).padStart(3, "0")}`).join(", ") || "Chưa có liên kết nguồn"}</p>
+                    <h2 className={`text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>
+                    <p className="w-full text-xs text-slate-500">Tổng hợp từ: {(activeFunctional?.sourceIds ?? []).map((id) => `US-${String(id).padStart(3, "0")}`).join(", ") || "Chưa có liên kết nguồn"}</p>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatusBadge tone={activeSpecification ? "success" : "warn"}>{activeSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
                       {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
