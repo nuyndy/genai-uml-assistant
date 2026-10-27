@@ -96,10 +96,7 @@ export default function Step3UserStory({
                   <h3 className="mt-1 text-sm font-semibold text-slate-900">{activeSavedDraft.feature.trim() || "User Story chưa có tiêu đề"}</h3>
                   <div className="mt-1"><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <SoftButton disabled={activeDraftIndex <= 0 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
-                  <SoftButton disabled={activeDraftIndex >= orderedSavedStories.length - 1 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1))}>Sau →</SoftButton>
-                </div>
+
               </div>
               <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
                 Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
@@ -118,7 +115,9 @@ export default function Step3UserStory({
                   <textarea value={activeSavedDraft.acceptance_criteria} onChange={(event) => changeSavedDraft("acceptance_criteria", event.target.value)} rows={5} className={`${inputClass} mt-1.5 bg-white ${textWrap}`} placeholder="Mỗi tiêu chí một dòng" />
                 </label>
               </div>
-              <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 p-3">
+              <div className="flex flex-nowrap items-center gap-1 overflow-x-auto border-t border-slate-100 bg-slate-50/50 p-1 [&_button]:!whitespace-nowrap [&_button]:!px-2 [&_button]:!py-1 [&_button]:!text-xs">
+                <SoftButton disabled={activeDraftIndex <= 0 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
+                <SoftButton disabled={activeDraftIndex >= orderedSavedStories.length - 1 || busy || savingSavedStory || improvingSavedStory} onClick={() => setActiveDraftIndex((i) => Math.min(orderedSavedStories.length - 1, i + 1))}>Sau →</SoftButton>
                 <SoftButton disabled={busy || savingSavedStory || improvingSavedStory} onClick={() => void (async () => {
                   setImprovingSavedStory(true); setActionMessage("");
                   try {
