@@ -427,5 +427,9 @@ class FunctionalConsolidationCheckpoint(Base):
     )
     story_signature = Column(Text, nullable=False)
     completed_batches = Column(Text, nullable=False, default="[]")
+    status = Column(String(30), nullable=False, default="starting")
+    current_batch = Column(Integer, nullable=False, default=0)
+    total_batches = Column(Integer, nullable=False, default=0)
+    status_message = Column(Text, nullable=False, default="Đang chuẩn bị tổng hợp...")
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
