@@ -1709,7 +1709,20 @@ def generate_project_use_case_scenarios_batch(
             .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
             .filter(
                 RawRequirement.project_id == project_id,
-                (UseCase.main_flow.is_(None)) | (UseCase.main_flow == "[]"),
+                (
+                    (UseCase.main_flow.is_(None))
+                    | (UseCase.main_flow == "[]")
+                    | (UseCase.actor.is_(None))
+                    | (UseCase.actor == "")
+                    | (UseCase.description.is_(None))
+                    | (UseCase.description == "")
+                    | (UseCase.preconditions.is_(None))
+                    | (UseCase.preconditions == "")
+                    | (UseCase.minimal_guarantees.is_(None))
+                    | (UseCase.minimal_guarantees == "")
+                    | (UseCase.postconditions.is_(None))
+                    | (UseCase.postconditions == "")
+                ),
             )
             .order_by(UseCase.id)
             .all()
