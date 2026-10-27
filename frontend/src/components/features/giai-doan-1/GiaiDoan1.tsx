@@ -8,7 +8,7 @@ import {
   deleteRequirement,
   generateNonFunctionalSpecification,
   generateProjectSpecificationsBatch,
-  generateSpecification,
+  consolidateProjectFunctionalSpecifications,
   getSpecificationDocument,
   listProjectRequirements,
   listProjectSpecifications,
@@ -620,48 +620,48 @@ export default function GiaiDoan1({
   };
 
   const generateFunctionalSpecification = useCallback(async (
-    story: UserStory,
+    _story: UserStory,
     regenerate = false,
     skipRegenerationConfirmation = false,
   ): Promise<boolean> => {
     if (!projectId) return false;
-    const requestKey = `${projectId}:functional:${story.id}`;
+    const requestKey = `${projectId}:functional:consolidated`;
     if (generationInFlight.current.has(requestKey)) return false;
     if (regenerate && !skipRegenerationConfirmation && !window.confirm(
-      "AI sẽ thay thế toàn bộ nội dung đặc tả hiện tại, kể cả các chỉnh sửa chưa lưu. Bạn có muốn tiếp tục?",
+      "AI sẽ phân tích lại toàn bộ US và thay thế danh sách FR tổng hợp. Các chỉnh sửa chưa lưu có thể bị mất. Bạn có muốn tiếp tục?",
     )) return false;
     generationInFlight.current.add(requestKey);
-    setGeneratingStories((previous) => ({ ...previous, [story.id]: true }));
+    setGeneratingStories((previous) => ({ ...previous, [_story.id]: true }));
     setBusy(true);
-    setAiTaskLabel("Đang sinh đặc tả chức năng...");
+    setAiTaskLabel("Đang tổng hợp User Story thành các chức năng...");
     setError("");
     try {
-      const created = await generateSpecification(story.id, "functional", regenerate);
+      const created = await consolidateProjectFunctionalSpecifications(projectId, regenerate);
       setSpecifications((previous) => [
-        ...previous.filter((item) => item.id !== created.id),
-        created,
+        ...previous.filter((item) => item.type !== "functional" || item.user_story_id !== null),
+        ...created,
       ]);
       setState((previous) => ({
         ...previous,
         specs: [
-          ...previous.specs.filter((item) => item.id !== created.id),
-          toSpecDoc(created),
+          ...previous.specs.filter((item) => item.type !== "functional" || item.userStoryId !== undefined),
+          ...created.map(toSpecDoc),
         ],
       }));
       await refreshSpecifications();
       setSpecDrafts((previous) => {
         const next = { ...previous };
-        delete next[created.id];
+        created.forEach((item) => { delete next[item.id]; });
         return next;
       });
       await refreshSrsDocument();
       return true;
     } catch (reason) {
-      setError(`Không thể sinh đặc tả chức năng: ${formatError(reason)}`);
+      setError(`Không thể tổng hợp User Story thành FR: ${formatError(reason)}`);
       return false;
     } finally {
       generationInFlight.current.delete(requestKey);
-      setGeneratingStories((previous) => ({ ...previous, [story.id]: false }));
+      setGeneratingStories((previous) => ({ ...previous, [_story.id]: false }));
       setAiTaskLabel("");
       setBusy(generationInFlight.current.size > 0);
     }
