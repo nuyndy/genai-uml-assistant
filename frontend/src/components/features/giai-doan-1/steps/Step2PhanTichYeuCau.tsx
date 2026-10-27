@@ -11,7 +11,6 @@ interface Props {
   addedCoverageSuggestions: number[];
   coverageAddedCount: number;
   selectedCoverageSuggestions: Record<number, boolean>;
-  onAddSelectedCoverage: () => void;
   onCheckCoverage: () => void;
   onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
   busy: boolean;
@@ -56,7 +55,6 @@ export default function Step2PhanTichYeuCau({
   selectedCoverageSuggestions,
   onCheckCoverage,
   onToggleCoverageSuggestion,
-  onAddSelectedCoverage,
   busy,
   requirementTitle,
   wrapClass: inheritedWrapClass,
