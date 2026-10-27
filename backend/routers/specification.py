@@ -24,13 +24,14 @@ from routers.ownership import require_project_owner
 from routers.requirement import _require_project
 from schemas.specification import (
     FunctionalSpecification,
+    FunctionalSpecificationBatch,
     GenerateSpecificationInput,
     NonFunctionalSpecification,
     SpecificationApprovalResult,
     SpecificationRecord,
     SpecificationUpdate,
 )
-from services.spec_generator import build_functional_spec_prompt
+from services.spec_generator import build_functional_spec_prompt, build_consolidated_functional_specs_prompt
 from services.ollama import AIServiceError, generate_json
 
 router = APIRouter(
@@ -157,6 +158,120 @@ def generate_specification(
         content=specification.content,
         version=specification.version,
     )
+
+
+@router.post(
+    "/api/projects/{project_id}/specifications/functional/consolidate",
+    response_model=list[SpecificationRecord],
+)
+def consolidate_project_functional_specifications(
+    project_id: int,
+    regenerate: bool = True,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> list[SpecificationRecord]:
+    """Tổng hợp toàn bộ US của dự án thành các FR độc lập, có truy vết nguồn."""
+    _require_project(db, project_id)
+    try:
+        stories = (
+            db.query(UserStory)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UserStory.id.asc())
+            .all()
+        )
+        if not stories:
+            raise HTTPException(status_code=422, detail="Dự án chưa có User Story để tổng hợp.")
+        existing = (
+            db.query(Specification)
+            .filter(
+                Specification.project_id == project_id,
+                Specification.type == "functional",
+            )
+            .order_by(Specification.id.asc())
+            .all()
+        )
+    except HTTPException:
+        raise
+    except SQLAlchemyError as exc:
+        logger.exception("Could not load user stories for functional consolidation")
+        raise HTTPException(status_code=500, detail="Không thể đọc User Story của dự án.") from exc
+
+    try:
+        generated = generate_json(
+            build_consolidated_functional_specs_prompt(stories),
+            FunctionalSpecificationBatch,
+        )
+    except AIServiceError as exc:
+        logger.exception("AI failed to consolidate functional specifications")
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    valid_story_ids = {story.id for story in stories}
+    normalized_items: list[FunctionalSpecification] = []
+    for index, item in enumerate(generated.items, start=1):
+        item.function_code = f"FR-{index:03d}"
+        item.source_user_story_ids = sorted(set(item.source_user_story_ids) & valid_story_ids)
+        if not item.source_user_story_ids:
+            raise HTTPException(
+                status_code=502,
+                detail=f"{item.function_code} chưa truy vết được về User Story nguồn.",
+            )
+        normalized_items.append(item)
+
+    try:
+        # Chỉ xóa bộ FR tổng hợp cũ sau khi kết quả mới đã sinh và qua kiểm tra.
+        for old_item in existing:
+            if db.query(UseCase.id).filter(UseCase.specification_id == old_item.id).first():
+                raise HTTPException(
+                    status_code=409,
+                    detail="Bộ FR tổng hợp đang được Use Case tham chiếu; không thể thay thế an toàn.",
+                )
+        for old_item in existing:
+            db.query(SpecificationApproval).filter(
+                SpecificationApproval.specification_id == old_item.id
+            ).delete(synchronize_session=False)
+            db.query(TraceLink).filter(
+                or_(
+                    ((TraceLink.source_type == "specification") & (TraceLink.source_id == old_item.id)),
+                    ((TraceLink.target_type == "specification") & (TraceLink.target_id == old_item.id)),
+                )
+            ).delete(synchronize_session=False)
+            db.delete(old_item)
+        db.flush()
+        saved: list[Specification] = []
+        for item in normalized_items:
+            record = Specification(
+                user_story_id=None,
+                project_id=project_id,
+                type="functional",
+                content=item.model_dump_json(),
+                version=1,
+            )
+            db.add(record)
+            saved.append(record)
+        db.commit()
+        for item in saved:
+            db.refresh(item)
+    except HTTPException:
+        db.rollback()
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not save consolidated functional specifications")
+        raise HTTPException(status_code=500, detail="Không thể lưu bộ FR tổng hợp.") from exc
+
+    return [
+        SpecificationRecord(
+            id=record.id,
+            user_story_id=None,
+            feature=normalized_items[index].function_name,
+            type="functional",
+            content=record.content,
+            version=record.version,
+            approval_status="draft",
+        )
+        for index, record in enumerate(saved)
+    ]
 
 
 @router.post(
