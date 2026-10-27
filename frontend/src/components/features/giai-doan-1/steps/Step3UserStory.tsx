@@ -116,7 +116,7 @@ export default function Step3UserStory({
                 const story = storyDrafts[item.id];
                 const storyReady = Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
                 return (
-                  <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                  <article key={item.id} className="overflow-hidden">
                     <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-800">{String(activeDraftIndex + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
