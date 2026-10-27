@@ -74,11 +74,26 @@ export default function Step4DacTa({
   const [actionMessage, setActionMessage] = useState("");
 
   const functionalItems = useMemo(
-    () => stories.map((story) => ({
-      story,
-      specification: specifications.find((item) => item.user_story_id === story.id && item.type === "functional"),
-    })),
-    [stories, specifications],
+    () => specifications
+      .filter((item) => item.type === "functional" && item.user_story_id === null)
+      .map((specification) => {
+        const content = parseSpecification<FunctionalSpecification>(
+          specification.content,
+          emptyFunctionalSpecification(),
+        );
+        return {
+          story: {
+            id: specification.id,
+            role: content.actors?.join(", ") || null,
+            feature: content.function_name || specification.feature,
+            benefit: null,
+            acceptance_criteria: content.acceptance_criteria?.join("\n") || null,
+          } as UserStory,
+          specification,
+          sourceIds: content.source_user_story_ids ?? [],
+        };
+      }),
+    [specifications],
   );
   const nonFunctionalSpecification = specifications.find((item) => item.type === "non_functional");
   const activeFunctional = functionalItems[activeIndex];
@@ -113,33 +128,25 @@ export default function Step4DacTa({
   const regenerateAllSpecifications = async () => {
     if (!projectId || busy || regeneratingAll || stories.length === 0) return;
     const confirmed = window.confirm(
-      "AI sẽ sinh lại toàn bộ FR cho các User Story và NFR của dự án. Nội dung đặc tả đã lưu có thể bị thay thế. Bạn nên lưu các chỉnh sửa trước khi tiếp tục. Bạn có muốn thực hiện không?",
+      "AI sẽ phân tích toàn bộ US để tổng hợp lại danh sách FR và sinh lại NFR. Các chỉnh sửa đặc tả chưa lưu có thể bị thay thế. Bạn có muốn thực hiện không?",
     );
     if (!confirmed) return;
 
     setRegeneratingAll(true);
     setActionMessage("");
     try {
-      const failedStoryIds: number[] = [];
-      for (const story of stories) {
-        const succeeded = await generateFunctionalSpecification(story, true, true);
-        if (!succeeded) failedStoryIds.push(story.id);
-      }
-
+      const frSucceeded = await generateFunctionalSpecification(stories[0], true, true);
       const nfrSucceeded = await createNonFunctionalSpecification(true, true);
       const failures: string[] = [];
-      if (failedStoryIds.length > 0) {
-        failures.push(`FR thất bại ở User Story: ${failedStoryIds.map((id) => `US-${String(id).padStart(3, "0")}`).join(", ")}`);
-      }
+      if (!frSucceeded) failures.push("Tổng hợp FR thất bại");
       if (!nfrSucceeded) failures.push("NFR thất bại");
-
       setActionMessage(
-        failures.length > 0
-          ? `Đã chạy xong nhưng chưa sinh thành công toàn bộ. ${failures.join(". ")}. Xem thông báo lỗi phía trên và thử lại các mục lỗi.`
-          : `Đã sinh lại thành công ${stories.length} FR và 1 NFR.`,
+        failures.length
+          ? `Đã chạy xong nhưng chưa hoàn tất: ${failures.join(". ")}. Xem thông báo lỗi phía trên và thử lại.`
+          : "Đã tổng hợp lại danh sách FR từ toàn bộ US và sinh lại NFR thành công.",
       );
     } catch (reason) {
-      setActionMessage(reason instanceof Error ? reason.message : "Không thể sinh lại toàn bộ FR/NFR.");
+      setActionMessage(reason instanceof Error ? reason.message : "Không thể tổng hợp lại FR/NFR.");
     } finally {
       setRegeneratingAll(false);
     }
@@ -182,9 +189,9 @@ export default function Step4DacTa({
           {expandedList === "functional" && (
             <div className="mb-2 max-h-56 overflow-y-auto rounded-xl border border-emerald-100 bg-slate-50/70 p-1" aria-label="Danh sách FR">
               {functionalItems.length ? functionalItems.map((item, index) => (
-                <button key={item.story.id} type="button" onClick={() => { setActiveIndex(index); setKind("functional"); setExpandedList(null); setActionMessage(""); }} className={"mb-1 flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition last:mb-0 " + (index === activeIndex && kind === "functional" ? "bg-emerald-100 font-semibold text-emerald-900" : "text-slate-700 hover:bg-white")}>
+                <button key={item.specification.id} type="button" onClick={() => { setActiveIndex(index); setKind("functional"); setExpandedList(null); setActionMessage(""); }} className={"mb-1 flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition last:mb-0 " + (index === activeIndex && kind === "functional" ? "bg-emerald-100 font-semibold text-emerald-900" : "text-slate-700 hover:bg-white")}>
                   <span className="shrink-0 font-bold">FR {index + 1}</span>
-                  <span className="min-w-0 break-words">{item.story.feature || "Use Case " + (index + 1)}</span>
+                  <span className="min-w-0 break-words">{item.story.feature}</span>
                 </button>
               )) : <p className="px-2 py-3 text-xs text-slate-500">Chưa có FR.</p>}
             </div>
@@ -228,7 +235,7 @@ export default function Step4DacTa({
                   <div className="flex flex-wrap items-center gap-2">
                     {activeSpecification && <>
                       <SoftButton disabled={busy || deleting} onClick={() => void removeActiveSpecification()}>{deleting ? "Đang xóa..." : "Xóa FR"}</SoftButton>
-                      <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(activeStory, true)}>Tạo lại bằng AI</SoftButton>
+                      <SoftButton disabled={busy} onClick={() => void generateFunctionalSpecification(stories[0], true)}>Tổng hợp lại FR</SoftButton>
                       <PrimaryButton disabled={busy} onClick={() => void saveSpecification(activeSpecification, activeFunctionalValue)}>Lưu</PrimaryButton>
                       <SoftButton disabled={busy || activeSpecification.approval_status === "approved"} onClick={() => void approveSpecification(activeSpecification)}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Duyệt"}</SoftButton>
                     </>}
@@ -237,7 +244,7 @@ export default function Step4DacTa({
                 <header className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
                     <p className={`text-sm font-bold uppercase tracking-wide text-emerald-800 ${wrapClass}`}>FR · US-{String(activeStory.id).padStart(3, "0")}{activeSpecification ? ` · SPEC-${String(activeSpecification.id).padStart(3, "0")}` : ""}</p>
-                    <h2 className={`text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>
+                    <h2 className={`text-lg font-semibold text-slate-900 ${wrapClass}`}>{activeFunctionalValue.function_name || activeStory.feature}</h2>\n                    <p className="w-full text-xs text-slate-500">Tổng hợp từ: {(activeFunctional?.sourceIds ?? []).map((id) => `US-${String(id).padStart(3, "0")}`).join(", ") || "Chưa có liên kết nguồn"}</p>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatusBadge tone={activeSpecification ? "success" : "warn"}>{activeSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
                       {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
