@@ -960,6 +960,21 @@ export default function GiaiDoan1({
       allRequirementsConfirmed={allRequirementsConfirmed}
       changeStoryDraft={changeStoryDraft}
       generateStoryDrafts={generateStoryDrafts}
+      onStorySaved={(savedStory) => {
+        setStories((previous) => {
+          const existing = previous.some((story) => story.id === savedStory.id);
+          return existing
+            ? previous.map((story) => story.id === savedStory.id ? savedStory : story)
+            : [...previous, savedStory];
+        });
+        setRequirements((previous) =>
+          previous.map((item) =>
+            item.id === savedStory.requirement_id
+              ? { ...item, user_story: savedStory }
+              : item,
+          ),
+        );
+      }}
       confirmAll={confirmAll}
       onStepChange={onStepChange}
       requirementTitle={requirementTitle}
