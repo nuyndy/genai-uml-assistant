@@ -218,6 +218,19 @@ def consolidate_project_functional_specifications(
             )
         normalized_items.append(item)
 
+    covered_story_ids = {
+        story_id
+        for item in normalized_items
+        for story_id in item.source_user_story_ids
+    }
+    uncovered_story_ids = sorted(valid_story_ids - covered_story_ids)
+    if uncovered_story_ids:
+        raise HTTPException(
+            status_code=502,
+            detail="AI chưa bao phủ các User Story: "
+            + ", ".join(f"US-{story_id:03d}" for story_id in uncovered_story_ids),
+        )
+
     try:
         # Chỉ xóa bộ FR tổng hợp cũ sau khi kết quả mới đã sinh và qua kiểm tra.
         for old_item in existing:
