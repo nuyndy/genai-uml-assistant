@@ -208,17 +208,19 @@ export default function Step4DacTa({
               </button>
             </div>
           )}
-          <div className="mt-3 border-t border-slate-200 pt-3">
-            <button
-              type="button"
-              onClick={() => void regenerateAllSpecifications()}
-              disabled={!projectId || stories.length === 0 || busy || regeneratingAll || Boolean(Object.values(generatingStories).some(Boolean)) || generatingNonFunctional}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {regeneratingAll ? <><span className="animate-spin">⟳</span> Đang sinh lại...</> : "Sinh lại toàn bộ"}
-            </button>
-            <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Sinh lại tất cả FR và NFR bằng AI.</p>
-          </div>
+          {functionalItems.length > 0 && (
+            <div className="mt-3 border-t border-slate-200 pt-3">
+              <button
+                type="button"
+                onClick={() => void regenerateAllSpecifications()}
+                disabled={!projectId || stories.length === 0 || busy || regeneratingAll || Boolean(Object.values(generatingStories).some(Boolean)) || generatingNonFunctional}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {regeneratingAll ? <><span className="animate-spin">⟳</span> Đang sinh lại...</> : "Sinh lại toàn bộ"}
+              </button>
+              <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Sinh lại tất cả FR và NFR bằng AI.</p>
+            </div>
+          )}
         </aside>
 
         <section className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-2xl">
