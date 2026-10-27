@@ -162,6 +162,46 @@ def generate_specification(
     )
 
 
+@router.get("/api/projects/{project_id}/specifications/functional/consolidation-status")
+def get_functional_consolidation_status(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> dict[str, object]:
+    """Trạng thái tiến trình để giao diện hiển thị công việc AI đang thực hiện."""
+    _require_project(db, project_id)
+    try:
+        checkpoint = (
+            db.query(FunctionalConsolidationCheckpoint)
+            .filter(FunctionalConsolidationCheckpoint.project_id == project_id)
+            .first()
+        )
+    except SQLAlchemyError as exc:
+        logger.exception("Could not read functional consolidation status")
+        raise HTTPException(status_code=500, detail="Không thể đọc tiến trình tổng hợp FR.") from exc
+    if checkpoint is None:
+        return {
+            "status": "idle",
+            "current_batch": 0,
+            "total_batches": 0,
+            "completed_batches": 0,
+            "status_message": "Chưa có lượt tổng hợp FR đang chạy.",
+        }
+    try:
+        completed = json.loads(checkpoint.completed_batches or "[]")
+        completed_count = len(completed) if isinstance(completed, list) else 0
+    except (TypeError, json.JSONDecodeError):
+        completed_count = 0
+    return {
+        "status": checkpoint.status,
+        "current_batch": checkpoint.current_batch,
+        "total_batches": checkpoint.total_batches,
+        "completed_batches": completed_count,
+        "status_message": checkpoint.status_message,
+        "updated_at": checkpoint.updated_at.isoformat() if checkpoint.updated_at else None,
+    }
+
+
 @router.post(
     "/api/projects/{project_id}/specifications/functional/consolidate",
     response_model=list[SpecificationRecord],
@@ -227,6 +267,10 @@ def consolidate_project_functional_specifications(
                 project_id=project_id,
                 story_signature=story_signature,
                 completed_batches="[]",
+                status="starting",
+                current_batch=0,
+                total_batches=(len(stories) + batch_size - 1) // batch_size,
+                status_message="Đang chuẩn bị dữ liệu User Story...",
             )
             db.add(checkpoint)
             db.commit()
@@ -234,6 +278,15 @@ def consolidate_project_functional_specifications(
         elif checkpoint.story_signature != story_signature:
             checkpoint.story_signature = story_signature
             checkpoint.completed_batches = "[]"
+            checkpoint.current_batch = 0
+            checkpoint.total_batches = (len(stories) + batch_size - 1) // batch_size
+            checkpoint.status = "starting"
+            checkpoint.status_message = "User Story đã thay đổi; đang tạo tiến trình mới..."
+            db.commit()
+        else:
+            checkpoint.total_batches = (len(stories) + batch_size - 1) // batch_size
+            checkpoint.status = "running"
+            checkpoint.status_message = "Đang tiếp tục từ các nhóm đã lưu..."
             db.commit()
 
         try:
@@ -258,13 +311,24 @@ def consolidate_project_functional_specifications(
     generated_items: list[FunctionalSpecification] = []
     try:
         for batch_index, start in enumerate(range(0, len(stories), batch_size)):
+            checkpoint.current_batch = batch_index + 1
             if batch_index < len(completed_batches):
+                checkpoint.status = "running"
+                checkpoint.status_message = f"Đang khôi phục kết quả nhóm {batch_index + 1}/{checkpoint.total_batches} đã lưu trước đó..."
+                db.commit()
                 batch_items = [
                     FunctionalSpecification.model_validate(item)
                     for item in completed_batches[batch_index]
                 ]
             else:
                 story_batch = stories[start : start + batch_size]
+                story_numbers = ", ".join(f"US-{story.id:03d}" for story in story_batch)
+                checkpoint.status = "generating"
+                checkpoint.status_message = (
+                    f"Đang gửi {story_numbers} tới Ollama; AI đang phân tích và sinh nội dung FR "
+                    f"(nhóm {batch_index + 1}/{checkpoint.total_batches})."
+                )
+                db.commit()
                 batch_result = generate_json(
                     build_consolidated_functional_specs_prompt(story_batch),
                     FunctionalSpecificationBatch,
@@ -276,14 +340,36 @@ def consolidate_project_functional_specifications(
                 checkpoint.completed_batches = json.dumps(
                     completed_batches, ensure_ascii=False
                 )
+                checkpoint.status = "running"
+                checkpoint.status_message = (
+                    f"Đã sinh xong nhóm {batch_index + 1}/{checkpoint.total_batches}; "
+                    "đã lưu checkpoint. Đang chuẩn bị nhóm tiếp theo..."
+                )
                 db.add(checkpoint)
                 db.commit()
             generated_items.extend(batch_items)
+        checkpoint.status = "validating"
+        checkpoint.status_message = "AI đã sinh xong các nhóm; đang kiểm tra truy vết và độ bao phủ User Story..."
+        db.commit()
     except AIServiceError as exc:
         logger.exception("AI failed to consolidate functional specifications batch")
+        try:
+            checkpoint.status = "error"
+            checkpoint.status_message = f"AI gặp lỗi: {exc}"
+            db.add(checkpoint)
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     except (ValidationError, SQLAlchemyError, TypeError, ValueError) as exc:
         db.rollback()
+        try:
+            checkpoint.status = "error"
+            checkpoint.status_message = "Không thể khôi phục hoặc kiểm tra dữ liệu checkpoint; xem log backend."
+            db.add(checkpoint)
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
         logger.exception("Could not resume functional consolidation checkpoint")
         raise HTTPException(
             status_code=500,
@@ -321,6 +407,9 @@ def consolidate_project_functional_specifications(
         )
 
     try:
+        checkpoint.status = "saving"
+        checkpoint.status_message = "Đang lưu bộ FR mới sau khi kiểm tra thành công..."
+        db.commit()
         # Chỉ xóa bộ FR tổng hợp cũ sau khi kết quả mới đã sinh và qua kiểm tra.
         for old_item in existing:
             if db.query(UseCase.id).filter(UseCase.specification_id == old_item.id).first():
