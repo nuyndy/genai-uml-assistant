@@ -142,20 +142,11 @@ tất cả use case còn thiếu rồi cho phép sửa riêng từng kịch bả
 tương tác cùng loại cho tất cả use case đủ kịch bản, cuối cùng tổng hợp mô hình
 lớp và biểu đồ lớp của toàn project.
 
-Backend cần dịch vụ render PlantUML để tạo ảnh. Dịch vụ này đã có sẵn trong
-`backend/render_service.py`, nhận `POST /render` với JSON `{"source_code":"..."}`
-và trả `{"image_url":"data:image/svg;base64,..."}`. Nó chuyển tiếp mã PlantUML sang
-[Kroki](https://kroki.io) để render, nên **không cần cài Java hay Docker**.
-
-Chạy thêm service này cùng backend:
-
-```bash
-cd backend
-python -m uvicorn render_service:app --host 127.0.0.1 --port 8080
-```
-
-Trỏ `PLANTUML_RENDER_URL=http://localhost:8080` trong `backend/.env`. Đổi đích
-render bằng `KROKI_URL`, đổi định dạng ảnh bằng `KROKI_OUTPUT_FORMAT=svg|png`.
+Backend render biểu đồ bằng cách gọi trực tiếp dịch vụ web PlantUML tại
+`https://www.plantuml.com/plantuml/svg` qua `backend/services/plantuml.py`.
+Không cần chạy `backend/render_service.py`, không cần cổng `8080`, Java hay Docker.
+Có thể đổi máy chủ bằng biến tùy chọn
+`PLANTUML_SERVER_URL=https://www.plantuml.com/plantuml` trong `backend/.env`.
 
 Khi dịch vụ render không chạy, API vẫn lưu mã PlantUML vào PostgreSQL và để
 `image_url` NULL; người dùng chỉ cần sinh lại biểu đồ sau khi bật service. Bước 3
