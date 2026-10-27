@@ -414,3 +414,18 @@ class EntityRevision(Base):
             "version",
         ),
     )
+
+class FunctionalConsolidationCheckpoint(Base):
+    """Lưu kết quả từng lô để có thể tiếp tục tổng hợp FR sau khi lỗi."""
+
+    __tablename__ = "functional_consolidation_checkpoint"
+
+    project_id = Column(
+        Integer,
+        ForeignKey("project.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    story_signature = Column(Text, nullable=False)
+    completed_batches = Column(Text, nullable=False, default="[]")
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+
