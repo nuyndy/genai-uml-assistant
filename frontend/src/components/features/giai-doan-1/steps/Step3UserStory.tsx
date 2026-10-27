@@ -32,7 +32,9 @@ export default function Step3UserStory({
   storyDrafts,
   loadingStoryDrafts,
   busy,
+  savedStories,
   allRequirementsConfirmed,
+  onStepChange,
   changeStoryDraft,
   generateStoryDrafts,
   onStorySaved,
@@ -50,7 +52,19 @@ export default function Step3UserStory({
 
   return (
     <div className="space-y-2">
-      {allRequirementsConfirmed ? null : total === 0 ? (
+      {allRequirementsConfirmed ? (
+        <Card title="User Story đã được xác nhận">
+          <p className="text-sm text-slate-600">
+            Tất cả yêu cầu đã được xác nhận. Hiện có {savedStories.length} User Story đã lưu.
+            Bước này không còn bản nháp cần chỉnh sửa.
+          </p>
+          <div className="mt-4 flex justify-start">
+            <PrimaryButton onClick={() => onStepChange(4)}>
+              Tiếp tục đến Bước 4: Đặc tả
+            </PrimaryButton>
+          </div>
+        </Card>
+      ) : total === 0 ? (
         <Card title="Chưa có yêu cầu để rà soát">
           <EmptyState title="Danh sách yêu cầu đang trống" hint="Quay lại Bước 1 để thêm yêu cầu, sau đó phân tích và tạo User Story." />
           <div className="mt-4 flex justify-start"></div>
