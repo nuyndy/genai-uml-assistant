@@ -128,6 +128,11 @@ export interface UseCaseScenarioBatchItem {
   /** Đồng bộ với `UseCaseRecord` — xem `backend/schemas/uml.py`. */
   name: string;
   specification_id: number;
+  actor: string[];
+  description: string[];
+  preconditions: string[];
+  minimal_guarantees: string[];
+  postconditions: string[];
   main_flow: string[];
   alt_flow: string[];
   exception_flow: string[];
