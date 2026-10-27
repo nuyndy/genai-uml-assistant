@@ -16,7 +16,6 @@ interface Props {
   error: string;
   allStoryDraftsReady: boolean;
   allRequirementsConfirmed: boolean;
-  generateStoryDrafts: (requirementId?: number) => void;
   changeStoryDraft: (requirementId: number, field: Exclude<keyof UserStoryDraft, "requirement_id">, value: string) => void;
   confirmAll: () => void;
   onStepChange: (step: number) => void;
@@ -35,7 +34,6 @@ export default function Step3UserStory({
   busy,
   allStoryDraftsReady,
   allRequirementsConfirmed,
-  generateStoryDrafts,
   changeStoryDraft,
   requirementTitle,
   wrapClass,
