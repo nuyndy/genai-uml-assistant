@@ -201,6 +201,18 @@ export default function Step4DacTa({
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
             <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold">{nonFunctionalSpecification ? 1 : 0}</span>
           </button>
+          {kind === "functional" && stories.length > 0 && functionalItems.length === 0 && (
+            <div className="mt-2">
+              <button
+                type="button"
+                disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
+                onClick={() => void generateFunctionalSpecification(stories[0])}
+                className="flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-[#2F7D32] px-3 py-2.5 text-center text-sm font-semibold leading-5 text-white shadow-sm transition hover:bg-[#43A047] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span className="block w-full whitespace-normal break-words text-center [text-wrap:balance]">Tạo đặc tả chức năng từ User Story</span>
+              </button>
+            </div>
+          )}
           {expandedList === "non_functional" && (
             <div className="mb-2 max-h-56 overflow-y-auto rounded-xl border border-violet-100 bg-slate-50/70 p-1" aria-label="Danh sách NFR">
               <button type="button" onClick={() => { setKind("non_functional"); setExpandedList(null); setActionMessage(""); }} className={"flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition " + (kind === "non_functional" ? "bg-violet-100 font-semibold text-violet-900" : "text-slate-700 hover:bg-white")}>
@@ -219,18 +231,6 @@ export default function Step4DacTa({
                 {regeneratingAll ? <><span className="animate-spin">⟳</span> Đang sinh lại...</> : "Sinh lại toàn bộ"}
               </button>
               <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Sinh lại tất cả FR và NFR bằng AI.</p>
-            </div>
-          )}
-          {kind === "functional" && stories.length > 0 && functionalItems.length === 0 && (
-            <div className="mt-auto pt-3">
-              <button
-                type="button"
-                disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
-                onClick={() => void generateFunctionalSpecification(stories[0])}
-                className="flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-[#2F7D32] px-2 py-3 text-center text-sm font-semibold leading-5 text-white shadow-sm transition hover:bg-[#43A047] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <span className="whitespace-normal break-words">Tạo đặc tả chức năng từ User Story</span>
-              </button>
             </div>
           )}
         </aside>
