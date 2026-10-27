@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 from datetime import datetime, timezone
@@ -10,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from database.db import get_db
 from database.models import (
+    FunctionalConsolidationCheckpoint,
     Project,
     RawRequirement,
     Specification,
@@ -197,22 +199,96 @@ def consolidate_project_functional_specifications(
         logger.exception("Could not load user stories for functional consolidation")
         raise HTTPException(status_code=500, detail="Không thể đọc User Story của dự án.") from exc
 
-    # Qwen2.5:3B chạy cục bộ khá chậm; nhóm 5 US có thể vượt timeout 300 giây.
-    # Giảm kích thước nhóm để prompt ngắn hơn và hạn chế timeout.
-    # Lưu ý: tổng hợp theo nhóm không thể so sánh trùng lặp giữa các nhóm.
+    # Lô nhỏ giúp Qwen2.5:3B chạy trên máy ít RAM. Lưu kết quả từng lô
+    # để khi Ollama timeout, lần gọi lại có thể tiếp tục từ lô chưa hoàn thành.
+    # Bộ FR chính thức chỉ được thay sau khi toàn bộ lô qua kiểm tra.
     batch_size = 2
+    story_snapshot = [
+        {
+            "id": story.id,
+            "role": story.role,
+            "feature": story.feature,
+            "benefit": story.benefit,
+            "acceptance_criteria": story.acceptance_criteria,
+        }
+        for story in stories
+    ]
+    story_signature = hashlib.sha256(
+        json.dumps(story_snapshot, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    try:
+        checkpoint = (
+            db.query(FunctionalConsolidationCheckpoint)
+            .filter(FunctionalConsolidationCheckpoint.project_id == project_id)
+            .first()
+        )
+        if checkpoint is None:
+            checkpoint = FunctionalConsolidationCheckpoint(
+                project_id=project_id,
+                story_signature=story_signature,
+                completed_batches="[]",
+            )
+            db.add(checkpoint)
+            db.commit()
+            db.refresh(checkpoint)
+        elif checkpoint.story_signature != story_signature:
+            checkpoint.story_signature = story_signature
+            checkpoint.completed_batches = "[]"
+            db.commit()
+
+        try:
+            completed_batches = json.loads(checkpoint.completed_batches or "[]")
+            if not isinstance(completed_batches, list):
+                completed_batches = []
+        except (TypeError, json.JSONDecodeError):
+            completed_batches = []
+        if len(completed_batches) > (len(stories) + batch_size - 1) // batch_size:
+            completed_batches = []
+        if checkpoint.completed_batches != json.dumps(completed_batches, ensure_ascii=False):
+            checkpoint.completed_batches = json.dumps(completed_batches, ensure_ascii=False)
+            db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not load functional consolidation checkpoint")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể đọc tiến trình tổng hợp FR. Hãy chạy migration 005.",
+        ) from exc
+
     generated_items: list[FunctionalSpecification] = []
     try:
-        for start in range(0, len(stories), batch_size):
-            story_batch = stories[start : start + batch_size]
-            batch_result = generate_json(
-                build_consolidated_functional_specs_prompt(story_batch),
-                FunctionalSpecificationBatch,
-            )
-            generated_items.extend(batch_result.items)
+        for batch_index, start in enumerate(range(0, len(stories), batch_size)):
+            if batch_index < len(completed_batches):
+                batch_items = [
+                    FunctionalSpecification.model_validate(item)
+                    for item in completed_batches[batch_index]
+                ]
+            else:
+                story_batch = stories[start : start + batch_size]
+                batch_result = generate_json(
+                    build_consolidated_functional_specs_prompt(story_batch),
+                    FunctionalSpecificationBatch,
+                )
+                batch_items = batch_result.items
+                completed_batches.append(
+                    [item.model_dump(mode="json") for item in batch_items]
+                )
+                checkpoint.completed_batches = json.dumps(
+                    completed_batches, ensure_ascii=False
+                )
+                db.add(checkpoint)
+                db.commit()
+            generated_items.extend(batch_items)
     except AIServiceError as exc:
         logger.exception("AI failed to consolidate functional specifications batch")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except (ValidationError, SQLAlchemyError, TypeError, ValueError) as exc:
+        db.rollback()
+        logger.exception("Could not resume functional consolidation checkpoint")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể khôi phục tiến trình tổng hợp FR. Hãy thử chạy lại.",
+        ) from exc
 
     valid_story_ids = {story.id for story in stories}
     normalized_items: list[FunctionalSpecification] = []
@@ -220,9 +296,11 @@ def consolidate_project_functional_specifications(
         item.function_code = f"FR-{index:03d}"
         item.source_user_story_ids = sorted(set(item.source_user_story_ids) & valid_story_ids)
         if not item.source_user_story_ids:
+            db.delete(checkpoint)
+            db.commit()
             raise HTTPException(
                 status_code=502,
-                detail=f"{item.function_code} chưa truy vết được về User Story nguồn.",
+                detail=f"{item.function_code} chưa truy vết được về User Story nguồn; hãy chạy lại để AI sinh lại các lô.",
             )
         normalized_items.append(item)
 
@@ -233,10 +311,13 @@ def consolidate_project_functional_specifications(
     }
     uncovered_story_ids = sorted(valid_story_ids - covered_story_ids)
     if uncovered_story_ids:
+        db.delete(checkpoint)
+        db.commit()
         raise HTTPException(
             status_code=502,
             detail="AI chưa bao phủ các User Story: "
-            + ", ".join(f"US-{story_id:03d}" for story_id in uncovered_story_ids),
+            + ", ".join(f"US-{story_id:03d}" for story_id in uncovered_story_ids)
+            + ". Hãy chạy lại để AI sinh lại các lô.",
         )
 
     try:
@@ -270,6 +351,7 @@ def consolidate_project_functional_specifications(
             )
             db.add(record)
             saved.append(record)
+        db.delete(checkpoint)
         db.commit()
         for item in saved:
             db.refresh(item)
