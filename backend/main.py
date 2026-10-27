@@ -37,6 +37,9 @@ with engine.begin() as connection:
         if column_name not in actor_columns:
             connection.execute(text(f"ALTER TABLE actor ADD COLUMN {column_name} TEXT"))
 
+    # Allow multiple project-level FR records instead of one specification per project/type.
+    connection.execute(text("DROP INDEX IF EXISTS uq_specification_project_type"))
+
     use_case_columns = {column["name"] for column in inspect(connection).get_columns("use_case")}
     for column_name in ("actor", "description", "preconditions", "minimal_guarantees", "postconditions"):
         if column_name not in use_case_columns:
