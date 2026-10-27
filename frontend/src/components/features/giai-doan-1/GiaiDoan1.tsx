@@ -160,7 +160,6 @@ export default function GiaiDoan1({
   const [newRequirement, setNewRequirement] = useState(state.rawRequirement);
   const [stories, setStories] = useState<UserStory[]>([]);
   const [storyDrafts, setStoryDrafts] = useState<Record<number, UserStoryDraft>>({});
-  const [editedStoryDraftIds, setEditedStoryDraftIds] = useState<number[]>([]);
   const [storyDraftsEdited, setStoryDraftsEdited] = useState(false);
   const [loadingStoryDrafts, setLoadingStoryDrafts] = useState(false);
   const [specifications, setSpecifications] = useState<SpecificationRecord[]>(
@@ -197,6 +196,7 @@ export default function GiaiDoan1({
   const [srsSpecDrafts, setSrsSpecDrafts] = useState<
     Record<number, FunctionalSpecification | NonFunctionalSpecification>
   >({});
+  const storyPreviewKey = useRef("");
   const autoGenerationAttempts = useRef(new Set<string>());
   const generationInFlight = useRef(new Set<string>());
 
@@ -205,6 +205,7 @@ export default function GiaiDoan1({
     () => requirements.filter((item) => item.status === "draft"),
     [requirements],
   );
+  const draftIdsKey = draftRequirements.map((item) => item.id).join(",");
   const allStoryDraftsReady =
     draftRequirements.length > 0 &&
     draftRequirements.every((item) => {
@@ -465,28 +466,27 @@ export default function GiaiDoan1({
     setError("");
     try {
       const result = await previewProjectUserStories(projectId);
-      const generatedDrafts = Object.fromEntries(
-        result.results.map((story) => [story.requirement_id, story]),
+      setStoryDrafts(
+        Object.fromEntries(result.results.map((story) => [story.requirement_id, story])),
       );
-      setStoryDrafts((previous) => {
-        const next = { ...generatedDrafts };
-        // Giữ nguyên các User Story người dùng đã tự chỉnh, không để AI ghi đè.
-        editedStoryDraftIds.forEach((requirementId) => {
-          if (previous[requirementId]) next[requirementId] = previous[requirementId];
-        });
-        return next;
-      });
-      setStoryDraftsEdited(editedStoryDraftIds.length > 0);
+      setStoryDraftsEdited(false);
     } catch (reason) {
       setError(`Không thể tạo bản nháp user story: ${formatError(reason)}`);
     } finally {
       setLoadingStoryDrafts(false);
       setAiTaskLabel("");
     }
-  }, [projectId, editedStoryDraftIds]);
+  }, [projectId]);
 
-  // Không tự gọi AI khi vào Bước 3 hoặc khi danh sách yêu cầu thay đổi.
-  // Người dùng chủ động bấm nút hoàn thiện để AI xử lý các yêu cầu hiện tại.
+  useEffect(() => {
+    if (step !== 3 || !loaded || !projectId || !draftIdsKey) return;
+    const key = `${projectId}:${draftIdsKey}`;
+    if (storyPreviewKey.current === key) return;
+    // Không tự ghi đè bản nháp đã chỉnh sửa khi danh sách yêu cầu thay đổi.
+    if (storyDraftsEdited) return;
+    storyPreviewKey.current = key;
+    void generateStoryDrafts();
+  }, [draftIdsKey, generateStoryDrafts, loaded, projectId, step, storyDraftsEdited]);
 
   const regenerateStoryDrafts = () => {
     if (storyDraftsEdited && !window.confirm(
@@ -503,17 +503,11 @@ export default function GiaiDoan1({
     setStoryDrafts((previous) => ({
       ...previous,
       [requirementId]: {
+        ...previous[requirementId],
         requirement_id: requirementId,
-        role: previous[requirementId]?.role ?? "",
-        feature: previous[requirementId]?.feature ?? "",
-        benefit: previous[requirementId]?.benefit ?? "",
-        acceptance_criteria: previous[requirementId]?.acceptance_criteria ?? "",
         [field]: value,
       },
     }));
-    setEditedStoryDraftIds((previous) =>
-      previous.includes(requirementId) ? previous : [...previous, requirementId],
-    );
     setStoryDraftsEdited(true);
   };
 
