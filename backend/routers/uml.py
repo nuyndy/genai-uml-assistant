@@ -1670,11 +1670,11 @@ def generate_use_case_scenario(
     if specification is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy đặc tả liên quan.")
     result = _generate_scenario_for(use_case, specification)
-    use_case.actor = "\\n".join(result.actor)
-    use_case.description = "\\n".join(result.description)
-    use_case.preconditions = "\\n".join(result.preconditions)
-    use_case.minimal_guarantees = "\\n".join(result.minimal_guarantees)
-    use_case.postconditions = "\\n".join(result.postconditions)
+    use_case.actor = "\n".join(result.actor)
+    use_case.description = "\n".join(result.description)
+    use_case.preconditions = "\n".join(result.preconditions)
+    use_case.minimal_guarantees = "\n".join(result.minimal_guarantees)
+    use_case.postconditions = "\n".join(result.postconditions)
     use_case.main_flow = _encode_lines(result.main_flow)
     use_case.alt_flow = _encode_lines(result.alt_flow)
     use_case.exception_flow = _encode_lines(result.exception_flow)
@@ -1795,11 +1795,11 @@ def generate_project_use_case_scenarios_batch(
     try:
         for item in ordered_results:
             use_case = by_id[item.use_case_id]
-            use_case.actor = "\\n".join(item.actor)
-            use_case.description = "\\n".join(item.description)
-            use_case.preconditions = "\\n".join(item.preconditions)
-            use_case.minimal_guarantees = "\\n".join(item.minimal_guarantees)
-            use_case.postconditions = "\\n".join(item.postconditions)
+            use_case.actor = "\n".join(item.actor)
+            use_case.description = "\n".join(item.description)
+            use_case.preconditions = "\n".join(item.preconditions)
+            use_case.minimal_guarantees = "\n".join(item.minimal_guarantees)
+            use_case.postconditions = "\n".join(item.postconditions)
             use_case.main_flow = _encode_lines(item.main_flow)
             use_case.alt_flow = _encode_lines(item.alt_flow)
             use_case.exception_flow = _encode_lines(item.exception_flow)
