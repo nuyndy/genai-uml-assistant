@@ -268,6 +268,16 @@ export function generateSpecification(
   });
 }
 
+export function consolidateProjectFunctionalSpecifications(
+  projectId: number,
+  regenerate = true,
+): Promise<SpecificationRecord[]> {
+  return apiFetch(
+    `/api/projects/${projectId}/specifications/functional/consolidate?regenerate=${regenerate}`,
+    { method: "POST" },
+  );
+}
+
 export function generateProjectSpecificationsBatch(
   projectId: number,
 ): Promise<SpecificationRecord[]> {
