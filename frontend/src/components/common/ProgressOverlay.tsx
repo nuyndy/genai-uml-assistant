@@ -1,12 +1,32 @@
+import { useEffect, useState } from "react";
+
 interface ProgressOverlayProps {
   label: string;
   estimate?: string;
 }
 
+function formatElapsed(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return minutes > 0
+    ? `${minutes} phút ${String(remainingSeconds).padStart(2, "0")} giây`
+    : `${remainingSeconds} giây`;
+}
+
 export default function ProgressOverlay({
   label,
-  estimate = "Thường mất 5-15 giây",
 }: ProgressOverlayProps) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-white/70 p-4 backdrop-blur-[2px]"
@@ -23,7 +43,9 @@ export default function ProgressOverlay({
         >
           <div className="h-full w-[38%] rounded-full bg-violet-600 progress-indeterminate" />
         </div>
-        <p className="mt-3 text-center text-xs text-slate-500">{estimate}</p>
+        <p className="mt-3 text-center text-xs text-slate-500" aria-live="off">
+          Thời gian đã xử lý: {formatElapsed(elapsedSeconds)}
+        </p>
       </div>
     </div>
   );
