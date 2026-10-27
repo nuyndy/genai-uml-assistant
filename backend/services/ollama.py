@@ -31,12 +31,15 @@ def strip_code_fence(text: str) -> str:
 
 def _parse_timeout() -> int:
     try:
-        timeout = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "600"))
+        timeout = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "900"))
     except ValueError as exc:
         raise AIServiceError("OLLAMA_TIMEOUT_SECONDS phải là số giây nguyên.") from exc
     if timeout <= 0:
         raise AIServiceError("OLLAMA_TIMEOUT_SECONDS phải lớn hơn 0.")
-    return timeout
+
+    # Tổng hợp FR có thể mất nhiều phút với model chạy cục bộ. Tránh để giá trị
+    # cũ trong .env (thường là 300s) tiếp tục cắt request quá sớm.
+    return max(timeout, 900)
 
 
 def _build_options(json_response: bool) -> dict[str, object]:
