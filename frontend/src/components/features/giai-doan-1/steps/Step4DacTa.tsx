@@ -196,6 +196,16 @@ export default function Step4DacTa({
               )) : <p className="px-2 py-3 text-xs text-slate-500">Chưa có FR.</p>}
             </div>
           )}
+          {kind === "functional" && stories.length > 0 && functionalItems.length === 0 && (
+            <div className="mb-3">
+              <PrimaryButton
+                disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
+                onClick={() => void generateFunctionalSpecification(stories[0])}
+              >
+                Tạo đặc tả chức năng từ User Story
+              </PrimaryButton>
+            </div>
+          )}
           <button type="button" onClick={() => chooseKind("non_functional")} aria-pressed={kind === "non_functional"}
             className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${kind === "non_functional" ? "border-violet-500 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
             <span><span className="block text-sm font-bold">NFR</span><span className="mt-0.5 block text-xs opacity-75">Phi chức năng</span></span>
@@ -233,14 +243,6 @@ export default function Step4DacTa({
               ) : (
                 <Card title="Danh sách FR">
                   <EmptyState title="Chưa có đặc tả chức năng" hint={`Đã có ${stories.length} User Story nhưng chưa có FR được tổng hợp. Bạn có thể tạo đặc tả chức năng từ các User Story hiện có ngay tại đây.`} />
-                  <div className="mt-4">
-                    <PrimaryButton
-                      disabled={busy || !projectId || Boolean(Object.values(generatingStories).some(Boolean))}
-                      onClick={() => void generateFunctionalSpecification(stories[0])}
-                    >
-                      Tạo đặc tả chức năng từ User Story
-                    </PrimaryButton>
-                  </div>
                 </Card>
               )
             ) : (
