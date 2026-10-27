@@ -101,22 +101,7 @@ export default function Step3UserStory({
           <div className="mt-4 flex justify-start"></div>
         </Card>
       ) : (
-        <Card tone="emerald" title="Bản nháp User Story" subtitle="Nội dung được AI đề xuất từ yêu cầu gốc. Bạn có thể chỉnh sửa trực tiếp trước khi xác nhận." actions={
-          <div className="flex flex-wrap gap-2">
-            <SoftButton
-              disabled={busy || loadingStoryDrafts || !activeDraftRequirement}
-              onClick={() => activeDraftRequirement && void generateStoryDrafts(activeDraftRequirement.id)}
-            >
-              {loadingStoryDrafts ? "Đang hoàn thiện..." : "Hoàn thiện UC hiện tại"}
-            </SoftButton>
-            <PrimaryButton
-              disabled={busy || loadingStoryDrafts || total === 0}
-              onClick={() => void generateStoryDrafts()}
-            >
-              {loadingStoryDrafts ? "Đang hoàn thiện..." : "Hoàn thiện tất cả UC"}
-            </PrimaryButton>
-          </div>
-        }>
+        <div className="space-y-3">
           {loadingStoryDrafts ? (
             <div role="status" aria-live="polite" className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
               <p className="text-sm font-semibold text-emerald-900">AI đang tạo User Story</p>
@@ -202,7 +187,7 @@ export default function Step3UserStory({
           </div>
           {actionMessage && <p role="status" className="mt-3 text-sm text-slate-600">{actionMessage}</p>}
           {!allStoryDraftsReady && !loadingStoryDrafts && <p className="mt-3 text-right text-sm text-amber-800">Cần hoàn thiện đủ 4 trường cho mọi User Story trước khi xác nhận.</p>}
-        </Card>
+        </div>
       )}
 
       {!allRequirementsConfirmed && <div className="flex justify-start"></div>}
