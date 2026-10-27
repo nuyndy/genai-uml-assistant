@@ -2,30 +2,37 @@ import { useEffect, useState } from "react";
 
 interface ProgressOverlayProps {
   label: string;
-  estimate?: string;
 }
 
-function formatElapsed(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return minutes > 0
-    ? `${minutes} phút ${String(remainingSeconds).padStart(2, "0")} giây`
-    : `${remainingSeconds} giây`;
+function formatElapsed(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours} giờ ${String(minutes).padStart(2, "0")} phút ${String(seconds).padStart(2, "0")} giây`;
+  }
+  if (minutes > 0) {
+    return `${minutes} phút ${String(seconds).padStart(2, "0")} giây`;
+  }
+  return `${seconds} giây`;
 }
 
-export default function ProgressOverlay({
-  label,
-}: ProgressOverlayProps) {
+export default function ProgressOverlay({ label }: ProgressOverlayProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     const startedAt = Date.now();
-    const timer = window.setInterval(() => {
+    const updateElapsed = () => {
       setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
-    }, 1000);
+    };
+
+    setElapsedSeconds(0);
+    updateElapsed();
+    const timer = window.setInterval(updateElapsed, 1000);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [label]);
 
   return (
     <div
