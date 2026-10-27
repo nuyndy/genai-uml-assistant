@@ -279,6 +279,23 @@ export function consolidateProjectFunctionalSpecifications(
   );
 }
 
+export interface FunctionalConsolidationStatus {
+  status: "idle" | "starting" | "running" | "generating" | "validating" | "saving" | "error" | string;
+  current_batch: number;
+  total_batches: number;
+  completed_batches: number;
+  status_message: string;
+  updated_at?: string | null;
+}
+
+export function getFunctionalConsolidationStatus(
+  projectId: number,
+): Promise<FunctionalConsolidationStatus> {
+  return apiFetch(
+    `/api/projects/${projectId}/specifications/functional/consolidation-status`,
+  );
+}
+
 export function generateProjectSpecificationsBatch(
   projectId: number,
 ): Promise<SpecificationRecord[]> {
