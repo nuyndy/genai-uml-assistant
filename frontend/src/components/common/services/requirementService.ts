@@ -103,6 +103,7 @@ export interface FunctionalSpecification {
   acceptance_criteria: string[];
   business_rules: string[];
   field_mapping: FieldMapping[];
+  source_user_story_ids?: number[];
   priority?: "Must" | "Should" | "Could" | "Won't";
   pre_conditions?: string[];
   main_flow?: string[];
