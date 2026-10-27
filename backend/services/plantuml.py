@@ -1,65 +1,85 @@
 import base64
-import json
 import os
 
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+DEFAULT_PLANTUML_SERVER = "https://www.plantuml.com/plantuml"
+
 
 class PlantUMLRenderError(RuntimeError):
     pass
 
 
 def render_plantuml(source_code: str) -> str:
-    # TODO: cần cấu hình PlantUML render service qua PLANTUML_RENDER_URL.
-    service_url = os.getenv("PLANTUML_RENDER_URL", "").strip()
-    if not service_url:
+    """Render PlantUML directly through the public PlantUML server.
+
+    Returns a base64 data URL, preserving the existing database/API contract.
+    PLANTUML_SERVER_URL may override the server base URL.
+    """
+    source = source_code.strip()
+    if not source:
+        raise PlantUMLRenderError("Mã PlantUML không được để trống.")
+
+    if "@startuml" not in source or "@enduml" not in source:
         raise PlantUMLRenderError(
-            "Chưa cấu hình dịch vụ render PlantUML. Cần cấu hình PlantUML render service."
+            "Mã PlantUML phải có @startuml và @enduml."
         )
 
+    server_url = (
+        os.getenv("PLANTUML_SERVER_URL", DEFAULT_PLANTUML_SERVER).strip().rstrip("/")
+        or DEFAULT_PLANTUML_SERVER
+    )
+
+    request = Request(
+        f"{server_url}/svg",
+        data=source.encode("utf-8"),
+        headers={
+            "Content-Type": "text/plain; charset=utf-8",
+            "Accept": "image/svg+xml",
+        },
+        method="POST",
+    )
+
     try:
-        request = Request(
-            f"{service_url.rstrip('/')}/render",
-            data=json.dumps({"source_code": source_code}).encode("utf-8"),
-            headers={"Content-Type": "application/json", "Accept": "application/json, image/*"},
-            method="POST",
-        )
         with urlopen(request, timeout=45) as response:
-            content_type = response.headers.get_content_type()
-            body = response.read()
+            content_type = (
+                response.headers.get("Content-Type", "")
+                .split(";", 1)[0]
+                .strip()
+                .lower()
+            )
+            image_bytes = response.read()
     except HTTPError as exc:
         raise PlantUMLRenderError(
-            f"Dịch vụ render PlantUML trả về HTTP {exc.code}."
+            f"Máy chủ PlantUML trả về HTTP {exc.code}."
         ) from exc
     except (URLError, TimeoutError, OSError, ValueError) as exc:
         raise PlantUMLRenderError(
-            "Không kết nối được dịch vụ render PlantUML."
+            "Không kết nối được máy chủ PlantUML web. "
+            "Hãy kiểm tra kết nối Internet hoặc thử lại sau."
         ) from exc
 
-    if not body:
-        raise PlantUMLRenderError("Dịch vụ render PlantUML trả về ảnh rỗng.")
+    if not image_bytes:
+        raise PlantUMLRenderError("Máy chủ PlantUML trả về nội dung rỗng.")
 
-    if content_type == "application/json":
-        try:
-            payload = json.loads(body.decode("utf-8"))
-            image_url = payload["image_url"]
-        except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError) as exc:
-            raise PlantUMLRenderError(
-                "Dịch vụ render PlantUML trả về JSON thiếu image_url."
-            ) from exc
-        if not isinstance(image_url, str) or not image_url.strip():
-            raise PlantUMLRenderError(
-                "Dịch vụ render PlantUML trả về image_url không hợp lệ."
-            )
-        return image_url.strip()
-
-    if content_type not in {"image/svg+xml", "image/png"}:
+    if content_type != "image/svg+xml":
         raise PlantUMLRenderError(
-            f"Dịch vụ render PlantUML trả về kiểu nội dung không hỗ trợ: {content_type}."
+            "Máy chủ PlantUML trả về kiểu nội dung không hợp lệ: "
+            f"{content_type or 'không xác định'}."
         )
-    encoded = base64.b64encode(body).decode("ascii")
-    return f"data:{content_type};base64,{encoded}"
+
+    # Do not accept an HTML/text error page as a valid diagram image.
+    if b"<svg" not in image_bytes[:4096].lower():
+        raise PlantUMLRenderError(
+            "Máy chủ PlantUML không trả về SVG hợp lệ. "
+            "Hãy kiểm tra cú pháp mã sơ đồ."
+        )
+
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    return f"data:image/svg+xml;base64,{encoded}"
