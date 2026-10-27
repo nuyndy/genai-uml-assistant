@@ -71,6 +71,13 @@ export default function Step3UserStory({
           ) : (
             <div className="space-y-3">
               
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
+            <SoftButton disabled={activeDraftIndex === 0 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
+            <SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton>
+            <SoftButton disabled={!activeDraftRequirement || busy || loadingStoryDrafts} onClick={() => { if (activeDraftRequirement) void generateStoryDrafts(activeDraftRequirement.id); }}>Hoàn thiện UC này bằng AI</SoftButton>
+            <PrimaryButton disabled={!activeDraftRequirement || !storyDrafts[activeDraftRequirement.id] || ![storyDrafts[activeDraftRequirement.id]?.role, storyDrafts[activeDraftRequirement.id]?.feature, storyDrafts[activeDraftRequirement.id]?.benefit, storyDrafts[activeDraftRequirement.id]?.acceptance_criteria].every((v) => Boolean(v?.trim())) || busy || saving} onClick={() => void (async () => { if (!activeDraftRequirement) return; setSaving(true); setActionMessage(""); try { const saved = await saveRequirementUserStory(activeDraftRequirement.id, storyDrafts[activeDraftRequirement.id]); setActionMessage("Đã lưu US-" + String(saved.id).padStart(3, "0") + "."); window.location.reload(); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
+            <PrimaryButton disabled={busy || loadingStoryDrafts || draftRequirements.length === 0} onClick={() => void generateStoryDrafts()}>Hoàn thiện tất cả UC bằng AI</PrimaryButton>
+          </div>
               {(orderedDrafts[activeDraftIndex] ? [orderedDrafts[activeDraftIndex]] : []).map((item) => {
                 const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
                 const savedDraft = storyDrafts[item.id];
@@ -86,7 +93,7 @@ export default function Step3UserStory({
                         </div>
                         <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>USER STORY · {story?.feature?.trim() || `Bản nháp cho REQ-${String(item.id).padStart(3, "0")}`}</h3>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <StatusBadge tone={story ? "success" : "warn"}>{story ? "AI đã sinh" : "AI chưa sinh"}</StatusBadge>
+                          <StatusBadge tone={savedDraft ? "success" : "warn"}>{savedDraft ? "AI đã sinh" : "AI chưa sinh"}</StatusBadge>
                           <StatusBadge tone="warn">Chưa duyệt</StatusBadge>
                           <StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường" : "Cần hoàn thiện"}</StatusBadge>
                         </div>
@@ -131,13 +138,6 @@ export default function Step3UserStory({
               })}
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
-            <SoftButton disabled={activeDraftIndex === 0 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.max(0, i - 1))}>← Trước</SoftButton>
-            <SoftButton disabled={activeDraftIndex >= orderedDrafts.length - 1 || busy || loadingStoryDrafts} onClick={() => setActiveDraftIndex((i) => Math.min(orderedDrafts.length - 1, i + 1))}>Sau →</SoftButton>
-            <SoftButton disabled={!activeDraftRequirement || busy || loadingStoryDrafts} onClick={() => { if (activeDraftRequirement) void generateStoryDrafts(activeDraftRequirement.id); }}>Hoàn thiện UC này bằng AI</SoftButton>
-            <PrimaryButton disabled={!activeDraftRequirement || !storyDrafts[activeDraftRequirement.id] || ![storyDrafts[activeDraftRequirement.id]?.role, storyDrafts[activeDraftRequirement.id]?.feature, storyDrafts[activeDraftRequirement.id]?.benefit, storyDrafts[activeDraftRequirement.id]?.acceptance_criteria].every((v) => Boolean(v?.trim())) || busy || saving} onClick={() => void (async () => { if (!activeDraftRequirement) return; setSaving(true); setActionMessage(""); try { const saved = await saveRequirementUserStory(activeDraftRequirement.id, storyDrafts[activeDraftRequirement.id]); setActionMessage("Đã lưu US-" + String(saved.id).padStart(3, "0") + "."); window.location.reload(); } catch (e) { setActionMessage(e instanceof Error ? e.message : "Không thể lưu User Story."); } finally { setSaving(false); } })()}>{saving ? "Đang lưu..." : "Lưu US"}</PrimaryButton>
-            <PrimaryButton disabled={busy || loadingStoryDrafts || draftRequirements.length === 0} onClick={() => void generateStoryDrafts()}>Hoàn thiện tất cả UC bằng AI</PrimaryButton>
-          </div>
           {actionMessage && <p role="status" className="mt-3 text-sm text-slate-600">{actionMessage}</p>}
         </div>
       )}
