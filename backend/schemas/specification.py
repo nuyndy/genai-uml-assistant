@@ -40,6 +40,7 @@ class FunctionalSpecification(BaseModel):
     acceptance_criteria: list[str] = Field(default_factory=list)
     business_rules: list[str] = Field(default_factory=list)
     field_mapping: list[FieldMapping] = Field(default_factory=list)
+    source_user_story_ids: list[int] = Field(default_factory=list)
     # Legacy fields accepted to read existing records; new FR forms do not use them.
     priority: Literal["Must", "Should", "Could", "Won't"] | None = None
     pre_conditions: list[str] = Field(default_factory=list)
@@ -49,6 +50,11 @@ class FunctionalSpecification(BaseModel):
     post_conditions: list[str] = Field(default_factory=list)
     minimal_guarantee: str = ""
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
+
+
+class FunctionalSpecificationBatch(BaseModel):
+    items: list[FunctionalSpecification] = Field(min_length=1)
+    model_config = ConfigDict(extra="forbid")
 
 
 class NonFunctionalItem(BaseModel):
