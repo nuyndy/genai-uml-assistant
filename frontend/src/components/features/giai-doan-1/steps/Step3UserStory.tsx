@@ -115,8 +115,16 @@ export default function Step3UserStory({
             <div className="space-y-3">
               {(orderedDrafts[activeDraftIndex] ? [orderedDrafts[activeDraftIndex]] : []).map((item, index) => {
                 const rawValue = requirementValues[item.id] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] };
-                const story = storyDrafts[item.id];
-                const storyReady = Boolean(story && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
+                const existingStory = storyDrafts[item.id];
+                // Luôn hiển thị đủ 4 trường cho yêu cầu mới; AI chỉ điền nội dung khi được yêu cầu.
+                const story = existingStory ?? {
+                  requirement_id: item.id,
+                  role: "",
+                  feature: "",
+                  benefit: "",
+                  acceptance_criteria: "",
+                };
+                const storyReady = Boolean(existingStory && [story.role, story.feature, story.benefit, story.acceptance_criteria].every((value) => value.trim()));
                 return (
                   <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div className="flex items-start gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
@@ -127,17 +135,14 @@ export default function Step3UserStory({
                         </div>
                         <h3 className={`mt-1 break-words text-base font-semibold leading-6 text-slate-900 ${textWrap}`}>USER STORY · {story?.feature?.trim() || `Bản nháp cho REQ-${String(item.id).padStart(3, "0")}`}</h3>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <StatusBadge tone={story ? "success" : "warn"}>{story ? "AI đã sinh" : "AI chưa sinh"}</StatusBadge>
+                          <StatusBadge tone={existingStory ? "success" : "warn"}>{existingStory ? "Đã có bản nháp" : "Chưa có nội dung · chờ AI hoặc nhập tay"}</StatusBadge>
                           <StatusBadge tone="warn">Chưa duyệt</StatusBadge>
                           <StatusBadge tone={storyReady ? "success" : "warn"}>{storyReady ? "Đủ trường" : "Cần hoàn thiện"}</StatusBadge>
                         </div>
                         <p className={`mt-2 text-sm leading-5 text-slate-600 ${textWrap}`}>Yêu cầu gốc: {requirementTitle(rawValue)} — {rawValue.purpose || "Chưa có mục đích được mô tả."}</p>
                       </div>
                     </div>
-                    {!story ? (
-                      <div className="p-4 sm:p-5"><p className="text-sm text-amber-800">Chưa có bản nháp cho yêu cầu này. Hãy tạo lại bản nháp bằng AI.</p></div>
-                    ) : (
-                      <div className="grid gap-3 p-4 sm:grid-cols-2">
+                    <div className="grid gap-3 p-4 sm:grid-cols-2">
                         <label className="block text-sm font-medium text-slate-700">Vai trò <span className="text-rose-600">*</span>
                           <input aria-label={`Vai trò User Story ${item.id}`} value={story.role ?? ""} onChange={(event) => changeStoryDraft(item.id, "role", event.target.value)} className={`${inputClass} mt-1.5 bg-white`} placeholder="Ví dụ: Khách hàng" />
                         </label>
@@ -169,8 +174,7 @@ export default function Step3UserStory({
                             ))}
                           </div>
                         </div>
-                      </div>
-                    )}
+                    </div>
                   </article>
                 );
               })}
