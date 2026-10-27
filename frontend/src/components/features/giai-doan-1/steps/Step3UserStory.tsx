@@ -126,7 +126,7 @@ export default function Step3UserStory({
                 })()}>{savingSavedStory ? "Đang lưu..." : "Lưu thay đổi"}</PrimaryButton>
                 {actionMessage && <p role="status" className="text-sm text-slate-600">{actionMessage}</p>}
               </div>
-              <div className="hidden">
+              </div>
               <div className="border-b border-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
                 Yêu cầu gốc: {requirementTitle(requirementValues[activeSavedStory.requirement_id ?? 0] ?? { actor: "", action: "", targetObject: "", purpose: "", preConditions: [], businessRules: [] })} — {(requirementValues[activeSavedStory.requirement_id ?? 0]?.purpose) || "Chưa có mục đích được mô tả."}
               </div>
