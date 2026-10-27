@@ -78,7 +78,7 @@ export default function Step3UserStory({
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-xs font-bold text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">US-{String(story.id).padStart(3, "0")} · REQ-{String(story.requirement_id).padStart(3, "0")}</p>
-                        <h3 className={`mt-1 break-words text-sm font-semibold leading-5 text-slate-900 ${textWrap}}>{story.feature?.trim() || "User Story chưa có tiêu đề"}</h3>
+                        <h3 className={`mt-1 break-words text-sm font-semibold leading-5 text-slate-900 ${textWrap}`}>{story.feature?.trim() || "User Story chưa có tiêu đề"}</h3>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                           <StatusBadge tone="success">Đã xác nhận</StatusBadge>
                         </div>
