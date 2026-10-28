@@ -2,7 +2,7 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -2338,46 +2338,85 @@ def generate_classes(
 ) -> list[ClassEntityRecord]:
     _require_project(db, project_id)
     try:
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if project is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+
+        # Hỗ trợ cả dữ liệu cũ gắn qua UserStory và bộ đặc tả FR tổng hợp
+        # mới gắn trực tiếp vào Project.
         rows = (
             db.query(UseCase, Specification)
             .join(Specification, UseCase.specification_id == Specification.id)
-            .join(UserStory, Specification.user_story_id == UserStory.id)
-            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
-            .filter(RawRequirement.project_id == project_id)
+            .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+            .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(
+                or_(
+                    Specification.project_id == project_id,
+                    RawRequirement.project_id == project_id,
+                )
+            )
             .order_by(UseCase.id)
             .all()
         )
-        # Lớp được suy luận từ nghiệp vụ, tức đặc tả CHỨC NĂNG; đặc tả phi
-        # chức năng không mô tả thực thể nên không đưa vào prompt.
         specifications = (
             db.query(Specification)
-            .join(UserStory, Specification.user_story_id == UserStory.id)
-            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+            .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
             .filter(
-                RawRequirement.project_id == project_id,
                 Specification.type == "functional",
+                or_(
+                    Specification.project_id == project_id,
+                    RawRequirement.project_id == project_id,
+                ),
             )
             .order_by(Specification.id)
+            .all()
+        )
+        raw_requirements = (
+            db.query(RawRequirement)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(RawRequirement.id)
             .all()
         )
     except SQLAlchemyError as exc:
         logger.exception("Could not read class diagram source material")
         raise HTTPException(status_code=500, detail="Không thể đọc dữ liệu mô hình lớp.") from exc
-    if not rows:
+    if not rows and not specifications and not raw_requirements:
         raise HTTPException(
             status_code=409,
-            detail="Cần ít nhất một use case để suy luận biểu đồ lớp.",
+            detail="Cần có yêu cầu, đặc tả chức năng hoặc use case để suy luận biểu đồ lớp.",
         )
-    case_context = "\n".join(
-        f"Use case: {item.name}\nLuồng chính: {'; '.join(_decode_lines(item.main_flow))}\n"
-        f"Luồng phụ: {'; '.join(_decode_lines(item.alt_flow))}\n"
-        f"Ngoại lệ: {'; '.join(_decode_lines(item.exception_flow))}"
-        for item, _ in rows
+
+    # Đưa tên/mô tả dự án và yêu cầu gốc vào ngữ cảnh để AI không suy đoán
+    # theo ví dụ quen thuộc hoặc trộn miền nghiệp vụ của hệ thống khác.
+    project_context = (
+        f"HỆ THỐNG ĐANG PHÂN TÍCH: {project.name}\n"
+        f"Mô tả hệ thống: {project.description or 'Không có mô tả riêng.'}\n"
+        "YÊU CẦU GỐC CỦA CHÍNH DỰ ÁN:\n"
+        + "\n\n".join(
+            f"Yêu cầu {index}: {item.title or ''}\n"
+            f"Nội dung: {item.content}\n"
+            f"Mục đích: {item.purpose or ''}\n"
+            f"Tiêu chí chấp nhận: {item.acceptance_criteria or ''}"
+            for index, item in enumerate(raw_requirements, start=1)
+        )
+    )
+    case_context = project_context + "\n\nUSE CASE:\n" + (
+        "\n".join(
+            f"Use case: {item.name}\nMô tả: {item.description or ''}\n"
+            f"Tác nhân: {item.actor or ''}\n"
+            f"Luồng chính: {'; '.join(_decode_lines(item.main_flow))}\n"
+            f"Luồng phụ: {'; '.join(_decode_lines(item.alt_flow))}\n"
+            f"Ngoại lệ: {'; '.join(_decode_lines(item.exception_flow))}"
+            for item, _ in rows
+        )
+        or "Chưa có use case được lưu."
     )
     spec_context = "\n\n".join(
         _format_specification(item, index=index)
         for index, item in enumerate(specifications, start=1)
-    )
+    ) or "Chưa có đặc tả chức năng được lưu."
+
     from services.uml_prompts import build_class_diagram_prompt
 
     prompt = build_class_diagram_prompt(case_context, spec_context)
@@ -2385,31 +2424,52 @@ def generate_classes(
     if not result.classes:
         raise HTTPException(status_code=502, detail="AI không đề xuất được lớp nào.")
 
-    by_name: dict[str, ClassEntity] = {}
     try:
         existing = db.query(ClassEntity).filter(ClassEntity.project_id == project_id).all()
-        by_name = {item.name.casefold(): item for item in existing}
+        existing_by_name = {item.name.casefold(): item for item in existing}
+        suggested_names = {item.name.casefold() for item in result.classes}
+
+        # Lần sinh mới là kết quả thay thế của mô hình lớp dự án, không để
+        # các lớp từ lần sinh trước tiếp tục xuất hiện lẫn với kết quả mới.
+        stale_classes = [
+            item for item in existing if item.name.casefold() not in suggested_names
+        ]
+        stale_ids = [item.id for item in stale_classes]
+        if stale_ids:
+            db.query(ClassRelation).filter(
+                or_(
+                    ClassRelation.class_a_id.in_(stale_ids),
+                    ClassRelation.class_b_id.in_(stale_ids),
+                )
+            ).delete(synchronize_session=False)
+            for stale in stale_classes:
+                db.delete(stale)
+
         persisted_classes: list[ClassEntity] = []
+        current_by_name: dict[str, ClassEntity] = {}
         for suggestion in result.classes:
-            class_entity = by_name.get(suggestion.name.casefold())
+            class_entity = existing_by_name.get(suggestion.name.casefold())
             if class_entity is None:
                 class_entity = ClassEntity(project_id=project_id, name=suggestion.name)
                 db.add(class_entity)
+            class_entity.name = suggestion.name
             class_entity.attributes = _encode_lines(suggestion.attributes)
             class_entity.methods = _encode_lines(suggestion.methods)
-            by_name[suggestion.name.casefold()] = class_entity
+            current_by_name[suggestion.name.casefold()] = class_entity
             persisted_classes.append(class_entity)
+
         db.flush()
-        class_ids = [item.id for item in existing]
-        class_ids.extend(item.id for item in persisted_classes if item.id not in class_ids)
-        if class_ids:
+        current_ids = [item.id for item in persisted_classes]
+        if current_ids:
             db.query(ClassRelation).filter(
-                ClassRelation.class_a_id.in_(class_ids)
-                | ClassRelation.class_b_id.in_(class_ids)
+                or_(
+                    ClassRelation.class_a_id.in_(current_ids),
+                    ClassRelation.class_b_id.in_(current_ids),
+                )
             ).delete(synchronize_session=False)
         for relation in result.relations:
-            class_a = by_name.get(relation.class_a.casefold())
-            class_b = by_name.get(relation.class_b.casefold())
+            class_a = current_by_name.get(relation.class_a.casefold())
+            class_b = current_by_name.get(relation.class_b.casefold())
             if class_a is not None and class_b is not None and class_a.id != class_b.id:
                 db.add(
                     ClassRelation(
@@ -2421,6 +2481,9 @@ def generate_classes(
         db.commit()
         for item in persisted_classes:
             db.refresh(item)
+    except HTTPException:
+        db.rollback()
+        raise
     except SQLAlchemyError as exc:
         db.rollback()
         logger.exception("Could not persist inferred class entities")
