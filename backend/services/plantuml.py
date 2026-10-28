@@ -91,7 +91,7 @@ def _apply_diagram_typography(source: str) -> str:
         if line.lstrip().startswith("@startuml"):
             lines[index + 1:index + 1] = settings
             break
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 def render_plantuml(source_code: str) -> str:
