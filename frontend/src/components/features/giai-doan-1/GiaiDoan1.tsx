@@ -880,8 +880,7 @@ export default function GiaiDoan1({
     setError("");
     try {
       await saveSrsMetadata(projectId, srsMetadata);
-      setSrsMetadataSaved(srsMetadata);
-      await refreshSrsDocument();
+      setSrsMetadataSaved({ ...srsMetadata });
     } catch (reason) {
       setError(`Không thể lưu nội dung tài liệu: ${formatError(reason)}`);
     } finally {
@@ -916,11 +915,21 @@ export default function GiaiDoan1({
     setBusy(true);
     setError("");
     try {
-      await updateSpecification(record.id, content);
-      // Sửa nội dung sẽ thu hồi phê duyệt ở backend; đồng bộ lại danh sách
-      // đặc tả để workflow không giữ cờ approved cũ và mở nhầm Giai đoạn 2.
-      await refreshSpecifications();
-      await refreshSrsDocument();
+      const saved = await updateSpecification(record.id, content);
+      // Cập nhật đúng bản ghi vừa lưu; không tải lại toàn bộ SRS vì việc đó
+      // có thể ghi đè các trường người dùng vẫn đang chỉnh sửa.
+      setSpecifications((previous) => previous.map((item) => item.id === record.id ? saved : item));
+      setState((previous) => ({
+        ...previous,
+        specs: previous.specs.map((item) => item.id === record.id
+          ? { ...item, content: saved.content, approved: saved.approval_status === "approved" }
+          : item),
+      }));
+      setSrsSpecDrafts((previous) => {
+        const next = { ...previous };
+        delete next[record.id];
+        return next;
+      });
     } catch (reason) {
       setError(`Không thể lưu đặc tả ${record.feature}: ${formatError(reason)}`);
     } finally {
@@ -1336,6 +1345,7 @@ export default function GiaiDoan1({
       specifications={specifications}
       srsFunctionalForEditor={srsFunctionalForEditor}
       srsNonFunctionalForEditor={srsNonFunctionalForEditor}
+      srsSpecDrafts={srsSpecDrafts}
       busy={busy}
       onStepChange={onStepChange}
       saveSrsMetadataDraft={saveSrsMetadataDraft}

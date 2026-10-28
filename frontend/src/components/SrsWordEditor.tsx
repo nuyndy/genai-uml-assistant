@@ -112,21 +112,25 @@ function SubHeading({ children }: { children: ReactNode }) {
 function FunctionalBlock({
   record,
   value,
+  onChange,
 }: {
   record: SpecificationRecord;
   value: FunctionalSpecification;
+  onChange: (content: FunctionalSpecification) => void;
 }) {
+  const patch = <K extends keyof FunctionalSpecification>(key: K, nextValue: FunctionalSpecification[K]) =>
+    onChange({ ...value, [key]: nextValue });
   const rows: { label: string; content: ReactNode }[] = [
-    { label: "Mã chức năng", content: <WordField label="" value={value.function_code ?? ""} onChange={() => undefined} readOnly /> },
-    { label: "Tên chức năng", content: <WordField label="" value={value.function_name ?? ""} onChange={() => undefined} readOnly /> },
-    { label: "Mô tả", content: <WordField label="" value={value.description ?? ""} onChange={() => undefined} readOnly /> },
-    { label: "Tác nhân", content: <WordListField label="" values={value.actors ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Quy trình xử lý", content: <WordListField label="" values={value.process ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Dữ liệu đầu vào", content: <WordListField label="" values={value.input_data ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Quy tắc xử lý", content: <WordListField label="" values={value.processing_rules ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Dữ liệu đầu ra", content: <WordListField label="" values={value.output_data ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Tiêu chí chấp nhận", content: <WordListField label="" values={value.acceptance_criteria ?? []} onChange={() => undefined} readOnly /> },
-    { label: "Quy tắc nghiệp vụ", content: <WordListField label="" values={value.business_rules ?? []} onChange={() => undefined} readOnly /> },
+    { label: "Mã chức năng", content: <WordField label="" value={value.function_code ?? ""} onChange={(next) => patch("function_code", next)} /> },
+    { label: "Tên chức năng", content: <WordField label="" value={value.function_name ?? ""} onChange={(next) => patch("function_name", next)} /> },
+    { label: "Mô tả", content: <WordField label="" value={value.description ?? ""} onChange={(next) => patch("description", next)} /> },
+    { label: "Tác nhân", content: <WordListField label="" values={value.actors ?? []} onChange={(next) => patch("actors", next)} /> },
+    { label: "Quy trình xử lý", content: <WordListField label="" values={value.process ?? []} onChange={(next) => patch("process", next)} /> },
+    { label: "Dữ liệu đầu vào", content: <WordListField label="" values={value.input_data ?? []} onChange={(next) => patch("input_data", next)} /> },
+    { label: "Quy tắc xử lý", content: <WordListField label="" values={value.processing_rules ?? []} onChange={(next) => patch("processing_rules", next)} /> },
+    { label: "Dữ liệu đầu ra", content: <WordListField label="" values={value.output_data ?? []} onChange={(next) => patch("output_data", next)} /> },
+    { label: "Tiêu chí chấp nhận", content: <WordListField label="" values={value.acceptance_criteria ?? []} onChange={(next) => patch("acceptance_criteria", next)} /> },
+    { label: "Quy tắc nghiệp vụ", content: <WordListField label="" values={value.business_rules ?? []} onChange={(next) => patch("business_rules", next)} /> },
   ];
   return (
     <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={`Bảng đặc tả ${value.function_code || record.feature}`}>
@@ -145,10 +149,14 @@ function FunctionalBlock({
 function NonFunctionalBlock({
   record,
   value,
+  onChange,
 }: {
   record: SpecificationRecord;
   value: NonFunctionalSpecification;
+  onChange: (content: NonFunctionalSpecification) => void;
 }) {
+  const patchItem = (index: number, key: keyof NonFunctionalSpecification["items"][number], nextValue: string) =>
+    onChange({ ...value, items: value.items.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: nextValue } : item) });
   return (
     <article className="mb-4" aria-label={record.feature || "Yêu cầu phi chức năng"}>
       
@@ -159,17 +167,17 @@ function NonFunctionalBlock({
             <table className="w-full table-fixed border-collapse border border-slate-400 text-left text-[13px] leading-5" aria-label={item.group || `Bảng yêu cầu phi chức năng ${index + 1}`}>
               <tbody>
                 {([
-                  ["Tiêu chí", item.criteria],
-                  ["Yêu cầu cụ thể", item.requirement],
-                  ["Chỉ tiêu / ngưỡng đo lường", item.metric],
-                  ["Điều kiện áp dụng", item.conditions],
-                  ["Phương pháp kiểm chứng", item.verification_method],
-                  ["Phạm vi áp dụng", item.scope],
-                  ["Nguồn / căn cứ", item.source],
-                ] as [string, string | undefined][]).map(([label, content]) => (
+                  ["Tiêu chí", "criteria", item.criteria],
+                  ["Yêu cầu cụ thể", "requirement", item.requirement],
+                  ["Chỉ tiêu / ngưỡng đo lường", "metric", item.metric],
+                  ["Điều kiện áp dụng", "conditions", item.conditions],
+                  ["Phương pháp kiểm chứng", "verification_method", item.verification_method],
+                  ["Phạm vi áp dụng", "scope", item.scope],
+                  ["Nguồn / căn cứ", "source", item.source],
+                ] as [string, keyof NonFunctionalSpecification["items"][number], string][]).map(([label, key, content]) => (
                   <tr key={label} className="border-b border-slate-300 align-top last:border-b-0">
                     <th scope="row" className="w-[28%] border-r border-slate-300 bg-slate-100 px-2 py-1 text-left font-bold">{label}</th>
-                    <td className="min-w-0 break-words whitespace-pre-wrap px-2 py-1">{content || "—"}</td>
+                    <td className="min-w-0 px-2 py-1"><WordField label="" value={content ?? ""} onChange={(next) => patchItem(index, key, next)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -187,6 +195,7 @@ export default function SrsWordEditor({
   functional,
   nonFunctional,
   onChangeMetadata,
+  onChangeSpecification,
   appendixBContent,
 }: SrsWordEditorProps) {
   const patchMeta = (key: keyof SrsMetadata, value: string) =>
@@ -264,7 +273,7 @@ export default function SrsWordEditor({
                   <h4 className="mb-2 text-[15px] font-bold text-slate-900">
                     {String.fromCharCode(97 + index)}. Chức năng {index + 1}: {(record.value.function_name || record.feature || "Chức năng chưa đặt tên").replace(/\s*&\s*/g, " và ")}
                   </h4>
-                  <FunctionalBlock record={record} value={record.value} />
+                  <FunctionalBlock record={record} value={record.value} onChange={(content) => onChangeSpecification(record, content)} />
                 </section>
               ))}
             </div>
@@ -273,7 +282,7 @@ export default function SrsWordEditor({
           <SectionHeading>5.1 Danh sách đặc tả phi chức năng</SectionHeading>
           {nonFunctional.length === 0 && <p className="text-[15px] italic text-slate-500">Chưa có đặc tả phi chức năng.</p>}
           {nonFunctional.map((record) => (
-            <NonFunctionalBlock key={record.id} record={record} value={record.value} />
+            <NonFunctionalBlock key={record.id} record={record} value={record.value} onChange={(content) => onChangeSpecification(record, content)} />
           ))}
           <SubHeading>5.2 Quy tắc nghiệp vụ</SubHeading>
           <p className="text-sm leading-6">Các quy tắc nghiệp vụ chi tiết được ghi tại từng đặc tả chức năng tương ứng.</p>

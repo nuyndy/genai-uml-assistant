@@ -28,6 +28,7 @@ interface Props {
   specifications: SpecificationRecord[];
   srsFunctionalForEditor: FunctionalRow[];
   srsNonFunctionalForEditor: NonFunctionalRow[];
+  srsSpecDrafts: Record<number, SpecDraft>;
   busy: boolean;
   onStepChange: (step: number) => void;
   saveSrsMetadataDraft: () => void | Promise<void>;
@@ -49,6 +50,7 @@ export default function Step5ChotTaiLieu({
   specifications,
   srsFunctionalForEditor,
   srsNonFunctionalForEditor,
+  srsSpecDrafts,
   busy,
   saveSrsMetadataDraft,
   onGenerateRemainingFields,
@@ -131,6 +133,17 @@ export default function Step5ChotTaiLieu({
   };
 
 
+  const saveAllSrs = async () => {
+    saveTimers.current.forEach((timer) => clearTimeout(timer));
+    saveTimers.current.clear();
+    await saveSrsMetadataDraft();
+    const rows = [...srsFunctionalForEditor, ...srsNonFunctionalForEditor];
+    const pendingSpecs = rows
+      .filter((record) => Object.prototype.hasOwnProperty.call(srsSpecDrafts, record.id))
+      .map((record) => ({ record, content: srsSpecDrafts[record.id] }));
+    await Promise.all(pendingSpecs.map(({ record, content }) => saveSrsSpecification(record, content)));
+  };
+
   const changeSpecification = (record: SpecificationRecord, content: SpecDraft) => {
     setSrsSpecDrafts((previous) => ({ ...previous, [record.id]: content }));
     const pending = saveTimers.current.get(record.id);
@@ -170,7 +183,7 @@ export default function Step5ChotTaiLieu({
                   </SoftButton>
                 </div>
                 <div className="min-w-0 [&>button]:w-full">
-                  <SoftButton disabled={busy || !srsMetadataDirty} onClick={() => void saveSrsMetadataDraft()}>
+                  <SoftButton disabled={busy || (!srsMetadataDirty && Object.keys(srsSpecDrafts).length === 0)} onClick={() => void saveAllSrs()}>
                     Lưu SRS
                   </SoftButton>
                 </div>
