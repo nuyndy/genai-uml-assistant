@@ -17,6 +17,7 @@ import {
   generateClasses,
   generateClassDiagram,
   generateInteractionDiagram,
+  getDiagram,
   generateProjectInteractionDiagramsBatch,
   generateProjectScenariosBatch,
   generateScenario,
@@ -656,6 +657,12 @@ export default function GiaiDoan2({
           await refreshSavedState();
           setState((previous) => ({ ...previous, interactionsConfirmed: false }));
         }, "Đang sinh biểu đồ tương tác...");
+      }}
+      onLoadDiagramCode={async (id) => {
+        const diagram = await getDiagram(id);
+        const code = diagram.source_code ?? "";
+        if (!code.trim()) throw new Error("API không trả về mã nguồn của biểu đồ này.");
+        return code;
       }}
       onSaveDiagram={async (id, code) => {
         await runAction(async () => {
