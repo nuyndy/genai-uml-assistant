@@ -141,13 +141,13 @@ export default function Step4InteractionDiagram({
                       <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">Vừa khung</button>
                       {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
                     </div>
-                    <button type="button" onClick={() => void toggleCode()} className={`shrink-0 rounded-md border px-2 py-1.5 text-xs font-semibold ${(codeVisible[useCase.id] ?? false) ? "border-emerald-800 bg-emerald-800 text-white" : "border-emerald-200 bg-white text-emerald-900"}`}>Mã</button>
+                    <button type="button" onClick={() => void toggleCode()} className={`shrink-0 rounded-md border px-2 py-1.5 text-xs font-semibold ${(codeVisible[useCase.id] ?? false) ? "border-emerald-800 bg-emerald-800 text-white" : "border-emerald-200 bg-white text-emerald-900"}`}>Mã UML</button>
                     <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
                   </div>
 
-                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]" : "grid-cols-1"}`}>
                     <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "lg:col-span-2" : ""}`}>
                       <div className="space-y-2">
                         <div className="h-[calc(100vh-250px)] min-h-[340px] max-h-[calc(100vh-250px)] overflow-auto">
