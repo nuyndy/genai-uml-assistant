@@ -46,7 +46,9 @@ export default function Step3KiemTraNhatQuan({
   const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
   const missingRelations = consistencyResult?.missing_relations ?? [];
   const extraRelations = consistencyResult?.extra_relations ?? [];
-  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
+  const crossStageIssues: string[] = consistencyResult?.cross_stage_issues ?? [];
+  const stageCounts = consistencyResult?.stage_counts;
+  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length + crossStageIssues.length;
   const hasResult = consistencyResult != null;
 
   return (
@@ -90,7 +92,7 @@ export default function Step3KiemTraNhatQuan({
             ) : totalIssues === 0 ? (
               <div className="flex min-h-36 flex-col items-center justify-center gap-2 rounded-lg bg-emerald-50 px-5 py-8 text-center">
                 <p className="text-sm font-semibold text-emerald-800">Không phát hiện sai lệch</p>
-                <p className="text-sm text-emerald-700">Mô hình và mã PlantUML nhất quán trong phạm vi kiểm tra.</p>
+                <p className="text-sm text-emerald-700">Không phát hiện sai lệch giữa mã PlantUML, mô hình lớp và các chặng dữ liệu Giai đoạn 1–3.</p>
               </div>
             ) : (
               <>
@@ -104,6 +106,37 @@ export default function Step3KiemTraNhatQuan({
               </>
             )}
           </div>
+          {stageCounts && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-sm font-semibold text-slate-800">Phạm vi đã quét xuyên suốt Giai đoạn 1–3</h3>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  ["Yêu cầu", stageCounts.requirements],
+                  ["User Story", stageCounts.user_stories],
+                  ["Đặc tả", stageCounts.specifications],
+                  ["Use Case", stageCounts.use_cases],
+                  ["Tác nhân", stageCounts.actors],
+                  ["Biểu đồ tương tác", stageCounts.interaction_diagrams],
+                  ["Lớp", stageCounts.classes],
+                  ["Tổng biểu đồ", stageCounts.diagrams],
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                    <p className="text-xs text-slate-500">{label}</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {crossStageIssues.length > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <h3 className="text-sm font-semibold text-amber-900">Vấn đề liên kết giữa các giai đoạn ({crossStageIssues.length})</h3>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-900">
+                {crossStageIssues.map((issue, index) => <li key={index}>{issue}</li>)}
+              </ul>
+              <p className="mt-2 text-xs text-amber-800">Các vấn đề thiếu dữ liệu cần xử lý ở giai đoạn tương ứng; sửa mã PlantUML không tự tạo thay các dữ liệu này.</p>
+            </div>
+          )}
         </div>
       </Card>
     </div>
