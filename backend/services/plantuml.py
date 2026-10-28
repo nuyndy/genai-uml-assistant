@@ -60,6 +60,40 @@ def _apply_diagram_layout(source: str) -> str:
     return "\n".join(lines)
 
 
+def _apply_diagram_typography(source: str) -> str:
+    """Dùng font sans-serif rõ ràng và cỡ chữ nhất quán cho mọi sơ đồ."""
+    lines = source.splitlines()
+    if not lines or not any(line.lstrip().startswith("@startuml") for line in lines):
+        return source
+
+    # Không ghi đè cấu hình font do người dùng đã chủ động đặt trong mã.
+    has_font_name = any(
+        line.strip().lower().startswith("skinparam defaultfontname")
+        for line in lines
+    )
+    has_font_size = any(
+        line.strip().lower().startswith("skinparam defaultfontsize")
+        for line in lines
+    )
+
+    settings = []
+    if not has_font_name:
+        settings.append('skinparam defaultFontName "DejaVu Sans"')
+    if not has_font_size:
+        settings.append("skinparam defaultFontSize 14")
+    settings.extend([
+        "skinparam titleFontSize 16",
+        "skinparam classAttributeFontSize 13",
+        "skinparam classMethodFontSize 13",
+    ])
+
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith("@startuml"):
+            lines[index + 1:index + 1] = settings
+            break
+    return "\\n".join(lines)
+
+
 def render_plantuml(source_code: str) -> str:
     """Render PlantUML through the public server using its encoded GET API.
 
@@ -76,6 +110,7 @@ def render_plantuml(source_code: str) -> str:
         )
 
     source = _apply_diagram_layout(source)
+    source = _apply_diagram_typography(source)
 
     server_url = (
         os.getenv("PLANTUML_SERVER_URL", DEFAULT_PLANTUML_SERVER).strip().rstrip("/")
