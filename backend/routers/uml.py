@@ -643,7 +643,15 @@ def fix_uml_consistency_with_ai(
             status_code=502,
             detail="Mã PlantUML AI đề xuất chưa hợp lệ. Hãy thử lại hoặc chỉnh sửa thủ công.",
         ) from exc
-    return {"source_code": corrected_code}
+    # Kiểm tra lại mã AI vừa đề xuất bằng cùng bộ quy tắc nhất quán của hệ thống.
+    # Trả cả kết quả kiểm tra để giao diện không tuyên bố đã sửa xong khi vẫn còn lệch.
+    verification = check_uml_consistency(
+        project_id,
+        {"source_code": corrected_code},
+        db,
+        _,
+    )
+    return {"source_code": corrected_code, "consistency_result": verification}
 
 
 @router.post(
