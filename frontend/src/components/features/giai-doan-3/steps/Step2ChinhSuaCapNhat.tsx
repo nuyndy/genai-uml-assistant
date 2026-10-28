@@ -27,7 +27,8 @@ export default function Step2ChinhSuaCapNhat({
   const missingPlantUml = consistencyResult?.missing_in_plantuml ?? [];
   const missingRelations = consistencyResult?.missing_relations ?? [];
   const extraRelations = consistencyResult?.extra_relations ?? [];
-  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length;
+  const crossStageIssues: string[] = consistencyResult?.cross_stage_issues ?? [];
+  const totalIssues = missingDb.length + missingPlantUml.length + missingRelations.length + extraRelations.length + crossStageIssues.length;
   const hasResult = consistencyResult != null;
 
   const issues: Issue[] = useMemo(() => [
@@ -47,7 +48,11 @@ export default function Step2ChinhSuaCapNhat({
       detail: `${item.from} → ${item.to}${item.type ? ` (${item.type})` : ""}`,
       lineHint: String(item.from ?? ""), tone: "rose" as const,
     })),
-  ], [missingDb, missingPlantUml, missingRelations, extraRelations]);
+    ...crossStageIssues.map((item, index) => ({
+      id: `cross-stage-${index}`, title: "Vấn đề xuyên Giai đoạn 1–3",
+      detail: item, tone: "amber" as const,
+    })),
+  ], [missingDb, missingPlantUml, missingRelations, extraRelations, crossStageIssues]);
 
   const focusIssue = (issue: Issue) => {
     const editor = editorRef.current;
@@ -120,7 +125,7 @@ export default function Step2ChinhSuaCapNhat({
               </div>
             ) : totalIssues === 0 ? (
               <div className="flex min-h-40 flex-1 items-center justify-center rounded-lg bg-emerald-50 px-4 py-8 text-center text-sm font-medium text-emerald-800">
-                Không phát hiện sai lệch. Mã PlantUML khớp với dữ liệu UML đã lưu.
+                Không phát hiện sai lệch trong mã PlantUML và các liên kết dữ liệu Giai đoạn 1–3.
               </div>
             ) : (
               <div className="min-h-0 space-y-2 xl:max-h-[calc(100vh-320px)] xl:overflow-y-auto">
@@ -161,7 +166,7 @@ export default function Step2ChinhSuaCapNhat({
               placeholder="@startuml\n...\n@enduml"
             />
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              Khi chọn sai lệch, dòng mã liên quan sẽ được chọn và cuộn vào vùng nhìn thấy. Sau khi chỉnh sửa, hãy lưu rồi kiểm tra lại.
+              Chọn sai lệch liên quan đến mã để định vị dòng. Nút “Sửa bằng AI” chỉ chỉnh mã PlantUML; các vấn đề thiếu yêu cầu, User Story, đặc tả, Use Case hoặc biểu đồ tương tác cần xử lý ở giai đoạn tương ứng. Sau khi sửa, xem trước, lưu rồi kiểm tra lại.
             </p>
           </section>
         </div>
