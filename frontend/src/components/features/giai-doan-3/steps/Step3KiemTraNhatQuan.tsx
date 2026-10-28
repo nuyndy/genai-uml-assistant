@@ -97,7 +97,7 @@ export default function Step3KiemTraNhatQuan({
             ) : (
               <>
                 
-                <div className="max-h-64 min-h-48 space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="min-h-48 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                   {missingDb.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`db-${index}`}>Thiếu trong dữ liệu đã lưu: {item}</div>)}
                   {missingPlantUml.map((item: string, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`puml-${index}`}>Thiếu trong PlantUML: {item}</div>)}
                   {missingRelations.map((item: any, index: number) => <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900" key={`mr-${index}`}>Thiếu quan hệ: {item.from} → {item.to} ({item.type})</div>)}
