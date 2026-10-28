@@ -12,6 +12,7 @@ import {
   createProjectBaseline,
   approveProjectBaseline,
   checkProjectUmlConsistency,
+  fixProjectUmlConsistency,
 } from "../../common/services/umlService";
 import {
   singleLineClass,
@@ -222,26 +223,38 @@ export default function GiaiDoan3({
   }, [projectId, setState]);
 
   const handleFixWithAI = async () => {
+    if (!consistencyResult) {
+      setStage3Message("Hãy chọn “Kiểm tra lại” trước để AI nhận được danh sách sai lệch cụ thể.");
+      return;
+    }
+    if (consistencyResult.consistent) {
+      setStage3Message("Không có sai lệch cần sửa. Mã PlantUML hiện tại đã nhất quán.");
+      return;
+    }
     setBusy(true);
-    setAiTaskLabel("Đang dùng AI tạo lại biểu đồ lớp để xử lý sai lệch...");
+    setAiTaskLabel("AI đang phân tích sai lệch và đề xuất sửa mã PlantUML...");
     setStage3Message("");
     try {
-      // Sinh biểu đồ lớp mới từ mô hình UML đã lưu, dùng mã được backend tạo
-      // làm bản đề xuất sửa; người dùng vẫn có thể chỉnh sửa trực tiếp sau đó.
-      const generated = await generateClassDiagram(projectId);
-      setSavedDiagramId(generated.id);
+      const result = await fixProjectUmlConsistency(
+        projectId,
+        state.diagramCode,
+        consistencyResult,
+      );
       setState((prev: any) => ({
         ...prev,
-        diagramCode: generated.source_code ?? prev.diagramCode,
-        previewImageUrl: generated.image_url ?? prev.previewImageUrl,
+        diagramCode: result.source_code,
         consistencyChecked: false,
         baselineApproved: false,
       }));
       setConsistencyResult(null);
-      setStage3Message("AI đã tạo mã biểu đồ lớp mới từ dữ liệu UML đã lưu. Hãy xem lại mã và chọn “Kiểm tra lại” để xác nhận các sai lệch đã được xử lý.");
+      setStage3Message("AI đã đề xuất mã PlantUML đã sửa. Hãy xem lại, chọn “Lưu chỉnh sửa”, sau đó “Kiểm tra lại” để xác nhận.");
     } catch (error) {
       console.error("Không thể sửa sai lệch bằng AI:", error);
-      setStage3Message("Không thể sửa bằng AI. Vui lòng kiểm tra backend và thử lại.");
+      setStage3Message(
+        error instanceof Error
+          ? `AI không sửa được sai lệch: ${error.message}`
+          : "AI không sửa được sai lệch. Hãy kiểm tra Ollama/backend và thử lại.",
+      );
     } finally {
       setBusy(false);
       setAiTaskLabel("");
