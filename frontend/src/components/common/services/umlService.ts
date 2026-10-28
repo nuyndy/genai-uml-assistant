@@ -510,6 +510,21 @@ export function approveProjectBaseline(
   );
 }
 
+/** Đề xuất sửa mã PlantUML bằng AI dựa trên các sai lệch và mô hình UML đã lưu. */
+export function fixProjectUmlConsistency(
+  projectId: number,
+  sourceCode: string,
+  issues: UmlConsistencyResult,
+): Promise<{ source_code: string }> {
+  return apiFetch<{ source_code: string }>(
+    `/api/projects/${projectId}/fix-uml-consistency`,
+    {
+      method: "POST",
+      body: JSON.stringify({ source_code: sourceCode, issues }),
+    },
+  );
+}
+
 /** So sánh mã PlantUML biểu đồ lớp với mô hình UML đã lưu. */
 export function checkProjectUmlConsistency(
   projectId: number,
