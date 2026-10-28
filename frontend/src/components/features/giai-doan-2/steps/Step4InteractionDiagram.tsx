@@ -135,11 +135,11 @@ export default function Step4InteractionDiagram({
                         </div>
                       </div>
                     </div>
-                    {(codeVisible[useCase.id] ?? false) && diagram?.sourceCode && diagram.id !== undefined ? (
+                    {(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? (
                       <div className="min-w-0 overflow-hidden rounded-xl bg-[#102d24]">
                         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
                           <span className="text-xs font-semibold text-emerald-100">Mã UML</span>
-                          {!editing && (
+                          {!editing && diagram.id !== undefined && (
                             <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}>
                               ✎ Sửa mã
                             </GhostButton>
