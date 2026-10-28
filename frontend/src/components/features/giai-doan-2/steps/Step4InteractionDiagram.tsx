@@ -63,8 +63,7 @@ export default function Step4InteractionDiagram({
 }: Props) {
   void confirmed;
   void onConfirm;
-  const [editingUseCaseId, setEditingUseCaseId] = useState<number | null>(null);
-  const [draft, setDraft] = useState("");
+  const [draftByUseCase, setDraftByUseCase] = useState<Record<number, string>>({});
   const [page, setPage] = useState(0);
   const [codeVisible, setCodeVisible] = useState<Record<number, boolean>>({});
   const [loadedCodes, setLoadedCodes] = useState<Record<number, string>>({});
@@ -76,14 +75,10 @@ export default function Step4InteractionDiagram({
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
 
-  const startEditing = (useCaseId: number, code: string) => {
-    setDraft(code);
-    setEditingUseCaseId(useCaseId);
-  };
-
-  const saveEditing = async (diagramId: number) => {
-    await onSaveDiagram(diagramId, draft);
-    setEditingUseCaseId(null);
+  const saveEditing = async (diagramId: number, code: string) => {
+    await onSaveDiagram(diagramId, code);
+    setLoadedCodes((previous) => ({ ...previous }));
+    setDraftByUseCase((previous) => ({ ...previous, [visibleScenarios[0]?.id ?? -1]: code }));
   };
 
   return (
@@ -166,27 +161,21 @@ export default function Step4InteractionDiagram({
                     </div>
                     {(codeVisible[useCase.id] ?? false) ? (
                       <div className="flex min-w-0 min-h-[280px] max-h-[calc(100vh-250px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
-                        {sourceCode && !codeLoading[useCase.id] && !codeErrors[useCase.id] && !editing && diagram?.id !== undefined && (\n                          <div className="flex justify-end border-b border-white/10 px-2 py-1">\n                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, sourceCode)}>✎ Sửa mã</GhostButton>\n                          </div>\n                        )}\n                        {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
-                          <div className="space-y-3 border-t border-white/10 p-3">
+                        {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (
+                          <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
                             <textarea
-                              value={draft}
-                              onChange={(event) => setDraft(event.target.value)}
-                              rows={8}
+                              value={draftByUseCase[useCase.id] ?? sourceCode}
+                              onChange={(event) => setDraftByUseCase((previous) => ({ ...previous, [useCase.id]: event.target.value }))}
+                              rows={12}
                               spellCheck={false}
-                              className={`${inputClass} min-h-40 resize-y border-white/10 bg-[#0b211a] font-mono text-xs leading-5 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
+                              disabled={busy}
+                              className={`${inputClass} min-h-40 flex-1 resize-y border-white/10 bg-[#0b211a] font-mono text-xs leading-5 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
                             />
-                            <div className="flex flex-wrap items-center justify-end gap-2">
-                              <GhostButton onClick={() => setEditingUseCaseId(null)}>Đóng</GhostButton>
-                              <PrimaryButton disabled={busy || !draft.trim()} onClick={() => void saveEditing(diagram.id as number)}>
-                                {busy ? "Đang lưu và render..." : "Lưu mã và render lại"}
-                              </PrimaryButton>
-                            </div>
+                            <PrimaryButton block disabled={busy || !(draftByUseCase[useCase.id] ?? sourceCode).trim() || diagram?.id === undefined} onClick={() => void saveEditing(diagram!.id as number, draftByUseCase[useCase.id] ?? sourceCode)}>
+                              {busy ? "Đang lưu và render..." : "Lưu mã và render lại"}
+                            </PrimaryButton>
                           </div>
-                        ) : (
-                          <pre className="uml-code-panel min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
-                            {sourceCode}
-                          </pre>
-                        ))}
+                        )}
                       </div>
                     ) : null}
                   </div>
