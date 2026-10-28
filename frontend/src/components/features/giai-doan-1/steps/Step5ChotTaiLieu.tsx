@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   Card,
@@ -36,8 +35,6 @@ interface Props {
   saveSrsSpecification: (record: SpecificationRecord, content: SpecDraft) => Promise<void>;
   setSrsMetadata: Dispatch<SetStateAction<SrsMetadata>>;
   setSrsSpecDrafts: Dispatch<SetStateAction<Record<number, SpecDraft>>>;
-  appendixBContent?: ReactNode;
-  appendixUseCaseNames?: string[];
 }
 
 const SAVE_DEBOUNCE_MS = 800;
@@ -57,8 +54,6 @@ export default function Step5ChotTaiLieu({
   saveSrsSpecification,
   setSrsMetadata,
   setSrsSpecDrafts,
-  appendixBContent,
-  appendixUseCaseNames = [],
 }: Props) {
   // Mỗi đặc tả có một bộ đếm riêng: chỉ lưu sau khi người dùng ngừng sửa.
   const saveTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
@@ -103,16 +98,7 @@ export default function Step5ChotTaiLieu({
     { label: "6. Yêu cầu khác", target: "6. Yêu cầu khác", level: 1 },
     { label: "6.1 Yêu cầu khác / ghi chú", target: "6.1 Yêu cầu khác / ghi chú", level: 2 },
     { label: "Phụ lục A. Thuật ngữ", target: "Phụ lục A. Thuật ngữ và từ viết tắt", level: 1 },
-    { label: "Phụ lục B. Mô hình phân tích", target: "Phụ lục B. Mô hình phân tích", level: 1 },
-    { label: "1. Mô hình hóa chức năng", target: "1. Mô hình hóa chức năng", level: 2 },
-    { label: "1.1 Danh sách tác nhân", target: "1.1 Danh sách tác nhân", level: 3 },
-    { label: "1.2 Biểu đồ Use Case tổng quan", target: "1.2 Biểu đồ Use Case tổng quan", level: 3 },
-    ...appendixUseCaseNames.map((name, index) => ({ label: `1.2.${index + 1} ${name}`, target: `1.2.${index + 1} ${name}`, level: 3 as const })),
-    { label: "2. Mô hình hóa cấu trúc", target: "2. Mô hình hóa cấu trúc", level: 2 },
-    { label: "2.1 Biểu đồ lớp", target: "2.1 Biểu đồ lớp", level: 3 },
-    { label: "2.2 Mô tả các lớp và mối quan hệ", target: "2.2 Mô tả các lớp và mối quan hệ", level: 3 },
-    { label: "3. Mô hình hóa hành vi", target: "3. Mô hình hóa hành vi", level: 2 },
-    { label: "3.1 Biểu đồ tuần tự cho từng Use Case", target: "3.1 Biểu đồ tuần tự cho từng Use Case", level: 3 },
+
   ];
 
   const jumpToTocItem = (target: string) => {
@@ -192,7 +178,11 @@ export default function Step5ChotTaiLieu({
             </aside>
             <div ref={editorRootRef} className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-3 scroll-mt-4">
               <SrsWordEditor projectName={projectName} metadata={srsMetadata} functional={srsFunctionalForEditor} nonFunctional={srsNonFunctionalForEditor}
-                onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} appendixBContent={appendixBContent} />
+                onChangeMetadata={setSrsMetadata} onChangeSpecification={changeSpecification} />
+              <section className="mt-4 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/70 px-4 py-5 text-center">
+                <h3 className="text-sm font-semibold text-emerald-900">Phụ lục B. Mô hình phân tích</h3>
+                <p className="mt-1 text-sm text-slate-600">Nội dung này sẽ được hoàn thành ở Giai đoạn 3.</p>
+              </section>
             </div>
           </div>
         ) : (
