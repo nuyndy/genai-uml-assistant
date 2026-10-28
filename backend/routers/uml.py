@@ -782,6 +782,110 @@ def check_uml_consistency(
             )
         ]
 
+        # Kiểm tra độ bao phủ xuyên suốt Giai đoạn 1–3, ngoài việc so sánh
+        # riêng mã biểu đồ lớp với bảng lớp/quan hệ đã lưu.
+        cross_stage_issues: list[str] = []
+        raw_requirements = (
+            db.query(RawRequirement)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(RawRequirement.id)
+            .all()
+        )
+        stories = (
+            db.query(UserStory)
+            .join(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(RawRequirement.project_id == project_id)
+            .order_by(UserStory.id)
+            .all()
+        )
+        specifications = (
+            db.query(Specification)
+            .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+            .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(
+                or_(
+                    Specification.project_id == project_id,
+                    RawRequirement.project_id == project_id,
+                )
+            )
+            .order_by(Specification.id)
+            .all()
+        )
+        use_cases = (
+            db.query(UseCase)
+            .join(Specification, UseCase.specification_id == Specification.id)
+            .outerjoin(UserStory, Specification.user_story_id == UserStory.id)
+            .outerjoin(RawRequirement, UserStory.requirement_id == RawRequirement.id)
+            .filter(
+                or_(
+                    Specification.project_id == project_id,
+                    RawRequirement.project_id == project_id,
+                )
+            )
+            .order_by(UseCase.id)
+            .all()
+        )
+        actors = (
+            db.query(Actor)
+            .filter(Actor.project_id == project_id)
+            .order_by(Actor.id)
+            .all()
+        )
+        project_diagrams = (
+            db.query(Diagram)
+            .filter(Diagram.project_id == project_id)
+            .order_by(Diagram.id)
+            .all()
+        )
+
+        functional_specs = [
+            item for item in specifications if item.type == "functional"
+        ]
+        interaction_diagrams = [
+            item for item in project_diagrams
+            if item.type in ("sequence", "collaboration")
+        ]
+        interaction_use_case_ids = {
+            item.use_case_id for item in interaction_diagrams
+            if item.use_case_id is not None
+        }
+
+        if raw_requirements and not stories:
+            cross_stage_issues.append(
+                f"Giai đoạn 1 → User Story: có {len(raw_requirements)} yêu cầu gốc nhưng chưa có User Story."
+            )
+        if stories and not specifications:
+            cross_stage_issues.append(
+                f"User Story → đặc tả: có {len(stories)} User Story nhưng chưa có đặc tả."
+            )
+        if functional_specs and not use_cases:
+            cross_stage_issues.append(
+                f"Giai đoạn 1 → Giai đoạn 2: có {len(functional_specs)} đặc tả chức năng nhưng chưa có Use Case."
+            )
+        if use_cases:
+            missing_scenarios = [
+                item.name for item in use_cases if not _decode_lines(item.main_flow)
+            ]
+            if missing_scenarios:
+                cross_stage_issues.append(
+                    "Use Case chưa có kịch bản luồng chính: " + ", ".join(missing_scenarios[:12])
+                )
+            if not actors:
+                cross_stage_issues.append(
+                    f"Giai đoạn 2: có {len(use_cases)} Use Case nhưng dự án chưa có tác nhân."
+                )
+            missing_interactions = [
+                item.name for item in use_cases if item.id not in interaction_use_case_ids
+            ]
+            if missing_interactions:
+                cross_stage_issues.append(
+                    "Use Case chưa có biểu đồ tương tác: " + ", ".join(missing_interactions[:12])
+                )
+        if functional_specs and not db_classes:
+            cross_stage_issues.append(
+                "Giai đoạn 3: đã có đặc tả chức năng nhưng chưa có mô hình lớp được lưu."
+            )
+
         return {
             "project_id": project_id,
             "consistent": not (
@@ -789,11 +893,23 @@ def check_uml_consistency(
                 or missing_in_plantuml
                 or missing_relations
                 or extra_relations
+                or cross_stage_issues
             ),
             "missing_in_database": missing_in_database,
             "missing_in_plantuml": missing_in_plantuml,
             "missing_relations": missing_relations,
             "extra_relations": extra_relations,
+            "cross_stage_issues": cross_stage_issues,
+            "stage_counts": {
+                "requirements": len(raw_requirements),
+                "user_stories": len(stories),
+                "specifications": len(specifications),
+                "use_cases": len(use_cases),
+                "actors": len(actors),
+                "interaction_diagrams": len(interaction_diagrams),
+                "classes": len(db_classes),
+                "diagrams": len(project_diagrams),
+            },
         }
 
     except HTTPException:
