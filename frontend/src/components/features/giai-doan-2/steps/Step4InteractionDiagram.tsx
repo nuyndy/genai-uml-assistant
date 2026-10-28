@@ -32,6 +32,7 @@ interface Props {
   onGenerateBatch: () => void | Promise<void>;
   onGenerateSingle: (useCaseId: number) => void | Promise<void>;
   onSaveDiagram: (diagramId: number, code: string) => void | Promise<void>;
+  onLoadDiagramCode: (diagramId: number) => Promise<string>;
   onConfirm: () => void;
   confirmed: boolean;
   onStepChange: (step: number) => void;
@@ -54,6 +55,7 @@ export default function Step4InteractionDiagram({
   onGenerateBatch,
   onGenerateSingle,
   onSaveDiagram,
+  onLoadDiagramCode,
   onConfirm,
   confirmed,
   wrapClass,
@@ -65,6 +67,9 @@ export default function Step4InteractionDiagram({
   const [draft, setDraft] = useState("");
   const [page, setPage] = useState(0);
   const [codeVisible, setCodeVisible] = useState<Record<number, boolean>>({});
+  const [loadedCodes, setLoadedCodes] = useState<Record<number, string>>({});
+  const [codeLoading, setCodeLoading] = useState<Record<number, boolean>>({});
+  const [codeErrors, setCodeErrors] = useState<Record<number, string>>({});
   const [zoom, setZoom] = useState<Record<number, number>>({});
   const pageSize = 1;
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
@@ -100,6 +105,23 @@ export default function Step4InteractionDiagram({
                 (item) => item.usecaseId === useCase.id && item.type === currentDiagramType,
               );
               const editing = editingUseCaseId === useCase.id;
+              const sourceCode = diagram?.sourceCode?.trim() ? diagram.sourceCode : loadedCodes[useCase.id];
+              const toggleCode = async () => {
+                const nextVisible = !(codeVisible[useCase.id] ?? false);
+                setCodeVisible((v) => ({ ...v, [useCase.id]: nextVisible }));
+                if (nextVisible && !sourceCode && diagram?.id !== undefined) {
+                  setCodeLoading((v) => ({ ...v, [useCase.id]: true }));
+                  setCodeErrors((v) => ({ ...v, [useCase.id]: "" }));
+                  try {
+                    const code = await onLoadDiagramCode(diagram.id);
+                    setLoadedCodes((v) => ({ ...v, [useCase.id]: code }));
+                  } catch (reason) {
+                    setCodeErrors((v) => ({ ...v, [useCase.id]: reason instanceof Error ? reason.message : "Không tải được mã UML." }));
+                  } finally {
+                    setCodeLoading((v) => ({ ...v, [useCase.id]: false }));
+                  }
+                }
+              };
               return (
                 <section
                   key={useCase.id}
@@ -119,14 +141,14 @@ export default function Step4InteractionDiagram({
                       <button type="button" onClick={() => setZoom(v => ({...v, [useCase.id]: 100}))} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">Vừa khung</button>
                       {diagram?.imageUrl && <a href={diagram.imageUrl} download={currentDiagramType + '-' + useCase.id + '.svg'} className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-emerald-800">↓ Tải ảnh về</a>}
                     </div>
-                    <button type="button" onClick={() => setCodeVisible(v => ({ ...v, [useCase.id]: !(v[useCase.id] ?? false) }))} className={`shrink-0 rounded-md border px-2 py-1.5 text-xs font-semibold ${(codeVisible[useCase.id] ?? false) ? "border-emerald-800 bg-emerald-800 text-white" : "border-emerald-200 bg-white text-emerald-900"}`}>Mã UML</button>
+                    <button type="button" onClick={() => void toggleCode()} className={`shrink-0 rounded-md border px-2 py-1.5 text-xs font-semibold ${(codeVisible[useCase.id] ?? false) ? "border-emerald-800 bg-emerald-800 text-white" : "border-emerald-200 bg-white text-emerald-900"}`}>Mã UML</button>
                     <span className="shrink-0 whitespace-nowrap text-xs text-emerald-700">{diagram?.imageUrl ? "✓ Đã lưu" : "Chưa có biểu đồ"}</span>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateSingle(useCase.id)}>↻ Sinh lại UC này</SoftButton>
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
                   </div>
 
-                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"}`}>
-                    <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? "lg:col-span-2" : ""}`}>
+                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"}`}>
+                    <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "lg:col-span-2" : ""}`}>
                       <div className="space-y-2">
                         <div className="h-[calc(100vh-250px)] min-h-[340px] max-h-[calc(100vh-250px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
@@ -135,17 +157,17 @@ export default function Step4InteractionDiagram({
                         </div>
                       </div>
                     </div>
-                    {(codeVisible[useCase.id] ?? false) && diagram?.sourceCode ? (
+                    {(codeVisible[useCase.id] ?? false) ? (
                       <div className="min-w-0 overflow-hidden rounded-xl bg-[#102d24]">
                         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
                           <span className="text-xs font-semibold text-emerald-100">Mã UML</span>
-                          {!editing && diagram.id !== undefined && (
-                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, diagram.sourceCode ?? "")}>
+                          {!editing && diagram?.id !== undefined && sourceCode && (
+                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, sourceCode ?? "")}>
                               ✎ Sửa mã
                             </GhostButton>
                           )}
                         </div>
-                        {(codeVisible[useCase.id] ?? true) && (editing ? (
+                        {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
                           <div className="space-y-3 border-t border-white/10 p-3">
                             <textarea
                               value={draft}
@@ -163,7 +185,7 @@ export default function Step4InteractionDiagram({
                           </div>
                         ) : (
                           <pre className="uml-code-panel max-h-[min(42vh,360px)] min-h-[220px] overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
-                            {diagram.sourceCode}
+                            {sourceCode}
                           </pre>
                         ))}
                       </div>
