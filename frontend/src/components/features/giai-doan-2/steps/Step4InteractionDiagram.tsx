@@ -178,7 +178,7 @@ export default function Step4InteractionDiagram({
                             <div className="flex flex-wrap items-center justify-end gap-2">
                               <GhostButton onClick={() => setEditingUseCaseId(null)}>Đóng</GhostButton>
                               <PrimaryButton disabled={busy || !draft.trim()} onClick={() => void saveEditing(diagram.id as number)}>
-                                {busy ? "Đang lưu..." : "Lưu mã"}
+                                {busy ? "Đang lưu và render..." : "Lưu mã và render lại"}
                               </PrimaryButton>
                             </div>
                           </div>
