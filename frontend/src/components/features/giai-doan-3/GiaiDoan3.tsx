@@ -221,6 +221,33 @@ export default function GiaiDoan3({
     return () => { cancelled = true; };
   }, [projectId, setState]);
 
+  const handleFixWithAI = async () => {
+    setBusy(true);
+    setAiTaskLabel("Đang dùng AI tạo lại biểu đồ lớp để xử lý sai lệch...");
+    setStage3Message("");
+    try {
+      // Sinh biểu đồ lớp mới từ mô hình UML đã lưu, dùng mã được backend tạo
+      // làm bản đề xuất sửa; người dùng vẫn có thể chỉnh sửa trực tiếp sau đó.
+      const generated = await generateClassDiagram(projectId);
+      setSavedDiagramId(generated.id);
+      setState((prev: any) => ({
+        ...prev,
+        diagramCode: generated.source_code ?? prev.diagramCode,
+        previewImageUrl: generated.image_url ?? prev.previewImageUrl,
+        consistencyChecked: false,
+        baselineApproved: false,
+      }));
+      setConsistencyResult(null);
+      setStage3Message("AI đã tạo mã biểu đồ lớp mới từ dữ liệu UML đã lưu. Hãy xem lại mã và chọn “Kiểm tra lại” để xác nhận các sai lệch đã được xử lý.");
+    } catch (error) {
+      console.error("Không thể sửa sai lệch bằng AI:", error);
+      setStage3Message("Không thể sửa bằng AI. Vui lòng kiểm tra backend và thử lại.");
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
+
   const handleRenderAndSave = async () => {
     setBusy(true);
     setAiTaskLabel("Đang render và lưu biểu đồ...");
@@ -293,6 +320,7 @@ export default function GiaiDoan3({
             busy={busy}
             onConsistencyCheck={runConsistencyCheck}
             onSaveDiagram={handleRenderAndSave}
+            onFixWithAI={handleFixWithAI}
           />
         )}
         {step === 3 && (
