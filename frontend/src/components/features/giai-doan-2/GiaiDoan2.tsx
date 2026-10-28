@@ -764,6 +764,7 @@ export default function GiaiDoan2({
         setState((previous) => ({ ...previous, classDiagramConfirmed: false, classDiagramUrl: diagram.image_url, classDiagramCode: diagram.source_code }));
       }, "Đang sinh biểu đồ lớp...")}
       onConfirmClassDiagram={() => setState((previous) => ({ ...previous, classDiagramConfirmed: true }))}
+      onSaveClassDiagramCode={async (code) => { await runAction(async () => { if (!projectId) return; const diagram = await generateClassDiagram(projectId); const rendered = await updateDiagram(diagram.id, code); setState((previous) => ({ ...previous, classDiagramConfirmed: false, classDiagramUrl: rendered.image_url, classDiagramCode: rendered.source_code })); }, "Đang lưu mã và render lại biểu đồ lớp..."); }}
       busy={busy}
       projectId={projectId}
       wrapClass={wrapClass}
