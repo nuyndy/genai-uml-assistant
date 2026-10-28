@@ -350,7 +350,7 @@ export default function GiaiDoan3({
 
   return (
     <div className={`relative w-full min-w-0 ${step === 3 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden" : ""}`}>
-      {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />
+      {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
       <div className={`relative z-10 w-full max-w-none min-w-0 ${step === 3 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 py-3 sm:px-6 lg:px-8" : "space-y-6 px-4 py-6 sm:px-6 lg:px-8"}`}>
         {step === 1 && (
           <Step3KiemTraNhatQuan
