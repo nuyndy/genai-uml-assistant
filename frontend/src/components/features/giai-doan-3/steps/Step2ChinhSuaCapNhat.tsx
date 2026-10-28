@@ -2,7 +2,8 @@ import { useMemo, useRef } from "react";
 import { Card, PrimaryButton, SoftButton, Notice } from "../../../common/ui/primitives";
 
 interface Props {
-  state: { diagramCode: string };
+  state: { diagramCode: string; previewImageUrl?: string | null };
+  stage3Message?: string;
   setState: (updater: (prev: any) => any) => void;
   consistencyResult: any;
   busy: boolean;
@@ -17,6 +18,7 @@ export default function Step2ChinhSuaCapNhat({
   state,
   setState,
   consistencyResult,
+  stage3Message,
   busy,
   onConsistencyCheck,
   onSaveDiagram,
@@ -112,6 +114,13 @@ export default function Step2ChinhSuaCapNhat({
           </div>
         }
       >
+        {stage3Message && (
+          <div className="mb-4">
+            <Notice tone={stage3Message.toLowerCase().includes("không sửa được") ? "error" : "info"}>
+              {stage3Message}
+            </Notice>
+          </div>
+        )}
         <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(300px,0.9fr)_minmax(0,1.6fr)]">
           <section className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
@@ -166,8 +175,16 @@ export default function Step2ChinhSuaCapNhat({
               placeholder="@startuml\n...\n@enduml"
             />
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              Chọn sai lệch liên quan đến mã để định vị dòng. Nút “Sửa bằng AI” chỉ chỉnh mã PlantUML; các vấn đề thiếu yêu cầu, User Story, đặc tả, Use Case hoặc biểu đồ tương tác cần xử lý ở giai đoạn tương ứng. Sau khi sửa, xem trước, lưu rồi kiểm tra lại.
+              Chọn sai lệch liên quan đến mã để định vị dòng. Nút “Sửa bằng AI” chỉnh mã PlantUML và cập nhật bản xem trước; các vấn đề thiếu yêu cầu, User Story, đặc tả, Use Case hoặc biểu đồ tương tác cần xử lý ở giai đoạn tương ứng. Sau khi xem kết quả, chọn “Lưu chỉnh sửa” để lưu vào dự án rồi kiểm tra lại.
             </p>
+            {state.previewImageUrl && (
+              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                <div className="border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600">Bản xem trước biểu đồ sau chỉnh sửa</div>
+                <div className="flex max-h-[420px] min-h-40 items-center justify-center overflow-auto p-3">
+                  <img src={state.previewImageUrl} alt="Bản xem trước biểu đồ lớp PlantUML" className="max-w-full object-contain" />
+                </div>
+              </div>
+            )}
           </section>
         </div>
       </Card>
