@@ -78,13 +78,13 @@ def _apply_diagram_typography(source: str) -> str:
 
     settings = []
     if not has_font_name:
-        settings.append('skinparam defaultFontName "DejaVu Sans"')
+        settings.append('skinparam defaultFontName "Arial"')
     if not has_font_size:
-        settings.append("skinparam defaultFontSize 14")
+        settings.append("skinparam defaultFontSize 13")
     settings.extend([
-        "skinparam titleFontSize 16",
-        "skinparam classAttributeFontSize 13",
-        "skinparam classMethodFontSize 13",
+        "skinparam titleFontSize 15",
+        "skinparam classAttributeFontSize 12",
+        "skinparam classMethodFontSize 12",
     ])
 
     for index, line in enumerate(lines):
