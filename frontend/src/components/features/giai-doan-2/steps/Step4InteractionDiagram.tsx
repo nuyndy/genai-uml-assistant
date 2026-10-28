@@ -147,7 +147,7 @@ export default function Step4InteractionDiagram({
                     <SoftButton disabled={busy || !projectId} onClick={() => void onGenerateBatch()}>Sinh lại tất cả</SoftButton>
                   </div>
 
-                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]" : "grid-cols-1"}`}>
+                  <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" : "grid-cols-1"}`}>
                     <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "lg:col-span-2" : ""}`}>
                       <div className="space-y-2">
                         <div className="h-[calc(100vh-250px)] min-h-[340px] max-h-[calc(100vh-250px)] overflow-auto">
@@ -158,7 +158,7 @@ export default function Step4InteractionDiagram({
                       </div>
                     </div>
                     {(codeVisible[useCase.id] ?? false) ? (
-                      <div className="flex min-w-0 min-h-[340px] flex-col overflow-hidden rounded-xl bg-[#102d24]">
+                      <div className="flex min-w-0 min-h-[calc(100vh-250px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
                         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
                           <span className="text-xs font-semibold text-emerald-100">Mã</span>
                           {!editing && diagram?.id !== undefined && sourceCode && (
@@ -184,7 +184,7 @@ export default function Step4InteractionDiagram({
                             </div>
                           </div>
                         ) : (
-                          <pre className="uml-code-panel min-h-[300px] flex-1 overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
+                          <pre className="uml-code-panel min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words border-t border-white/10 p-3 text-xs leading-5 [overflow-wrap:anywhere]">
                             {sourceCode}
                           </pre>
                         ))}
