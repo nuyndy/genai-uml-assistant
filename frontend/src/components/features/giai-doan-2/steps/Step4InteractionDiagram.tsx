@@ -148,7 +148,7 @@ export default function Step4InteractionDiagram({
                   </div>
 
                   <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" : "grid-cols-1"}`}>
-                    <div className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "lg:col-span-2" : ""}`}>
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                       <div className="space-y-2">
                         <div className="h-[calc(100vh-250px)] min-h-[340px] max-h-[calc(100vh-250px)] overflow-auto">
                           <div style={{ transform: 'scale(' + ((zoom[useCase.id] ?? 100) / 100) + ')', transformOrigin: 'top left', width: (10000 / (zoom[useCase.id] ?? 100)) + '%' }}>
