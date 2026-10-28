@@ -231,6 +231,17 @@ export default function GiaiDoan3({
       setStage3Message("Không có sai lệch cần sửa. Mã PlantUML hiện tại đã nhất quán.");
       return;
     }
+    const codeIssueCount =
+      (consistencyResult.missing_in_database ?? []).length +
+      (consistencyResult.missing_in_plantuml ?? []).length +
+      (consistencyResult.missing_relations ?? []).length +
+      (consistencyResult.extra_relations ?? []).length;
+    if (codeIssueCount === 0 && (consistencyResult.cross_stage_issues ?? []).length > 0) {
+      setStage3Message(
+        "Các vấn đề còn lại nằm ở dữ liệu liên kết giữa Giai đoạn 1–3, không nằm trong mã biểu đồ lớp. Hãy xử lý các mục được liệt kê ở Bước 1 tại giai đoạn tương ứng; AI không thể tạo thay các yêu cầu, đặc tả hoặc Use Case còn thiếu chỉ bằng cách sửa PlantUML.",
+      );
+      return;
+    }
     setBusy(true);
     setAiTaskLabel("AI đang phân tích sai lệch và đề xuất sửa mã PlantUML...");
     setStage3Message("");
