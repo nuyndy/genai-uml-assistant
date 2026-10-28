@@ -151,6 +151,7 @@ export default function GiaiDoan1({
   const [aiTaskLabel, setAiTaskLabel] = useState("");
   const [aiTaskDetails, setAiTaskDetails] = useState("");
   const [loaded, setLoaded] = useState(!projectId);
+  const [appendixReady, setAppendixReady] = useState(false);
   const [requirements, setRequirements] = useState<RequirementRecord[]>([]);
   const [requirementValues, setRequirementValues] = useState<Record<number, RawRequirement>>({});
   const [coverageAnalysis, setCoverageAnalysis] = useState<RequirementCoverageAnalysis | null>(null);
@@ -1000,6 +1001,22 @@ export default function GiaiDoan1({
     />
   );
 
+  // Cho Bước 5 hiển thị khung trước; hoãn dựng Phụ lục B nặng sang sau vài frame.
+  useEffect(() => {
+    if (step !== 5) {
+      setAppendixReady(false);
+      return;
+    }
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => setAppendixReady(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [step]);
+
   // Tải trực tiếp mô hình UML đã lưu từ backend khi mở tài liệu SRS.
   // Không phụ thuộc vào state trong bộ nhớ, vì state có thể rỗng sau khi mở lại dự án.
   useEffect(() => {
@@ -1106,7 +1123,7 @@ export default function GiaiDoan1({
   }, [projectId, step, setState]);
 
   // Chỉ dựng Phụ lục B khi vào Bước 5; tránh tạo hàng loạt bảng/ảnh/kịch bản ở Bước 4.
-  const appendixBContent = step === 5 ? (
+  const appendixBContent = step === 5 && appendixReady ? (
     <div className="space-y-6 text-sm leading-6">
       <section>
         <h3 className="mb-3 mt-4 text-[15px] font-bold">1. Mô hình hóa chức năng</h3>
