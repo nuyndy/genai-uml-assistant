@@ -116,7 +116,7 @@ export default function Step2ChinhSuaCapNhat({
       >
         {stage3Message && (
           <div className="mb-4">
-            <Notice tone={stage3Message.toLowerCase().includes("không sửa được") ? "error" : "info"}>
+            <Notice tone="info">
               {stage3Message}
             </Notice>
           </div>
