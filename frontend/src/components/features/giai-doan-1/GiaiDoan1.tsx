@@ -1105,7 +1105,8 @@ export default function GiaiDoan1({
     return () => { cancelled = true; };
   }, [projectId, step, setState]);
 
-  const appendixBContent = (
+  // Chỉ dựng Phụ lục B khi vào Bước 5; tránh tạo hàng loạt bảng/ảnh/kịch bản ở Bước 4.
+  const appendixBContent = step === 5 ? (
     <div className="space-y-6 text-sm leading-6">
       <section>
         <h3 className="mb-3 mt-4 text-[15px] font-bold">1. Mô hình hóa chức năng</h3>
@@ -1259,7 +1260,7 @@ export default function GiaiDoan1({
         {!state.usecases.length && <p>Chưa có Use Case được lưu.</p>}
       </section>
     </div>
-  );
+  ) : null;
 
   const step5 = (
     <Step5ChotTaiLieu
