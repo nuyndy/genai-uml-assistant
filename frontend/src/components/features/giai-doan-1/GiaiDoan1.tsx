@@ -836,11 +836,10 @@ export default function GiaiDoan1({
           ...Object.fromEntries(pendingIds.map((id) => [id, true])),
         }));
         setBusy(true);
-        setAiTaskLabel("Đang sinh đặc tả chức năng lần đầu...");
+        // Sinh nền, không phủ overlay toàn màn hình để người dùng vẫn chuyển bước được.
         setError("");
         try {
           await generateProjectSpecificationsBatch(projectId);
-          setAiTaskLabel("Đang đồng bộ đặc tả và SRS...");
           await refreshSpecifications();
           await refreshSrsDocument();
         } catch (reason) {

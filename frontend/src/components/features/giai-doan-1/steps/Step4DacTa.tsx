@@ -111,9 +111,9 @@ export default function Step4DacTa({
   const itemCount = kind === "functional" ? functionalItems.length : (nonFunctionalSpecification ? 1 : 0);
   // Cho phép mở SRS dựa trên các đặc tả thực tế đã có; không khóa bước này
   // chỉ vì danh sách User Story không được trả về/đã thay đổi sau khi tổng hợp FR.
+  // Chuyển sang SRS không cần chờ các tác vụ nền; chỉ yêu cầu FR và NFR đã tồn tại.
   const canContinue = functionalItems.length > 0
-    && Boolean(nonFunctionalSpecification)
-    && !busy;
+    && Boolean(nonFunctionalSpecification);
 
   useEffect(() => {
     if (activeIndex >= Math.max(functionalItems.length, 1)) setActiveIndex(Math.max(functionalItems.length - 1, 0));
