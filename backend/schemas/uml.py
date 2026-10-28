@@ -253,9 +253,10 @@ class DiagramUpdate(BaseModel):
 
 class ClassSuggestion(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    # Không chấp nhận kết quả AI chỉ có tên lớp mà thiếu thành viên.
-    attributes: list[str] = Field(min_length=2)
-    methods: list[str] = Field(min_length=1)
+    # Cho phép danh sách rỗng nếu yêu cầu nguồn không đủ căn cứ;
+    # không ép AI bịa thuộc tính/phương thức để đạt số lượng tối thiểu.
+    attributes: list[str] = Field(default_factory=list)
+    methods: list[str] = Field(default_factory=list)
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
