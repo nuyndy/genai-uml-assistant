@@ -368,6 +368,7 @@ export default function GiaiDoan3({
             state={state}
             setState={setState}
             consistencyResult={consistencyResult}
+            stage3Message={stage3Message}
             busy={busy}
             onConsistencyCheck={runConsistencyCheck}
             onSaveDiagram={handleRenderAndSave}
