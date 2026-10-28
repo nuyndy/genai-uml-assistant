@@ -58,7 +58,6 @@ export default function Step5ClassDiagram({
   const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
   const [zoom, setZoom] = useState(1);
   const [showCode, setShowCode] = useState(false);
-  const [editingCode, setEditingCode] = useState(false);
   const [codeDraft, setCodeDraft] = useState(classDiagramCode ?? "");
 
   const downloadImage = () => {
@@ -236,7 +235,7 @@ export default function Step5ClassDiagram({
         <div className="mb-3 flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-slate-200 pb-3">
           <PrimaryButton disabled={busy || !projectId} onClick={regenerate}>{busy ? "Đang sinh..." : classDiagramCode ? "↻ Sinh lại biểu đồ" : "Sinh biểu đồ"}</PrimaryButton>
           <SoftButton disabled={!classDiagramUrl} onClick={downloadImage}>↓ Tải ảnh về</SoftButton>
-          <SoftButton disabled={!classDiagramCode} onClick={() => { setShowCode((value) => !value); setCodeDraft(classDiagramCode ?? ""); setEditingCode(false); }}>{showCode ? "Ẩn UML" : "Mã UML"}</SoftButton>
+          <SoftButton disabled={!classDiagramCode} onClick={() => { setShowCode((value) => !value); setCodeDraft(classDiagramCode ?? ""); }}>{showCode ? "Ẩn UML" : "Mã UML"}</SoftButton>
           <span className="mx-1 h-6 border-l border-slate-200" />
           <SoftButton disabled={!classDiagramUrl || zoom <= 0.1} onClick={() => setZoom((value) => Math.max(0.1, Number((value - 0.1).toFixed(2))))}>−</SoftButton>
           <span className="min-w-12 text-center text-sm tabular-nums text-slate-600">{Math.round(zoom * 100)}%</span>
@@ -250,7 +249,7 @@ export default function Step5ClassDiagram({
               {classDiagramUrl ? <div className="flex min-h-full w-max min-w-full items-center justify-center"><img src={classDiagramUrl} alt="Biểu đồ lớp" draggable={false} style={{ width: `${zoom * 100}%`, height: "auto", maxWidth: "none", flexShrink: 0 }} className="block rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[360px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={regenerate}>Sinh biểu đồ</PrimaryButton></div></div>}
             </div>
           </section>
-          {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex min-h-0 flex-1 flex-col bg-[#102d24] p-3">{editingCode ? <textarea value={codeDraft} onChange={(event) => setCodeDraft(event.target.value)} spellCheck={false} className="uml-code-panel min-h-0 flex-1 resize-y overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none" /> : <pre className="uml-code-panel min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 [overflow-wrap:anywhere]">{classDiagramCode || "Mã PlantUML sẽ xuất hiện tại đây sau khi sinh biểu đồ."}</pre>}<div className="flex flex-wrap justify-end gap-2 border-t border-white/10 pt-2"><GhostButton disabled={busy} onClick={() => { setCodeDraft(classDiagramCode ?? ""); setEditingCode((value) => !value); }}>{editingCode ? "Hủy sửa" : "✎ Sửa mã"}</GhostButton>{editingCode && onSaveClassDiagramCode && <PrimaryButton disabled={busy || !codeDraft.trim()} onClick={() => { if (onSaveClassDiagramCode) void onSaveClassDiagramCode(codeDraft).then(() => setEditingCode(false)); }}>{busy ? "Đang lưu và render..." : "Lưu mã và render lại"}</PrimaryButton>}</div></div></section>}
+          {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex min-h-0 flex-1 flex-col gap-2 bg-[#102d24] p-3"><textarea aria-label="Mã PlantUML biểu đồ lớp" value={codeDraft} onChange={(event) => setCodeDraft(event.target.value)} spellCheck={false} disabled={busy} className="uml-code-panel min-h-0 flex-1 resize-y overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none" /><div className="w-full [&>button]:w-full"><PrimaryButton block disabled={busy || !codeDraft.trim() || !onSaveClassDiagramCode} onClick={() => { if (onSaveClassDiagramCode) void onSaveClassDiagramCode(codeDraft).then(() => setCodeDraft(codeDraft)); }}>{busy ? "Đang lưu và render..." : "Lưu mã và render lại"}</PrimaryButton></div></div></section>}
         </div>
       </Card>}
 
