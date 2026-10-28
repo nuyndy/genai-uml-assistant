@@ -166,7 +166,7 @@ export default function Step4InteractionDiagram({
                     </div>
                     {(codeVisible[useCase.id] ?? false) ? (
                       <div className="flex min-w-0 min-h-[280px] max-h-[calc(100vh-250px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
-                        {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
+                        {sourceCode && !codeLoading[useCase.id] && !codeErrors[useCase.id] && !editing && diagram?.id !== undefined && (\n                          <div className="flex justify-end border-b border-white/10 px-2 py-1">\n                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, sourceCode)}>✎ Sửa mã</GhostButton>\n                          </div>\n                        )}\n                        {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
                           <div className="space-y-3 border-t border-white/10 p-3">
                             <textarea
                               value={draft}
