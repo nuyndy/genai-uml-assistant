@@ -2,24 +2,32 @@
 
 
 def build_class_diagram_prompt(use_case_context: str, specification_context: str) -> str:
-    """Tạo prompt mô hình lớp có đủ thành viên và tên định danh chuẩn UML."""
+    """Tạo prompt mô hình lớp bám sát yêu cầu nguồn, không ép AI bịa thành viên."""
     instructions = """
-Bạn là chuyên gia phân tích và thiết kế hướng đối tượng UML. Hãy suy luận mô hình lớp miền nghiệp vụ CHỈ từ toàn bộ use case, đặc tả chức năng và ngữ cảnh hệ thống được cung cấp.
+Bạn là chuyên gia phân tích và thiết kế hướng đối tượng UML. Hãy xây dựng mô hình lớp miền nghiệp vụ CHỈ dựa trên yêu cầu gốc, đặc tả chức năng và use case của chính hệ thống được cung cấp.
+
+NGUỒN SỰ THẬT VÀ TRUY VẾT:
+- Chỉ tạo lớp khi có căn cứ cụ thể trong yêu cầu, quy tắc nghiệp vụ, dữ liệu đầu vào/đầu ra hoặc luồng xử lý được mô tả. Mỗi lớp phải đại diện cho khái niệm nghiệp vụ hoặc trách nhiệm hệ thống có thể giải thích được bằng nguồn đã cho.
+- Không suy diễn thêm lớp chỉ vì thường gặp trong các hệ thống tương tự; không thêm lớp framework/kỹ thuật như Service, Repository, Manager nếu nguồn không yêu cầu.
+- Thuộc tính chỉ đưa vào khi nguồn có nêu dữ liệu/trạng thái cần lưu hoặc xử lý, hoặc dữ liệu đó được chỉ rõ trong luồng nghiệp vụ. Không tự bịa thuộc tính để đủ số lượng.
+- Phương thức chỉ đưa vào khi hành vi tương ứng được thể hiện trong use case/đặc tả. Có thể diễn đạt hành động nghiệp vụ thành tên phương thức, nhưng không tạo hành vi mới.
+- Quan hệ giữa hai lớp chỉ tạo khi có bằng chứng về liên kết dữ liệu/nghiệp vụ, sở hữu thành phần, kế thừa hoặc phụ thuộc. Không nối lớp chỉ để sơ đồ trông đầy đủ.
+- Nếu không đủ căn cứ cho thuộc tính/phương thức, trả mảng rỗng tương ứng. Tuyệt đối không bịa để đạt một số lượng tối thiểu. Nếu đầu vào chưa đủ để xác định một lớp đáng tin cậy, không đưa lớp đó vào kết quả.
+- Trước khi trả kết quả, tự kiểm tra từng lớp, thuộc tính, phương thức và quan hệ có căn cứ từ phần NGỮ CẢNH HỆ THỐNG VÀ YÊU CẦU GỐC hoặc ĐẶC TẢ CHỨC NĂNG hay không. Loại bỏ mọi phần chỉ là suy đoán.
 
 NGÔN NGỮ BẮT BUỘC:
-- Toàn bộ tên lớp, thuộc tính, phương thức và nhãn quan hệ phải dùng TIẾNG VIỆT KHÔNG DẤU, kể cả khi dữ liệu đầu vào có từ tiếng Anh.
-- Dịch ý nghĩa nghiệp vụ tiếng Anh sang tiếng Việt trước khi đặt tên. Ví dụ minh họa cách chuyển đổi: Customer -> KhachHang, Order -> DonHang, paymentDate -> ngayThanhToan, calculateTotal() -> tinhTongTien(). Đây chỉ là ví dụ dịch thuật, KHÔNG được tự thêm các lớp này nếu nghiệp vụ đầu vào không có.
-- Tên lớp dùng PascalCase; tên thuộc tính và phương thức dùng camelCase. Không dùng từ tiếng Anh như Customer, Manager, Service, Repository, User, Product, Order hoặc các từ tiếng Anh tương tự nếu có cách gọi tiếng Việt tương ứng.
-- Không dấu tiếng Việt, không dấu cách, không gạch nối trong định danh. Chỉ giữ nguyên thuật ngữ tiếng Anh khi đó là tên riêng/chuẩn kỹ thuật không có cách dịch phù hợp, không phải tên nghiệp vụ thông thường.
+- Tên lớp, thuộc tính, phương thức và nhãn quan hệ dùng TIẾNG VIỆT KHÔNG DẤU, kể cả khi đầu vào có từ tiếng Anh; dịch nghĩa nghiệp vụ trước khi đặt tên.
+- Tên lớp dùng PascalCase; tên thuộc tính và phương thức dùng camelCase. Không dùng từ tiếng Anh thông thường nếu có cách dịch tiếng Việt tương ứng.
+- Không dấu tiếng Việt, không dấu cách, không gạch nối trong định danh. Chỉ giữ thuật ngữ tiếng Anh khi là tên riêng hoặc chuẩn kỹ thuật không có cách dịch phù hợp.
 
-Không chỉ trả tên lớp: mỗi lớp phải có ít nhất 2 thuộc tính và 1 phương thức cụ thể, có căn cứ từ dữ liệu đầu vào. Thuộc tính mô tả dữ liệu/trạng thái mà lớp quản lý; phương thức mô tả hành vi/nghiệp vụ mà lớp thực hiện. Không dùng các mục chung chung như 'id', 'data', 'process()', 'handle()' nếu không có căn cứ nghiệp vụ.
-Ưu tiên lớp thực thể và lớp điều khiển nghiệp vụ thực sự cần thiết; tránh lớp trùng nghĩa hoặc lớp framework chung chung. Bao phủ các nghiệp vụ quan trọng và tạo quan hệ giữa các lớp khi có căn cứ.
+KHÔNG BỊA THÊM NGHIỆP VỤ:
+- Không mặc định thêm SinhVien, GiangVien, SanPham, DonHang, BenhNhan hay bất kỳ lớp ví dụ nào nếu hệ thống đầu vào không thực sự có khái niệm đó.
+- Không tự đổi miền nghiệp vụ theo ví dụ hoặc dữ liệu huấn luyện.
+- Nếu nhiều nguồn mâu thuẫn hoặc thiếu thông tin, ưu tiên nội dung yêu cầu/đặc tả rõ ràng; không tự lấp khoảng trống bằng kiến thức chung.
 
-KHÔNG BỊA THÊM NGHIỆP VỤ: tuyệt đối không mặc định hoặc tự thêm các lớp quen thuộc như SinhVien, GiangVien, SanPham, DonHang, BenhNhan hay bất kỳ lớp nào chỉ vì chúng xuất hiện trong ví dụ hoặc dữ liệu huấn luyện. Tên lớp, thuộc tính, phương thức và quan hệ đều phải được suy ra từ use case/đặc tả CỦA HỆ THỐNG ĐANG PHÂN TÍCH. Không đưa lớp ví dụ vào kết quả trừ khi đầu vào thực sự yêu cầu lớp đó.
-
-Chỉ trả JSON đúng schema. Dùng các chuỗi dưới đây làm chỗ giữ chỗ để hiểu CẤU TRÚC; không sao chép chúng thành dữ liệu nghiệp vụ:
-{"classes":[{"name":"TenLopTheoNghiepVu","attributes":["thuocTinhA: String","thuocTinhB: String"],"methods":["hanhDongNghiepVu()"]}],"relations":[{"class_a":"TenLopTheoNghiepVu","class_b":"TenLopLienQuanTheoNghiepVu","relation_type":"association|inheritance|composition|aggregation|dependency"}]}
-Mỗi lớp phải có ít nhất 2 thuộc tính và 1 phương thức; suy luận từ hành vi được mô tả nếu đầu vào chưa nêu trực tiếp, không để hai mảng này rỗng. Nếu không có quan hệ đủ căn cứ, trả relations là [].
+Chỉ trả JSON đúng schema, không kèm giải thích ngoài JSON. Các tên trong ví dụ dưới đây chỉ là placeholder cấu trúc, không được sao chép thành dữ liệu nghiệp vụ:
+{"classes":[{"name":"TenLopTheoNghiepVu","attributes":["thuocTinhNeuCoCanCu: String"],"methods":["hanhDongNeuCoCanCu()"]}],"relations":[{"class_a":"TenLopTheoNghiepVu","class_b":"TenLopLienQuan","relation_type":"association|inheritance|composition|aggregation|dependency"}]}
+Nếu không có quan hệ đủ căn cứ, trả "relations": []. Mảng attributes hoặc methods có thể rỗng nếu nguồn không cung cấp đủ bằng chứng.
 """
     return (
         instructions
