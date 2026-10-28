@@ -166,14 +166,6 @@ export default function Step4InteractionDiagram({
                     </div>
                     {(codeVisible[useCase.id] ?? false) ? (
                       <div className="flex min-w-0 min-h-[calc(100vh-250px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
-                        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-emerald-50">
-                          <span className="text-xs font-semibold text-emerald-100">Mã</span>
-                          {!editing && diagram?.id !== undefined && sourceCode && (
-                            <GhostButton disabled={busy} onClick={() => startEditing(useCase.id, sourceCode ?? "")}>
-                              ✎ Sửa mã
-                            </GhostButton>
-                          )}
-                        </div>
                         {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
                           <div className="space-y-3 border-t border-white/10 p-3">
                             <textarea
