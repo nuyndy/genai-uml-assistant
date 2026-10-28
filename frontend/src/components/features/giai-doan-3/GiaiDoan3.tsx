@@ -99,10 +99,20 @@ export default function GiaiDoan3({
         consistencyChecked: true,
         baselineApproved: false,
       }));
+      const codeIssues =
+        (result.missing_in_database ?? []).length +
+        (result.missing_in_plantuml ?? []).length +
+        (result.missing_relations ?? []).length +
+        (result.extra_relations ?? []).length;
+      const crossStageIssues = (result.cross_stage_issues ?? []).length;
       setStage3Message(
         result.consistent
-          ? "Biểu đồ lớp PlantUML khớp với dữ liệu lớp và quan hệ đã lưu."
-          : "Phát hiện sai lệch giữa PlantUML và dữ liệu UML đã lưu."
+          ? "Kiểm tra xuyên Giai đoạn 1–3 hoàn tất: không phát hiện sai lệch."
+          : codeIssues > 0 && crossStageIssues > 0
+            ? `Phát hiện ${codeIssues} sai lệch giữa mã và mô hình lớp, cùng ${crossStageIssues} vấn đề liên kết xuyên Giai đoạn 1–3.`
+            : codeIssues > 0
+              ? `Phát hiện ${codeIssues} sai lệch giữa mã PlantUML và mô hình lớp đã lưu.`
+              : `Mã lớp không có sai lệch trực tiếp, nhưng còn ${crossStageIssues} vấn đề liên kết dữ liệu xuyên Giai đoạn 1–3.`
       );
       await loadBaselines();
       if (step === 2 && result.consistent) {
