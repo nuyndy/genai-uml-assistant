@@ -157,7 +157,7 @@ export default function Step4InteractionDiagram({
                   <div className={`grid min-w-0 gap-3 p-3 ${(codeVisible[useCase.id] ?? false) && (sourceCode || codeLoading[useCase.id] || codeErrors[useCase.id]) ? "grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" : "grid-cols-1"}`}>
                     <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                       <div className="space-y-2">
-                        <div className="h-[calc(100vh-250px)] min-h-[340px] max-h-[calc(100vh-250px)] overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="h-[calc(100vh-170px)] min-h-[450px] max-h-[calc(100vh-170px)] overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                           <div style={{ width: '100%', minHeight: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                             <DiagramPreview imageUrl={diagram?.imageUrl ?? null} emptyTitle={diagram ? "Mã biểu đồ đã lưu, ảnh chưa sẵn sàng" : "Chưa có biểu đồ tương tác"} emptyHint="Biểu đồ được lưu riêng cho từng use case." downloadName={currentDiagramType + '-' + useCase.id + '.svg'} showToolbar={false} />
                           </div>
@@ -165,7 +165,7 @@ export default function Step4InteractionDiagram({
                       </div>
                     </div>
                     {(codeVisible[useCase.id] ?? false) ? (
-                      <div className="flex min-w-0 min-h-[280px] max-h-[calc(100vh-250px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
+                      <div className="flex min-w-0 min-h-[450px] max-h-[calc(100vh-170px)] flex-col overflow-hidden rounded-xl bg-[#102d24]">
                         {codeLoading[useCase.id] ? <p className="p-3 text-xs text-emerald-100">Đang tải mã UML...</p> : codeErrors[useCase.id] ? <p className="p-3 text-xs text-red-200">{codeErrors[useCase.id]}</p> : !sourceCode ? <p className="p-3 text-xs text-emerald-100">Biểu đồ chưa có mã nguồn được lưu.</p> : (codeVisible[useCase.id] ?? true) && (editing ? (
                           <div className="space-y-3 border-t border-white/10 p-3">
                             <textarea
