@@ -8,6 +8,7 @@ interface Props {
   busy: boolean;
   onConsistencyCheck: () => Promise<void>;
   onSaveDiagram: () => Promise<void>;
+  onFixWithAI: () => Promise<void>;
 }
 
 type Issue = { id: string; title: string; detail: string; lineHint?: string; tone: "amber" | "rose" | "slate" };
@@ -19,6 +20,7 @@ export default function Step2ChinhSuaCapNhat({
   busy,
   onConsistencyCheck,
   onSaveDiagram,
+  onFixWithAI,
 }: Props) {
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const missingDb = consistencyResult?.missing_in_database ?? [];
@@ -95,6 +97,9 @@ export default function Step2ChinhSuaCapNhat({
             )}
             <SoftButton disabled={busy || !state.diagramCode.trim()} onClick={onSaveDiagram}>
               {busy ? "Đang lưu..." : "Lưu chỉnh sửa"}
+            </SoftButton>
+            <SoftButton disabled={busy} onClick={onFixWithAI}>
+              {busy ? "Đang sửa bằng AI..." : "Sửa bằng AI"}
             </SoftButton>
             <PrimaryButton disabled={busy || !state.diagramCode.trim()} onClick={onConsistencyCheck}>
               {busy ? "Đang xử lý..." : "Kiểm tra lại"}
