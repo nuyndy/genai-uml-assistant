@@ -1192,8 +1192,8 @@ export default function GiaiDoan1({
         )}
         {state.usecases.map((useCase, index) => {
           const scenario = state.scenarios[useCase.id];
-          const activityDiagram = state.activityDiagrams.find((diagram) => diagram.usecaseId === useCase.id);
-          const useCaseDiagram = state.useCaseDiagrams.find((diagram) => diagram.usecaseId === useCase.id);
+          const activityDiagram = (state.activityDiagrams ?? []).find((diagram) => diagram.usecaseId === useCase.id);
+          const useCaseDiagram = (state.useCaseDiagrams ?? []).find((diagram) => diagram.usecaseId === useCase.id);
           return <div key={useCase.id} className="mt-6 break-inside-avoid">
             <h4 className="mb-2 font-bold">{"1.2." + (index + 1) + " " + useCase.name}</h4>
             <p className="font-semibold">Sơ đồ Use Case</p>
@@ -1316,7 +1316,7 @@ export default function GiaiDoan1({
         <h3 className="mb-3 mt-4 text-[15px] font-bold">3. Mô hình hóa hành vi</h3>
         <h4 className="mb-2 font-bold">3.1 Biểu đồ tuần tự cho từng Use Case</h4>
         {state.usecases.map((useCase) => {
-          const diagram = state.interactions.find((item) => item.usecaseId === useCase.id && item.type === "sequence");
+          const diagram = (state.interactions ?? []).find((item) => item.usecaseId === useCase.id && item.type === "sequence");
           return <div key={useCase.id} className="mb-5 break-inside-avoid">
             <p className="font-semibold">{useCase.name}</p>
             {diagram?.imageUrl ? <img src={diagram.imageUrl} alt={"Biểu đồ tuần tự — " + useCase.name} className="mx-auto my-2 max-w-full" /> : <p>Chưa có ảnh biểu đồ tuần tự được lưu cho Use Case này.</p>}
