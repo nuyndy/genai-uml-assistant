@@ -36,6 +36,30 @@ def _encode_plantuml(source: str) -> str:
     return "".join(encoded)
 
 
+def _apply_diagram_layout(source: str) -> str:
+    """Ưu tiên hướng trái-sang-phải cho sơ đồ lớp, không đổi các loại sơ đồ khác."""
+    lines = source.splitlines()
+    if not lines or not any(line.lstrip().startswith("@startuml") for line in lines):
+        return source
+
+    # Chỉ áp dụng cho sơ đồ lớp, không tác động sequence/activity/use-case.
+    has_class_declaration = any(
+        line.lstrip().startswith(("class ", "abstract class ", "interface ", "entity "))
+        for line in lines
+    )
+    if not has_class_declaration:
+        return source
+
+    if any(line.strip().lower() == "left to right direction" for line in lines):
+        return source
+
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith("@startuml"):
+            lines.insert(index + 1, "left to right direction")
+            break
+    return "\n".join(lines)
+
+
 def render_plantuml(source_code: str) -> str:
     """Render PlantUML through the public server using its encoded GET API.
 
@@ -50,6 +74,8 @@ def render_plantuml(source_code: str) -> str:
         raise PlantUMLRenderError(
             "Mã PlantUML phải có @startuml và @enduml."
         )
+
+    source = _apply_diagram_layout(source)
 
     server_url = (
         os.getenv("PLANTUML_SERVER_URL", DEFAULT_PLANTUML_SERVER).strip().rstrip("/")
