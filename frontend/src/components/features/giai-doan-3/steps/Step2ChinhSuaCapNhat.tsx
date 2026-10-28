@@ -137,7 +137,7 @@ export default function Step2ChinhSuaCapNhat({
                 Không phát hiện sai lệch trong mã PlantUML và các liên kết dữ liệu Giai đoạn 1–3.
               </div>
             ) : (
-              <div className="min-h-0 space-y-2 xl:max-h-[calc(100vh-320px)] xl:overflow-y-auto">
+              <div className="space-y-2">
                 {issues.map((issue, index) => (
                   <button
                     key={issue.id}
