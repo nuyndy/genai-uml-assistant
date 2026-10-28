@@ -55,7 +55,7 @@ from schemas.uml import (
     UseCaseScenarioBatchResult,
     UseCaseUpdate,
 )
-from services.ollama import AIServiceError, generate_json
+from services.ollama import AIServiceError, generate_content, generate_json, strip_code_fence
 from services.plantuml import PlantUMLRenderError, render_plantuml
 from services.plantuml_parser import parse_plantuml
 
@@ -553,6 +553,98 @@ def parse_plantuml_endpoint(
         logger.exception("Lỗi khi parse PlantUML")
         raise HTTPException(status_code=400, detail="Không thể parse PlantUML: " + str(exc))
     return parsed
+
+@router.post(
+    "/api/projects/{project_id}/fix-uml-consistency",
+    response_model=dict,
+    tags=["uml"],
+)
+def fix_uml_consistency_with_ai(
+    project_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Dùng Ollama sửa mã PlantUML dựa trên sai lệch kiểm tra và mô hình đã lưu."""
+    _require_project(db, project_id)
+    source_code = payload.get("source_code", "")
+    issues = payload.get("issues", {})
+    if not isinstance(source_code, str) or not source_code.strip():
+        raise HTTPException(status_code=422, detail="source_code không được để trống.")
+    if not isinstance(issues, dict):
+        raise HTTPException(status_code=422, detail="issues phải là một đối tượng.")
+
+    classes = (
+        db.query(ClassEntity)
+        .filter(ClassEntity.project_id == project_id)
+        .order_by(ClassEntity.id)
+        .all()
+    )
+    class_ids = [item.id for item in classes]
+    relations = (
+        db.query(ClassRelation)
+        .filter(
+            ClassRelation.class_a_id.in_(class_ids)
+            & ClassRelation.class_b_id.in_(class_ids)
+        )
+        .order_by(ClassRelation.id)
+        .all()
+        if class_ids else []
+    )
+    class_names = {item.id: item.name for item in classes}
+    model_context = {
+        "classes": [
+            {
+                "name": item.name,
+                "attributes": _decode_lines(item.attributes),
+                "methods": _decode_lines(item.methods),
+            }
+            for item in classes
+        ],
+        "relations": [
+            {
+                "from": class_names.get(item.class_a_id, ""),
+                "to": class_names.get(item.class_b_id, ""),
+                "type": item.relation_type,
+            }
+            for item in relations
+        ],
+    }
+    prompt = (
+        "Bạn là chuyên gia UML và PlantUML. Hãy sửa mã biểu đồ lớp đang có dựa trên "
+        "danh sách sai lệch kiểm tra và mô hình UML chuẩn đã lưu.\n"
+        "Ưu tiên sửa đúng các sai lệch được nêu; giữ nguyên các phần hợp lệ, thuộc tính, "
+        "phương thức, ghi chú và bố cục hiện có khi có thể. Không tự ý thêm lớp/quan hệ "
+        "không có trong mô hình chuẩn. Kết quả phải là TOÀN BỘ mã PlantUML hoàn chỉnh, "
+        "bắt đầu bằng @startuml và kết thúc bằng @enduml; không markdown, không giải thích.\n\n"
+        f"MÔ HÌNH UML ĐÃ LƯU (nguồn chuẩn):\n{json.dumps(model_context, ensure_ascii=False, indent=2)}\n\n"
+        f"KẾT QUẢ KIỂM TRA SAI LỆCH:\n{json.dumps(issues, ensure_ascii=False, indent=2)}\n\n"
+        f"MÃ PLANTUML HIỆN TẠI:\n{source_code}\n"
+    )
+    try:
+        response = strip_code_fence(generate_content(prompt))
+    except AIServiceError as exc:
+        logger.warning("AI failed to repair UML for project %s: %s", project_id, exc)
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    if "@startuml" not in response or "@enduml" not in response:
+        raise HTTPException(
+            status_code=502,
+            detail="AI không trả về mã PlantUML hoàn chỉnh. Hãy thử lại.",
+        )
+    start = response.find("@startuml")
+    end = response.rfind("@enduml") + len("@enduml")
+    corrected_code = response[start:end].strip()
+    try:
+        parse_plantuml(corrected_code)
+    except Exception as exc:
+        logger.info("AI repair returned unparsable PlantUML for project %s", project_id)
+        raise HTTPException(
+            status_code=502,
+            detail="Mã PlantUML AI đề xuất chưa hợp lệ. Hãy thử lại hoặc chỉnh sửa thủ công.",
+        ) from exc
+    return {"source_code": corrected_code}
+
 
 @router.post(
     "/api/projects/{project_id}/check-uml-consistency",
