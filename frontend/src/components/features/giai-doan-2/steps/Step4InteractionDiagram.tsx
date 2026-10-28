@@ -75,10 +75,10 @@ export default function Step4InteractionDiagram({
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
 
-  const saveEditing = async (diagramId: number, code: string) => {
+  const saveEditing = async (useCaseId: number, diagramId: number, code: string) => {
     await onSaveDiagram(diagramId, code);
-    setLoadedCodes((previous) => ({ ...previous }));
-    setDraftByUseCase((previous) => ({ ...previous, [visibleScenarios[0]?.id ?? -1]: code }));
+    setLoadedCodes((previous) => ({ ...previous, [useCaseId]: code }));
+    setDraftByUseCase((previous) => ({ ...previous, [useCaseId]: code }));
   };
 
   return (
@@ -100,7 +100,6 @@ export default function Step4InteractionDiagram({
               const diagram = interactions.find(
                 (item) => item.usecaseId === useCase.id && item.type === currentDiagramType,
               );
-              const editing = editingUseCaseId === useCase.id;
               const sourceCode = diagram?.sourceCode?.trim() ? diagram.sourceCode : loadedCodes[useCase.id];
               const toggleCode = async () => {
                 const nextVisible = !(codeVisible[useCase.id] ?? false);
@@ -171,7 +170,7 @@ export default function Step4InteractionDiagram({
                               disabled={busy}
                               className={`${inputClass} min-h-40 flex-1 resize-y border-white/10 bg-[#0b211a] font-mono text-xs leading-5 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
                             />
-                            <PrimaryButton block disabled={busy || !(draftByUseCase[useCase.id] ?? sourceCode).trim() || diagram?.id === undefined} onClick={() => void saveEditing(diagram!.id as number, draftByUseCase[useCase.id] ?? sourceCode)}>
+                            <PrimaryButton block disabled={busy || !(draftByUseCase[useCase.id] ?? sourceCode).trim() || diagram?.id === undefined} onClick={() => void saveEditing(useCase.id, diagram!.id as number, draftByUseCase[useCase.id] ?? sourceCode)}>
                               {busy ? "Đang lưu và render..." : "Lưu mã và render lại"}
                             </PrimaryButton>
                           </div>
