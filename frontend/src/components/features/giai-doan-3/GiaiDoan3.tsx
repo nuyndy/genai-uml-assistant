@@ -244,17 +244,26 @@ export default function GiaiDoan3({
       // Giữ kết quả này trên giao diện để người dùng thấy rõ còn sai lệch hay không.
       const verification = result.consistency_result
         ?? await checkProjectUmlConsistency(projectId, result.source_code);
+      // Render ngay mã AI vừa sửa để người dùng thấy thay đổi ở cả mã và hình,
+      // không phải bấm lưu mới biết AI đã tạo ra kết quả gì.
+      let previewImageUrl = state.previewImageUrl;
+      try {
+        previewImageUrl = await renderDiagram(result.source_code);
+      } catch (renderError) {
+        console.warn("Mã AI đã được cập nhật nhưng chưa render được ảnh:", renderError);
+      }
       setState((prev: any) => ({
         ...prev,
         diagramCode: result.source_code,
+        previewImageUrl,
         consistencyChecked: false,
         baselineApproved: false,
       }));
       setConsistencyResult(verification);
       setStage3Message(
         verification.consistent
-          ? "AI đã đề xuất mã không còn sai lệch theo bộ kiểm tra. Hãy xem lại và chọn “Lưu chỉnh sửa” để lưu mã cùng bản render."
-          : "AI đã đề xuất mã nhưng vẫn còn sai lệch. Danh sách đã được cập nhật; hãy sửa tiếp bằng AI hoặc chỉnh mã thủ công rồi lưu và kiểm tra lại.",
+          ? "AI đã sửa mã PlantUML và kiểm tra lại không còn sai lệch trong phạm vi mô hình lớp. Xem lại kết quả rồi chọn “Lưu chỉnh sửa” để lưu vào dự án."
+          : "AI đã cập nhật mã PlantUML và render bản xem trước, nhưng kiểm tra lại vẫn còn sai lệch. Xem danh sách bên dưới; có thể cần sửa mô hình dữ liệu hoặc các bước trước, không chỉ sửa mã.",
       );
     } catch (error) {
       console.error("Không thể sửa sai lệch bằng AI:", error);
