@@ -465,6 +465,18 @@ export interface UmlConsistencyResult {
     to: string;
     type: string;
   }>;
+  /** Vấn đề về độ bao phủ/traceability giữa Giai đoạn 1, 2 và 3. */
+  cross_stage_issues?: string[];
+  stage_counts?: {
+    requirements: number;
+    user_stories: number;
+    specifications: number;
+    use_cases: number;
+    actors: number;
+    interaction_diagrams: number;
+    classes: number;
+    diagrams: number;
+  };
 }
 
 /** Lấy danh sách baseline của dự án, mới nhất trước. */
