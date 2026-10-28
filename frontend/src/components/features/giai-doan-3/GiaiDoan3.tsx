@@ -240,14 +240,22 @@ export default function GiaiDoan3({
         state.diagramCode,
         consistencyResult,
       );
+      // Backend đã chạy lại bộ kiểm tra nhất quán trên chính mã AI vừa đề xuất.
+      // Giữ kết quả này trên giao diện để người dùng thấy rõ còn sai lệch hay không.
+      const verification = result.consistency_result
+        ?? await checkProjectUmlConsistency(projectId, result.source_code);
       setState((prev: any) => ({
         ...prev,
         diagramCode: result.source_code,
         consistencyChecked: false,
         baselineApproved: false,
       }));
-      setConsistencyResult(null);
-      setStage3Message("AI đã đề xuất mã PlantUML đã sửa. Hãy xem lại, chọn “Lưu chỉnh sửa”, sau đó “Kiểm tra lại” để xác nhận.");
+      setConsistencyResult(verification);
+      setStage3Message(
+        verification.consistent
+          ? "AI đã đề xuất mã không còn sai lệch theo bộ kiểm tra. Hãy xem lại và chọn “Lưu chỉnh sửa” để lưu mã cùng bản render."
+          : "AI đã đề xuất mã nhưng vẫn còn sai lệch. Danh sách đã được cập nhật; hãy sửa tiếp bằng AI hoặc chỉnh mã thủ công rồi lưu và kiểm tra lại.",
+      );
     } catch (error) {
       console.error("Không thể sửa sai lệch bằng AI:", error);
       setStage3Message(
