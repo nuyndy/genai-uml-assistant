@@ -200,6 +200,7 @@ function hydrateState(saved: ProjectUmlState, previous: WorkflowState): Workflow
         ? []
         : [
             {
+              id: diagram.id,
               usecaseId: diagram.use_case_id,
               type: diagram.type as InteractionType,
               imageUrl: diagram.image_url,
