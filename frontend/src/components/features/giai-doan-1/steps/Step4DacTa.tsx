@@ -109,8 +109,9 @@ export default function Step4DacTa({
     : emptyNonFunctionalSpecification();
   const activeTab = activeStory ? functionalSpecificationTabs[activeStory.id] ?? "overview" : "overview";
   const itemCount = kind === "functional" ? functionalItems.length : (nonFunctionalSpecification ? 1 : 0);
-  const canContinue = stories.length > 0
-    && functionalItems.every((item) => Boolean(item.specification))
+  // Cho phép mở SRS dựa trên các đặc tả thực tế đã có; không khóa bước này
+  // chỉ vì danh sách User Story không được trả về/đã thay đổi sau khi tổng hợp FR.
+  const canContinue = functionalItems.length > 0
     && Boolean(nonFunctionalSpecification)
     && !busy;
 
