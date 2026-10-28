@@ -515,8 +515,8 @@ export function fixProjectUmlConsistency(
   projectId: number,
   sourceCode: string,
   issues: UmlConsistencyResult,
-): Promise<{ source_code: string }> {
-  return apiFetch<{ source_code: string }>(
+): Promise<{ source_code: string; consistency_result?: UmlConsistencyResult }> {
+  return apiFetch<{ source_code: string; consistency_result?: UmlConsistencyResult }>(
     `/api/projects/${projectId}/fix-uml-consistency`,
     {
       method: "POST",
