@@ -71,6 +71,7 @@ export default function Step4InteractionDiagram({
   const [codeLoading, setCodeLoading] = useState<Record<number, boolean>>({});
   const [codeErrors, setCodeErrors] = useState<Record<number, string>>({});
   const [zoom, setZoom] = useState<Record<number, number>>({});
+  const [zoomBeforeCode, setZoomBeforeCode] = useState<Record<number, number>>({});
   const pageSize = 1;
   const pageCount = Math.max(1, Math.ceil(scenarios.length / pageSize));
   const visibleScenarios = useMemo(() => scenarios.slice(page * pageSize, page * pageSize + pageSize), [scenarios, page]);
@@ -109,6 +110,12 @@ export default function Step4InteractionDiagram({
               const toggleCode = async () => {
                 const nextVisible = !(codeVisible[useCase.id] ?? false);
                 setCodeVisible((v) => ({ ...v, [useCase.id]: nextVisible }));
+                if (nextVisible) {
+                  setZoomBeforeCode((v) => ({ ...v, [useCase.id]: v[useCase.id] ?? (zoom[useCase.id] ?? 100) }));
+                  setZoom((v) => ({ ...v, [useCase.id]: 60 }));
+                } else {
+                  setZoom((v) => ({ ...v, [useCase.id]: zoomBeforeCode[useCase.id] ?? 100 }));
+                }
                 if (nextVisible && !sourceCode && diagram?.id !== undefined) {
                   setCodeLoading((v) => ({ ...v, [useCase.id]: true }));
                   setCodeErrors((v) => ({ ...v, [useCase.id]: "" }));
