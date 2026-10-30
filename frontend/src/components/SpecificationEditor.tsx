@@ -8,7 +8,6 @@ export const emptyFunctionalSpecification = (): FunctionalSpecification => ({
   function_name: "",
   description: "",
   actors: [],
-  actors: [],
   process: [],
   input_data: [],
   processing_rules: [],
