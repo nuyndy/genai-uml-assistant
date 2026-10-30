@@ -10,6 +10,7 @@ interface Props {
   onConsistencyCheck: () => Promise<void>;
   onSaveDiagram: () => Promise<void>;
   onFixWithAI: () => Promise<void>;
+  onDiagramChange?: () => void;
 }
 
 type Issue = { id: string; title: string; detail: string; lineHint?: string; tone: "amber" | "rose" | "slate" };
@@ -23,6 +24,7 @@ export default function Step2ChinhSuaCapNhat({
   onConsistencyCheck,
   onSaveDiagram,
   onFixWithAI,
+  onDiagramChange,
 }: Props) {
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const missingDb = consistencyResult?.missing_in_database ?? [];
@@ -167,7 +169,7 @@ export default function Step2ChinhSuaCapNhat({
             <textarea
               ref={editorRef}
               value={state.diagramCode}
-              onChange={(event) => setState((prev) => ({ ...prev, diagramCode: event.target.value, consistencyChecked: false, baselineApproved: false }))}
+              onChange={(event) => { setState((prev) => ({ ...prev, diagramCode: event.target.value, consistencyChecked: false, baselineApproved: false })); onDiagramChange?.(); }}
               spellCheck={false}
               aria-label="Chỉnh sửa mã PlantUML"
               wrap="off"
