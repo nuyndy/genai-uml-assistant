@@ -12,10 +12,11 @@ interface Props {
   onCreate: (name: string, issues: BaselineIssueDecision[]) => Promise<void>;
   onSaveIssues: (baselineId: number, issues: BaselineIssueDecision[]) => Promise<void>;
   onApprove: (baselineId: number) => Promise<void>;
+  onExport: (baselineId: number) => Promise<void>;
 }
 
 export default function Step4Baseline({
-  baselines, issues, busy, hasChecked, message, onIssuesChange, onCreate, onSaveIssues, onApprove,
+  baselines, issues, busy, hasChecked, message, onIssuesChange, onCreate, onSaveIssues, onApprove, onExport,
 }: Props) {
   const [name, setName] = useState("");
   const [selectedBaselineId, setSelectedBaselineId] = useState<number | null>(null);
@@ -88,6 +89,11 @@ export default function Step4Baseline({
                 <p className="truncate text-sm font-semibold text-slate-800">{baseline.name} · v{baseline.version}</p>
                 <p className="text-xs text-slate-500">Trạng thái: {baseline.status} · {baseline.open_issues?.length ?? 0} sai lệch</p>
               </div>
+              {baseline.status === "approved" && (
+                <SoftButton disabled={busy} onClick={() => void onExport(baseline.id)}>
+                  Xuất SRS DOCX
+                </SoftButton>
+              )}
               {baseline.status === "draft" && (
                 <div className="flex flex-wrap gap-2">
                   <SoftButton
