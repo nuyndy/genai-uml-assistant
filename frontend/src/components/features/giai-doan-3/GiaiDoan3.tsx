@@ -29,7 +29,8 @@ function buildBaselineIssues(result: any): BaselineIssueDecision[] {
     ...(result.cross_stage_issues ?? []).map((detail: string, index: number) => ({ type: "cross_stage", id: `cross-${index}`, title: "Vấn đề liên kết xuyên giai đoạn", detail, status: "open" as const })),
   ];
 }
-\ninterface Props {
+
+interface Props {
   projectId: number;
   projectName: string;
   state: any;
@@ -133,10 +134,6 @@ export default function GiaiDoan3({
               : `Mã lớp không có sai lệch trực tiếp, nhưng còn ${crossStageIssues} vấn đề liên kết dữ liệu xuyên Giai đoạn 1–3.`
       );
       await loadBaselines();
-      if (step === 3 && result.consistent) {
-        setStage3Message("Đã khắc phục hết sai lệch. Đang quay lại Bước 1 để xác nhận kết quả.");
-        onStepChange(1);
-      }
     } catch (error) {
       console.error("Không thể kiểm tra UML:", error);
       setState((prev: any) => ({ ...prev, consistencyChecked: false, baselineApproved: false }));
@@ -268,40 +265,13 @@ export default function GiaiDoan3({
   };
 
   return (
-    <div className={`relative w-full min-w-0 ${step === 3 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden" : ""}`}>
+    <div className={`relative w-full min-w-0 ${step === 1 || step === 4 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden" : ""}`}>
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
-      <div className={`relative z-10 w-full max-w-none min-w-0 ${step === 3 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 py-3 sm:px-6 lg:px-8" : "space-y-6 px-4 py-6 sm:px-6 lg:px-8"}`}>
-        {step === 1 && (
-          <Step3KiemTraNhatQuan
-            state={state}
-            busy={busy}
-            onConsistencyCheck={runConsistencyCheck}
-            consistencyResult={consistencyResult}
-            stage3Message={stage3Message}
-          />
-        )}
-        {step === 2 && (
-          <Step2ChinhSuaCapNhat
-            state={state}
-            setState={setState}
-            consistencyResult={consistencyResult}
-            stage3Message={stage3Message}
-            busy={busy}
-            onConsistencyCheck={runConsistencyCheck}
-            onSaveDiagram={handleRenderAndSave}
-            onFixWithAI={handleFixWithAI}
-          />
-        )}
-        {step === 3 && (
-          <GiaiDoan1
-            projectId={projectId}
-            projectName={projectName}
-            state={state}
-            setState={setState}
-            step={5}
-            onStepChange={() => undefined}
-          />
-        )}
+      <div className={`relative z-10 w-full max-w-none min-w-0 ${step === 1 || step === 4 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 py-3 sm:px-6 lg:px-8" : "space-y-6 px-4 py-6 sm:px-6 lg:px-8"}`}>
+        {step === 1 && <GiaiDoan1 projectId={projectId} projectName={projectName} state={state} setState={setState} step={5} onStepChange={() => undefined} />}
+        {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} />}
+        {step === 3 && <Step3KiemTraNhatQuan state={state} busy={busy} onConsistencyCheck={runConsistencyCheck} consistencyResult={consistencyResult} stage3Message={stage3Message} />}
+        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onApprove={handleApproveBaseline} />}
       </div>
     </div>
   );
