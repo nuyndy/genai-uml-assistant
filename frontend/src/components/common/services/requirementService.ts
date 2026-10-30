@@ -415,6 +415,20 @@ export async function getSpecificationDocument(
   };
 }
 
+export function exportApprovedBaselineSrs(
+  projectId: number,
+  baselineId: number,
+): Promise<{ blob: Blob; filename: string }> {
+  return apiFetchBlob(
+    `/api/projects/${projectId}/specification-document/export?baseline_id=${baselineId}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ format: "docx" }),
+    },
+  );
+}
+
 export function exportSpecificationDocument(
   projectId: number,
 ): Promise<{ blob: Blob; filename: string }> {
