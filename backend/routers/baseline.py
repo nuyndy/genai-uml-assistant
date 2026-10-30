@@ -36,6 +36,7 @@ from database.models import (
     UserStory,
 )
 from routers.auth import get_current_user
+from services.entity_revision import record_entity_revision
 router = APIRouter(prefix="/api/projects", tags=["baseline-traceability"])
 logger = logging.getLogger(__name__)
 def _owned_project(
@@ -1643,3 +1644,156 @@ def delete_trace_link(
     db.delete(row)
     db.commit()
     return {"deleted": True, "id": link_id}
+
+
+_REVISION_ENTITY_MODELS = {
+    "raw_requirement": RawRequirement,
+    "user_story": UserStory,
+    "specification": Specification,
+    "srs_document": SrsDocument,
+    "actor": Actor,
+    "use_case": UseCase,
+    "class_entity": ClassEntity,
+}
+
+
+def _revision_entity_project_id(db: Session, entity_type: str, entity_id: int) -> tuple[Any, int]:
+    model = _REVISION_ENTITY_MODELS.get(entity_type)
+    if model is None:
+        raise HTTPException(status_code=422, detail="Loại dữ liệu không hỗ trợ lịch sử phiên bản.")
+    entity = db.query(model).filter(model.id == entity_id).first()
+    if entity is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu.")
+    if entity_type in {"raw_requirement", "actor", "class_entity", "srs_document"}:
+        project_id = entity.project_id
+    elif entity_type == "user_story":
+        requirement = db.query(RawRequirement).filter(RawRequirement.id == entity.requirement_id).first()
+        project_id = requirement.project_id if requirement else None
+    elif entity_type == "specification":
+        project_id = entity.project_id
+        if project_id is None and entity.user_story_id is not None:
+            story = db.query(UserStory).filter(UserStory.id == entity.user_story_id).first()
+            requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first() if story else None
+            project_id = requirement.project_id if requirement else None
+    else:
+        specification = db.query(Specification).filter(Specification.id == entity.specification_id).first()
+        project_id = specification.project_id if specification else None
+        if project_id is None and specification and specification.user_story_id is not None:
+            story = db.query(UserStory).filter(UserStory.id == specification.user_story_id).first()
+            requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first() if story else None
+            project_id = requirement.project_id if requirement else None
+    if project_id is None:
+        raise HTTPException(status_code=404, detail="Không xác định được dự án của dữ liệu.")
+    return entity, project_id
+
+
+@router.get("/{project_id}/entities/{entity_type}/{entity_id}/revisions")
+def list_entity_revisions(
+    project_id: int,
+    entity_type: str,
+    entity_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _owned_project(project_id, db, current_user)
+    _, actual_project_id = _revision_entity_project_id(db, entity_type, entity_id)
+    if actual_project_id != project_id:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu trong dự án.")
+    rows = (
+        db.query(EntityRevision)
+        .filter(
+            EntityRevision.project_id == project_id,
+            EntityRevision.entity_type == entity_type,
+            EntityRevision.entity_id == entity_id,
+        )
+        .order_by(EntityRevision.version.desc())
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "version": row.version,
+            "change_type": row.change_type,
+            "change_note": row.change_note,
+            "created_by": row.created_by,
+            "created_at": row.created_at,
+            "content": row.content,
+        }
+        for row in rows
+    ]
+
+
+@router.post("/{project_id}/entities/{entity_type}/{entity_id}/revisions/{revision_id}/restore")
+def restore_entity_revision(
+    project_id: int,
+    entity_type: str,
+    entity_id: int,
+    revision_id: int,
+    payload: dict = Body(default={}),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _owned_project(project_id, db, current_user)
+    entity, actual_project_id = _revision_entity_project_id(db, entity_type, entity_id)
+    if actual_project_id != project_id:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu trong dự án.")
+    revision = (
+        db.query(EntityRevision)
+        .filter(
+            EntityRevision.id == revision_id,
+            EntityRevision.project_id == project_id,
+            EntityRevision.entity_type == entity_type,
+            EntityRevision.entity_id == entity_id,
+        )
+        .first()
+    )
+    if revision is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phiên bản cần khôi phục.")
+    immutable_fields = {
+        "id", "project_id", "created_at", "updated_at",
+        "requirement_id", "user_story_id", "specification_id",
+        "version", "type",
+    }
+    try:
+        for key, value in (revision.content or {}).items():
+            if key not in immutable_fields and hasattr(entity, key):
+                setattr(entity, key, value)
+        if entity_type == "specification":
+            entity.version = (entity.version or 0) + 1
+            approval = db.query(SpecificationApproval).filter(
+                SpecificationApproval.specification_id == entity.id
+            ).first()
+            if approval is not None:
+                approval.status = "draft"
+                approval.approved_by = None
+                approval.approved_at = None
+        record_entity_revision(
+            db,
+            entity,
+            project_id=project_id,
+            entity_type=entity_type,
+            user_id=current_user.id,
+            change_type="restore",
+            change_note=str(payload.get("change_note") or f"Khôi phục từ phiên bản {revision.version}"),
+        )
+        db.commit()
+        db.refresh(entity)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not restore entity revision")
+        raise HTTPException(status_code=500, detail="Không thể khôi phục phiên bản.") from exc
+    return {
+        "entity_type": entity_type,
+        "entity_id": entity_id,
+        "restored_from_version": revision.version,
+        "current_version": (
+            db.query(EntityRevision.version)
+            .filter(
+                EntityRevision.project_id == project_id,
+                EntityRevision.entity_type == entity_type,
+                EntityRevision.entity_id == entity_id,
+            )
+            .order_by(EntityRevision.version.desc())
+            .scalar()
+        ),
+    }
