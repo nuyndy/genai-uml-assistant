@@ -289,6 +289,7 @@ def create_project_requirements_batch(
     return [
         RequirementRecord(
             id=record.id,
+            public_id=record.public_id,
             project_id=record.project_id,
             content=record.content,
             status=record.status,
@@ -321,6 +322,7 @@ def list_project_requirements(
         return [
             RequirementRecord(
                 id=requirement.id,
+                public_id=requirement.public_id,
                 project_id=requirement.project_id,
                 content=requirement.content,
                 status=requirement.status,
@@ -358,6 +360,7 @@ def get_requirement(
         raise HTTPException(status_code=500, detail="Không thể đọc user story.") from exc
     return RequirementRecord(
         id=requirement.id,
+        public_id=requirement.public_id,
         project_id=requirement.project_id,
         content=requirement.content,
         status=requirement.status,
