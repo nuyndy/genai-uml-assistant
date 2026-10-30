@@ -516,7 +516,7 @@ def save_requirement_user_story(
     requirement_id: int,
     data: UserStoryDraftContent,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     """Save one reviewed User Story and confirm its source requirement."""
     requirement = _requirement(db, requirement_id)
@@ -536,6 +536,34 @@ def save_requirement_user_story(
             story.benefit = data.benefit
             story.acceptance_criteria = data.acceptance_criteria
         requirement.status = "confirmed"
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="user_story",
+            entity_id=story.id,
+            content={
+                "requirement_id": story.requirement_id,
+                "role": story.role,
+                "feature": story.feature,
+                "benefit": story.benefit,
+                "acceptance_criteria": story.acceptance_criteria,
+                "technical_notes": story.technical_notes,
+            },
+            change_type="create" if story not in db.dirty else "update",
+            change_note="Lưu User Story đã duyệt",
+            created_by=current_user.id,
+        )
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="requirement",
+            entity_id=requirement.id,
+            content={"content": _load_content(requirement), "status": requirement.status},
+            change_type="confirm",
+            change_note="Xác nhận yêu cầu",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(story)
     except SQLAlchemyError as exc:
@@ -552,7 +580,7 @@ def save_requirement_user_story(
 def confirm_requirement(
     requirement_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     requirement = _requirement(db, requirement_id)
     content = _load_content(requirement)
@@ -586,6 +614,34 @@ def confirm_requirement(
     requirement.status = "confirmed"
     try:
         db.add(story)
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="user_story",
+            entity_id=story.id,
+            content={
+                "requirement_id": story.requirement_id,
+                "role": story.role,
+                "feature": story.feature,
+                "benefit": story.benefit,
+                "acceptance_criteria": story.acceptance_criteria,
+                "technical_notes": story.technical_notes,
+            },
+            change_type="create",
+            change_note="Tạo User Story khi xác nhận yêu cầu",
+            created_by=current_user.id,
+        )
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="requirement",
+            entity_id=requirement.id,
+            content={"content": _load_content(requirement), "status": requirement.status},
+            change_type="confirm",
+            change_note="Xác nhận yêu cầu",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(story)
     except SQLAlchemyError as exc:
