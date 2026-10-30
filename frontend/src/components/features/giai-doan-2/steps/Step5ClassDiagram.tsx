@@ -21,11 +21,15 @@ interface Props {
   classDiagramCode: string | null;
   setEditingClassDraft?: (id: number, draft: ClassDraft) => void;
   onSaveClass: (id: number, draft: ClassDraft) => Promise<void>;
+  onDeleteClass?: (id: number) => Promise<void>;
   onRegenerateClasses: () => Promise<void> | void;
   onConfirmClassDiagram: () => void;
   onSaveClassDiagramCode?: (code: string) => Promise<void>;
   busy: boolean;
   projectId?: number;
+  wrapClass?: string;
+  editingClassId?: number | null;
+  setEditingClassId?: (id: number | null) => void;
 }
 
 export default function Step5ClassDiagram({
@@ -35,6 +39,7 @@ export default function Step5ClassDiagram({
   classDiagramCode,
   setEditingClassDraft,
   onSaveClass,
+  onDeleteClass: _onDeleteClass,
   onRegenerateClasses,
   onConfirmClassDiagram,
   onSaveClassDiagramCode,
