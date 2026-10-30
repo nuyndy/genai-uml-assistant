@@ -69,11 +69,11 @@ function Harness({ initial, stage, step }: {
       <GiaiDoanStepper stage={stage} maxUnlockedStage={3} completedStages={[]} />
       <Stepper stage={stage} step={step} maxUnlockedStep={5} />
       {stage === 1 ? (
-        <GiaiDoan1 state={state} setState={setState} step={step} onStepChange={noop} />
+        <GiaiDoan1 projectName="Dự án kiểm thử" state={state} setState={setState} step={step} onStepChange={noop} />
       ) : stage === 2 ? (
         <GiaiDoan2 state={state} setState={setState} step={step} onStepChange={noop} />
       ) : (
-        <GiaiDoan3 projectId={1} state={state} setState={setState} step={step} onStepChange={noop} />
+        <GiaiDoan3 projectId={1} projectName="Dự án kiểm thử" state={state} setState={setState} step={step} onStepChange={noop} />
       )}
     </>
   );
