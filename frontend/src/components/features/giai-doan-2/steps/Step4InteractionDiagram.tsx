@@ -3,7 +3,6 @@ import {
   Card,
   SoftButton,
   PrimaryButton,
-  GhostButton,
   EmptyState,
   DiagramPreview,
 } from "../../../common/ui/primitives";
@@ -58,7 +57,6 @@ export default function Step4InteractionDiagram({
   onLoadDiagramCode,
   onConfirm,
   confirmed,
-  wrapClass,
   inputClass = "w-full rounded-lg border border-slate-300 p-3 text-sm",
 }: Props) {
   void confirmed;
@@ -170,7 +168,7 @@ export default function Step4InteractionDiagram({
                               disabled={busy}
                               className={`${inputClass} min-h-40 flex-1 resize-y border-white/10 bg-[#0b211a] font-mono text-xs leading-5 whitespace-pre text-emerald-100 placeholder:text-emerald-700 focus:border-emerald-500 focus:ring-emerald-900`}
                             />
-                            <PrimaryButton block disabled={busy || !(draftByUseCase[useCase.id] ?? sourceCode).trim() || diagram?.id === undefined} onClick={() => void saveEditing(useCase.id, diagram!.id as number, draftByUseCase[useCase.id] ?? sourceCode)}>
+                            <PrimaryButton disabled={busy || !(draftByUseCase[useCase.id] ?? sourceCode).trim() || diagram?.id === undefined} onClick={() => void saveEditing(useCase.id, diagram!.id as number, draftByUseCase[useCase.id] ?? sourceCode)}>
                               {busy ? "Đang lưu và render..." : "Lưu mã và render lại"}
                             </PrimaryButton>
                           </div>
