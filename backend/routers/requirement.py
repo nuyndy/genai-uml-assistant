@@ -483,7 +483,7 @@ def update_requirement(
 def delete_requirement(
     requirement_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     requirement = _requirement(db, requirement_id)
     if requirement.status != "draft":
@@ -497,6 +497,16 @@ def delete_requirement(
                 status_code=409,
                 detail="Không thể xóa yêu cầu đang được tham chiếu bởi user story.",
             )
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="requirement",
+            entity_id=requirement.id,
+            content={"content": _load_content(requirement), "status": requirement.status},
+            change_type="delete",
+            change_note="Xóa yêu cầu nháp",
+            created_by=current_user.id,
+        )
         # Xóa trace link trỏ đến yêu cầu trước khi xóa bản ghi.
         db.query(TraceLink).filter(
             or_(
@@ -884,7 +894,7 @@ def improve_user_story(
 def delete_user_story(
     story_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     try:
         story = db.query(UserStory).filter(UserStory.id == story_id).first()
@@ -897,6 +907,28 @@ def delete_user_story(
                 status_code=409,
                 detail="Không thể xóa user story đang được tham chiếu bởi đặc tả.",
             )
+        requirement = db.query(RawRequirement).filter(
+            RawRequirement.id == story.requirement_id
+        ).first()
+        if requirement is None:
+            raise HTTPException(status_code=409, detail="Không tìm thấy yêu cầu gốc của User Story.")
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="user_story",
+            entity_id=story.id,
+            content={
+                "requirement_id": story.requirement_id,
+                "role": story.role,
+                "feature": story.feature,
+                "benefit": story.benefit,
+                "acceptance_criteria": story.acceptance_criteria,
+                "technical_notes": story.technical_notes,
+            },
+            change_type="delete",
+            change_note="Xóa User Story",
+            created_by=current_user.id,
+        )
         # Xóa trace link trỏ đến User Story để tránh liên kết mồ côi.
         db.query(TraceLink).filter(
             or_(
