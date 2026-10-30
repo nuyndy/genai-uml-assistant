@@ -241,7 +241,6 @@ export default function GiaiDoan2({
   const [specifications, setSpecifications] = useState<ProjectSpecificationRecord[] | null>(null);
   const [specificationError, setSpecificationError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
-  const [editingClassId, setEditingClassId] = useState<number | null>(null);
   const [, setClassDrafts] = useState<Record<number, ClassDraft>>({});
 
 
@@ -429,7 +428,6 @@ export default function GiaiDoan2({
       error={error}
       runBatchAnalysis={() => runAction(runExtract, "Đang phân tích đặc tả chức năng...")}
       onSaveSuggestions={() => runAction(saveActorUseCaseSuggestions, "Đang lưu Actor và Use Case...")}
-      onSaveActorDetails={async (items) => { try { for (const item of items) await updateActor(item.id, { description: item.description, role: item.role, main_businesses: item.mainBusinesses }); } catch (reason) { setError(explainError(reason)); } }}
       onCreateActor={(name) => runAction(async () => {
         if (!projectId) return;
         const actor = await createProjectActor(projectId, name);
@@ -483,7 +481,6 @@ export default function GiaiDoan2({
       }
       onStepChange={onStepChange}
       requirementTitle={(raw: any) => raw.name}
-      wrapClass={wrapClass}
     />
   );
 
@@ -676,8 +673,6 @@ export default function GiaiDoan2({
       umlClasses={state.umlClasses}
       classDiagramUrl={state.classDiagramUrl}
       classDiagramCode={state.classDiagramCode}
-      editingClassId={editingClassId}
-      setEditingClassId={setEditingClassId}
       setEditingClassDraft={(id, draft) => setClassDrafts((prev) => ({ ...prev, [id]: draft }))}
       onSaveClass={async (id, draft) => {
         await runAction(async () => {
@@ -700,7 +695,6 @@ export default function GiaiDoan2({
                 : item,
             ),
           }));
-          setEditingClassId(null);
         }, "Đang lưu lớp...");
       }}
       onDeleteClass={async (id) => {
@@ -711,7 +705,7 @@ export default function GiaiDoan2({
             classDiagramConfirmed: false,
             umlClasses: previous.umlClasses.filter((item) => item.id !== id),
           }));
-          setEditingClassId(null);
+         
         }, "Đang xoá lớp...");
       }}
       onRegenerateClasses={() =>
