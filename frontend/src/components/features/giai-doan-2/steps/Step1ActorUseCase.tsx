@@ -10,7 +10,6 @@ interface RelationItem { id: number; from: string; to: string; type: string }
 interface SpecificationItem { id: number; feature: string }
 interface Props {
   projectId?: number;
-  onSaveActorDetails: (items: { id: number; description: string; role: string; mainBusinesses: string }[]) => Promise<void>;
   requirements: ActorItem[];
   requirementValues: UseCaseItem[];
   relations: RelationItem[];
