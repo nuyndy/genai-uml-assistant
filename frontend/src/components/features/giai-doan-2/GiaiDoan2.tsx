@@ -603,7 +603,6 @@ export default function GiaiDoan2({
       }))}
       confirmed={state.scenariosConfirmed}
       onStepChange={onStepChange}
-      wrapClass={wrapClass}
     />
   );
 
@@ -726,18 +725,15 @@ export default function GiaiDoan2({
       umlClasses={state.umlClasses}
       classDiagramUrl={state.classDiagramUrl}
       classDiagramCode={state.classDiagramCode}
-      editingClassId={editingClassId}
-      setEditingClassId={setEditingClassId}
       setEditingClassDraft={(id, draft) => setClassDrafts((prev) => ({ ...prev, [id]: draft }))}
       onSaveClass={async (id, draft) => {
         await runAction(async () => {
           const saved = await updateClass(id, { name: draft.name.trim(), attributes: draft.attributes.map((line) => line.trim()).filter(Boolean), methods: draft.methods.map((line) => line.trim()).filter(Boolean) });
           setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.map((item) => item.id === saved.id ? { id: saved.id, name: saved.name, attributes: saved.attributes, methods: saved.methods } : item) }));
-          setEditingClassId(null);
         }, "Đang lưu lớp...");
       }}
       onDeleteClass={async (id) => {
-        await runAction(async () => { await deleteClass(id); setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.filter((item) => item.id !== id) })); setEditingClassId(null); }, "Đang xoá lớp...");
+        await runAction(async () => { await deleteClass(id); setState((previous) => ({ ...previous, classDiagramConfirmed: false, umlClasses: previous.umlClasses.filter((item) => item.id !== id) })); }, "Đang xoá lớp...");
       }}
       onRegenerateClasses={() => void runAction(async () => {
         if (!projectId) return;
