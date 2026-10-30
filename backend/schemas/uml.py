@@ -80,11 +80,14 @@ class UseCaseRecord(BaseModel):
 
 class UseCaseScenarioSuggestion(BaseModel):
     # Sinh đủ thông tin đặc tả kịch bản, không chỉ ba luồng xử lý.
-    actor: list[str] = Field(min_length=1)
-    description: list[str] = Field(min_length=1)
-    preconditions: list[str] = Field(min_length=1)
-    minimal_guarantees: list[str] = Field(min_length=1)
-    postconditions: list[str] = Field(min_length=1)
+    # Theo luồng nghiệp vụ, ba luồng kịch bản là phần cốt lõi.
+    # Các thông tin bổ sung được phép để trống khi nguồn chưa cung cấp căn cứ;
+    # không ép AI suy đoán để vượt qua validation.
+    actor: list[str] = Field(default_factory=list)
+    description: list[str] = Field(default_factory=list)
+    preconditions: list[str] = Field(default_factory=list)
+    minimal_guarantees: list[str] = Field(default_factory=list)
+    postconditions: list[str] = Field(default_factory=list)
     main_flow: list[str] = Field(min_length=1)
     alt_flow: list[str] = Field(default_factory=list)
     exception_flow: list[str] = Field(default_factory=list)
