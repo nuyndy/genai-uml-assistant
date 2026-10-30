@@ -227,8 +227,8 @@ describe("Giai đoạn 3: SRS, UML và baseline", () => {
 
   it("Bước 3 yêu cầu chạy kiểm tra nhất quán", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
-    expect(screen.getByText("Chưa chạy kiểm tra nhất quán.")).toBeTruthy();
-    expect(screen.getByText("Kiểm tra UML")).toBeTruthy();
+    expect(screen.getByText("Chưa có kết quả kiểm tra")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Kiểm tra" })).toBeTruthy();
   });
 
   it("Bước 4 không cho tạo baseline nếu chưa kiểm tra", () => {
