@@ -7,7 +7,6 @@ import {
   createProjectRequirementsBatch,
   deleteRequirement,
   generateNonFunctionalSpecification,
-  generateProjectSpecificationsBatch,
   consolidateProjectFunctionalSpecifications,
   getFunctionalConsolidationStatus,
   getSpecificationDocument,
@@ -21,7 +20,6 @@ import {
   type FunctionalSpecification,
   type NonFunctionalSpecification,
   type RequirementCoverageAnalysis,
-  type RequirementCoverageSuggestion,
   type RequirementPayload,
   type RequirementRecord,
   type SpecificationRecord,
@@ -41,7 +39,6 @@ import {
   emptyNonFunctionalSpecification,
 } from "../../SpecificationEditor";
 import { inputClass, wrapClass } from "../../common/ui/primitives";
-import { getProjectUmlState } from "../../common/services/umlService";
 
 interface Props {
   projectId?: number;
@@ -890,21 +887,10 @@ export default function GiaiDoan1({
       busy={busy}
       loaded={loaded}
       error={error}
-      coverageAnalysis={coverageAnalysis}
-      loadingCoverage={loadingCoverage}
-      addedCoverageSuggestions={addedCoverageSuggestions}
-      coverageAddedCount={coverageAddedCount}
-      selectedCoverageSuggestions={selectedCoverageSuggestions}
-      selectedCoverageIndexes={selectedCoverageIndexes}
       onChangeNewField={changeNewField}
       onChangeNewList={changeNewList}
       onAddRequirement={addRequirement}
       onRemoveRequirement={removeRequirement}
-      onCheckCoverage={checkRequirementCoverage}
-      onToggleCoverageSuggestion={(index, selected) =>
-        setSelectedCoverageSuggestions((previous) => ({ ...previous, [index]: selected }))
-      }
-      onAddSelectedCoverage={addSelectedCoverageSuggestions}
       requirementTitle={requirementTitle}
     />
   );
@@ -1002,7 +988,7 @@ export default function GiaiDoan1({
 
   const step5 = (
     <Step5ChotTaiLieu
-      projectName={projectName}
+      projectName={projectName ?? ""}
       srsMetadataDirty={srsMetadataDirty}
       srsMetadata={srsMetadata}
       srsMarkdown={srsMarkdown}
