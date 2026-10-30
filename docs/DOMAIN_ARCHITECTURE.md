@@ -73,8 +73,10 @@ Trace links là quan hệ độc lập, hỗ trợ nhiều-nhiều; mỗi liên 
 - NFR có thể áp dụng ở cấp dự án, hệ thống, Use Case hoặc thành phần; không ép gắn với một US.
 
 ## 6. Định danh, trạng thái, phiên bản
-- Database hiện dùng integer primary key; đây là khóa kỹ thuật. Mục tiêu là bổ sung stable business key duy nhất trong phạm vi dự án cho Requirement, FR, NFR, US, Actor, UC, Class, Diagram và SRS section; giữ nguyên PK hiện tại.
-- Không tái sử dụng business key đã xóa; ID hiển thị không phụ thuộc thứ tự truy vấn.
+- Database hiện dùng integer primary key; đây là khóa kỹ thuật. Backend đã có bước đầu tạo public key có namespace từ PK (`REQ-000001`, `FR-000001`, `NFR-000001`, `US-000001`, `ACT-000001`, `UC-000001`, `CLS-000001`...).
+- Public key hiện được tính từ PK, chưa lưu thành cột riêng. Vì vậy key ổn định trong vòng đời bản ghi trên cùng database, nhưng chưa bảo đảm giữ nguyên khi migrate/import dữ liệu sang database khác. Không gọi đây là global ID.
+- Baseline snapshot và trace-link serialization đã bổ sung entity key, đồng thời vẫn giữ integer IDs để tương thích API cũ.
+- Không tái sử dụng PK; ID hiển thị không phụ thuộc thứ tự truy vấn.
 - Trạng thái nghiệp vụ mục tiêu: draft, proposed, in_review, approved, needs_review, rejected. Không thêm đồng loạt cột trạng thái trước khi có migration và mapping.
 - Baseline bất biến tối thiểu chứa yêu cầu, UML, SRS, trace links, glossary, điểm lệch được chấp nhận, người duyệt, thời điểm và phiên bản.
 - Bản nháp không được xuất thành tài liệu chính thức.
@@ -109,7 +111,7 @@ Quy tắc xác định được bằng dữ liệu triển khai bằng code. AI 
 | functional_consolidation_checkpoint | Tiến trình AI tổng hợp FR theo lô | Không dùng làm luồng mặc định; chỉ giữ chuyển tiếp khi còn consumer |
 
 ### Khoảng trống xác nhận được
-- Phần lớn entity dùng integer PK; chưa thấy stable business key chung.
+- Phần lớn entity vẫn dùng integer PK; backend mới có public key suy ra từ PK và chưa persist riêng. Cần quyết định chiến lược giữ key khi import/migrate database trước khi coi đây là business key lâu dài.
 - FR/NFR đang cùng dùng bảng Specification; functional gắn User Story, NFR có thể gắn Project. Chưa phản ánh rõ quan hệ nhiều-nhiều FR–US–UC.
 - Approval hiện có riêng cho Specification; chưa có workflow duyệt thống nhất cho mọi miền.
 - Có TraceLink, EntityRevision và ProjectBaseline, nhưng cần kiểm tra sâu snapshot/serializer/restore trước khi kết luận đáp ứng đầy đủ baseline mới.
@@ -120,7 +122,7 @@ Quy tắc xác định được bằng dữ liệu triển khai bằng code. AI 
 2. Domain service độc lập FastAPI router và SQLAlchemy model.
 3. Router chỉ nhận request, gọi use case/service và trả response.
 4. Tách AI integration khỏi domain rule; domain service kiểm soát quyền gọi AI.
-5. Bổ sung stable business key song song integer PK.
+5. Bổ sung public entity key có namespace song song integer PK; giai đoạn đầu tính deterministic từ PK, giai đoạn sau quyết định persist/migration nếu cần giữ ID xuyên database.
 6. Dùng TraceLink cho quan hệ đa miền với registry loại entity hợp lệ.
 7. Dùng revision và immutable baseline cho lịch sử.
 8. PlantUML/render là projection của mô hình; mã không parse được phải báo chưa đồng bộ.
