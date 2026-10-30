@@ -45,7 +45,6 @@ export default function GiaiDoan3({
   state,
   setState,
   step,
-  onStepChange,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [aiTaskLabel, setAiTaskLabel] = useState("");
@@ -59,7 +58,6 @@ export default function GiaiDoan3({
   const loadBaselines = async () => {
     const items = await listProjectBaselines(projectId);
     setBaselines(items);
-    setBaselineIssues((items[0]?.open_issues as BaselineIssueDecision[] | undefined) ?? []);
     const approved = items.find((item) => item.status === "approved");
     setState((prev: any) => ({
       ...prev,
@@ -67,8 +65,11 @@ export default function GiaiDoan3({
     }));
   };
 
-  // Bước 3 của Giai đoạn 3 dùng trực tiếp màn hình Bước 5 Giai đoạn 1,
-  // vì vậy dữ liệu SRS và trạng thái lưu được quản lý bởi GiaiDoan1.
+  useEffect(() => {
+    void loadBaselines().catch((error) => {
+      console.error("Không tải được lịch sử baseline:", error);
+    });
+  }, [projectId]);
 
 
   const handleCreateBaseline = async (name: string, issues: BaselineIssueDecision[]) => {
@@ -220,6 +221,7 @@ export default function GiaiDoan3({
         baselineApproved: false,
       }));
       setConsistencyResult(verification);
+      setBaselineIssues(buildBaselineIssues(verification));
       setStage3Message(
         verification.consistent
           ? "AI đã sửa mã PlantUML và kiểm tra lại không còn sai lệch trong phạm vi mô hình lớp. Xem lại kết quả rồi chọn “Lưu chỉnh sửa” để lưu vào dự án."
