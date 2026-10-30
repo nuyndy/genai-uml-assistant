@@ -31,6 +31,8 @@ Run `003_add_diagram_revision.sql` once after `002_add_srs_specifications.sql`. 
 
 Run `004_add_baseline_traceability_glossary.sql` once to create the glossary, trace-link, project-baseline, and generic entity-revision tables. The backend model metadata can create missing tables on startup, but applying the SQL migration explicitly keeps database setup deterministic and applies the documented constraints and indexes.
 
+Run `007_add_stable_public_ids.sql` after migrations 001–006. It adds a UUID-shaped `public_id` to requirements, User Stories, specifications, SRS metadata, Use Cases, Actors, Actor–Use Case relations, classes, class relations, and diagrams. Existing integer primary keys are retained; existing rows receive generated public IDs before the columns become non-null. The migration is PostgreSQL-specific, matching the existing SQL migration set.
+
 PDF export requires `reportlab` and an installed Unicode TrueType font such as
 DejaVu Sans or Arial for Vietnamese text.
 
