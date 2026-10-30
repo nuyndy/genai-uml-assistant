@@ -265,7 +265,8 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     assert regenerated.status_code == 409
     ollama.assert_called_once()
     assert ollama.call_args.kwargs["json_response"] is True
-    assert "Mã định danh chức năng: UC" in ollama.call_args.args[0]
+    assert "FR-001" in ollama.call_args.args[0]
+    assert "không phải Use Case" in ollama.call_args.args[0]
     assert "chưa có, hãy tự đề xuất" in ollama.call_args.args[0]
 
     specification_id = functional.json()["id"]
