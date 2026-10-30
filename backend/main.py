@@ -9,7 +9,6 @@ from routers.srs import router as srs_router
 from routers.auth import router as auth_router
 from database.db import Base, engine
 from database import models
-from sqlalchemy import inspect, text
 
 app = FastAPI(title="GenAI UML Assistant")
 
@@ -28,22 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# create_all chỉ tạo các bảng còn thiếu cho môi trường mới; không dùng nó để
+# thay đổi schema hiện hữu. Mọi thay đổi schema phải nằm trong migrations/.
 Base.metadata.create_all(bind=engine)
-
-# Bổ sung các cột Actor cho database đã tồn tại (create_all không tự ALTER bảng).
-with engine.begin() as connection:
-    actor_columns = {column["name"] for column in inspect(connection).get_columns("actor")}
-    for column_name in ("description", "role", "main_businesses"):
-        if column_name not in actor_columns:
-            connection.execute(text(f"ALTER TABLE actor ADD COLUMN {column_name} TEXT"))
-
-    # Allow multiple project-level FR records instead of one specification per project/type.
-    connection.execute(text("DROP INDEX IF EXISTS uq_specification_project_type"))
-
-    use_case_columns = {column["name"] for column in inspect(connection).get_columns("use_case")}
-    for column_name in ("actor", "description", "preconditions", "minimal_guarantees", "postconditions"):
-        if column_name not in use_case_columns:
-            connection.execute(text(f"ALTER TABLE use_case ADD COLUMN {column_name} TEXT"))
 
 app.include_router(auth_router)
 app.include_router(requirement_router)
@@ -53,10 +39,13 @@ app.include_router(uml_router)
 app.include_router(srs_router)
 app.include_router(baseline_router)
 
+
 @app.get("/")
 async def root():
     return {"message": "GenAI UML Assistant API is running!"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
