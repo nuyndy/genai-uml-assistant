@@ -1,4 +1,4 @@
-import { Card, EmptyState, PrimaryButton, RemoveButton, SoftButton, StatusBadge, wrapClass } from "../../../common/ui/primitives";
+import { Card, EmptyState, RemoveButton, StatusBadge, wrapClass } from "../../../common/ui/primitives";
 import RequirementFormFields from "../../../step1/RequirementFormFields";
 import type { RequirementInput } from "../../../step1/types";
 import type { RawRequirement } from "../../../common/types/workflow";
@@ -28,9 +28,7 @@ interface Props {
 
 export default function Step1NhapYeuCau({
   newRequirement, requirementValues, requirements, busy, loaded, error,
-  coverageAnalysis, loadingCoverage, addedCoverageSuggestions, selectedCoverageSuggestions,
-  selectedCoverageIndexes, onChangeNewField, onChangeNewList, onAddRequirement,
-  onRemoveRequirement, onCheckCoverage, onToggleCoverageSuggestion, onAddSelectedCoverage,
+  onChangeNewField, onChangeNewList, onAddRequirement, onRemoveRequirement,
   requirementTitle,
 }: Props) {
   return (
