@@ -150,7 +150,7 @@ def create_requirement(
         db.rollback()
         logger.exception("Could not save requirement")
         raise HTTPException(status_code=500, detail="Không thể lưu yêu cầu.") from exc
-    return {"id": requirement.id, "status": requirement.status}
+    return {"id": requirement.id, "public_id": requirement.public_id, "status": requirement.status}
 
 
 @router.post(
