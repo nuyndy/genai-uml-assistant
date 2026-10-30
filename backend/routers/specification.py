@@ -93,7 +93,7 @@ def generate_specification(
     user_story_id: int,
     data: GenerateSpecificationInput = GenerateSpecificationInput(type="functional"),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> SpecificationRecord:
     story = _story(db, user_story_id)
     try:
@@ -122,8 +122,10 @@ def generate_specification(
         logger.exception("AI returned an invalid functional specification")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+    is_new_specification = existing is None
     if existing is not None:
         specification = existing
+        specification.version = (specification.version or 1) + 1
         specification.content = content.model_dump_json()
         approval = db.query(SpecificationApproval).filter(
             SpecificationApproval.specification_id == existing.id
@@ -141,6 +143,22 @@ def generate_specification(
         )
     try:
         db.add(specification)
+        db.flush()
+        requirement = db.query(RawRequirement).filter(
+            RawRequirement.id == story.requirement_id
+        ).first()
+        if requirement is None:
+            raise HTTPException(status_code=409, detail="Không tìm thấy yêu cầu gốc của User Story.")
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="specification",
+            entity_id=specification.id,
+            content={"type": specification.type, "content": content.model_dump(), "version": specification.version},
+            change_type="create" if is_new_specification else "regenerate",
+            change_note="Sinh đặc tả chức năng",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(specification)
     except IntegrityError as exc:
