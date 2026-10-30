@@ -108,7 +108,6 @@ export default function Step4DacTa({
       ?? parseSpecification(nonFunctionalSpecification.content, emptyNonFunctionalSpecification())
     : emptyNonFunctionalSpecification();
   const activeTab = activeStory ? functionalSpecificationTabs[activeStory.id] ?? "overview" : "overview";
-  const itemCount = kind === "functional" ? functionalItems.length : (nonFunctionalSpecification ? 1 : 0);
   // Cho phép mở SRS dựa trên các đặc tả thực tế đã có; không khóa bước này
   // chỉ vì danh sách User Story không được trả về/đã thay đổi sau khi tổng hợp FR.
   // Chuyển sang SRS không cần chờ các tác vụ nền; chỉ yêu cầu FR và NFR đã tồn tại.
@@ -272,7 +271,7 @@ export default function Step4DacTa({
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatusBadge tone={activeSpecification ? "success" : "warn"}>{activeSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
                       {activeSpecification && <StatusBadge tone={activeSpecification.approval_status === "approved" ? "success" : "warn"}>{activeSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
-                      {activeSpecification && <StatusBadge tone="neutral">Phiên bản {activeSpecification.version}</StatusBadge>}
+                      {activeSpecification && <StatusBadge tone="muted">Phiên bản {activeSpecification.version}</StatusBadge>}
                     </div>
                   </div>
                   <span className="shrink-0 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">FR {functionalItems.length ? activeIndex + 1 : 0}/{functionalItems.length}</span>
