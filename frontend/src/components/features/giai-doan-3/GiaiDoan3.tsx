@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { renderDiagram } from "../../common/services/aiService";
+import { exportApprovedBaselineSrs } from "../../common/services/requirementService";
 import {
   generateClassDiagram,
   listProjectDiagrams,
@@ -88,6 +89,28 @@ export default function GiaiDoan3({
     }
   };
 
+  const handleExportBaselineSrs = async (baselineId: number) => {
+    setBusy(true);
+    setAiTaskLabel("Đang xuất SRS từ baseline đã duyệt...");
+    setStage3Message("");
+    try {
+      const result = await exportApprovedBaselineSrs(projectId, baselineId);
+      const url = window.URL.createObjectURL(result.blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = result.filename || "SRS.docx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setStage3Message("Đã tạo tệp SRS DOCX từ snapshot baseline đã duyệt.");
+    } catch (error) {
+      setStage3Message(error instanceof Error ? error.message : "Không thể xuất SRS từ baseline.");
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
   const handleSaveBaselineIssues = async (baselineId: number, issues: BaselineIssueDecision[]) => {
     setBusy(true);
     setAiTaskLabel("Đang lưu quyết định sai lệch...");
@@ -293,7 +316,7 @@ export default function GiaiDoan3({
         {step === 1 && <GiaiDoan1 projectId={projectId} projectName={projectName} state={state} setState={setState} step={5} onStepChange={() => undefined} />}
         {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} onDiagramChange={() => { setConsistencyResult(null); setBaselineIssues([]); }} />}
         {step === 3 && <Step3KiemTraNhatQuan state={state} busy={busy} onConsistencyCheck={runConsistencyCheck} consistencyResult={consistencyResult} stage3Message={stage3Message} />}
-        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onSaveIssues={handleSaveBaselineIssues} onApprove={handleApproveBaseline} />}
+        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onSaveIssues={handleSaveBaselineIssues} onApprove={handleApproveBaseline} onExport={handleExportBaselineSrs} />}
       </div>
     </div>
   );
