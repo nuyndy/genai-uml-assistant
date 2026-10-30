@@ -603,6 +603,7 @@ export default function GiaiDoan2({
       }))}
       confirmed={state.scenariosConfirmed}
       onStepChange={onStepChange}
+      wrapClass={wrapClass}
     />
   );
 
