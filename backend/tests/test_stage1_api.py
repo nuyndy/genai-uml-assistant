@@ -267,7 +267,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     assert ollama.call_args.kwargs["json_response"] is True
     assert "FR-001" in ollama.call_args.args[0]
     assert "không phải Use Case" in ollama.call_args.args[0]
-    assert "chưa có, hãy tự đề xuất" in ollama.call_args.args[0]
+    assert "chưa có, hãy suy luận tiêu chí kiểm thử hợp lý" in ollama.call_args.args[0]
 
     specification_id = functional.json()["id"]
     invalid_edit = client.patch(
