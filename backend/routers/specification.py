@@ -33,6 +33,7 @@ from schemas.specification import (
     SpecificationRecord,
     SpecificationUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.spec_generator import build_functional_spec_prompt, build_consolidated_functional_specs_prompt
 from services.ollama import AIServiceError, generate_json
 
@@ -632,7 +633,7 @@ def update_specification(
     specification_id: int,
     data: SpecificationUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> SpecificationRecord:
     specification = _specification(db, specification_id)
     try:
@@ -659,6 +660,13 @@ def update_specification(
             approval.status = "draft"
             approval.approved_by = None
             approval.approved_at = None
+        project_id = specification.project_id
+        if project_id is None and specification.user_story_id is not None:
+            story = db.query(UserStory).filter(UserStory.id == specification.user_story_id).first()
+            requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first() if story else None
+            project_id = requirement.project_id if requirement else None
+        if project_id is not None:
+            record_entity_revision(db, specification, project_id=project_id, entity_type="specification", user_id=current_user.id, change_note="Cập nhật đặc tả")
         db.commit()
         db.refresh(specification)
     except SQLAlchemyError as exc:
