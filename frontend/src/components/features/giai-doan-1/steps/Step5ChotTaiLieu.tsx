@@ -4,7 +4,6 @@ import {
   Card,
   EmptyState,
   SoftButton,
-  StatusBadge,
 } from "../../../common/ui/primitives";
 import SrsWordEditor from "../../../SrsWordEditor";
 import type {
