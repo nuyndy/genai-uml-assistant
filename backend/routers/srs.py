@@ -28,6 +28,7 @@ from schemas.specification import (
     SpecificationDocumentExportInput,
     SpecificationRecord,
 )
+from services.entity_revision import record_entity_revision
 from services.ollama import AIServiceError, generate_content, generate_json, strip_code_fence
 from services.spec_generator import build_nonfunctional_spec_prompt
 from services.srs_export import markdown_to_docx
