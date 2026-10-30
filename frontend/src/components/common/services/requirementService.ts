@@ -378,9 +378,11 @@ function normalizeSrsMetadata(value: unknown): SrsMetadata {
   const source = value && typeof value === "object"
     ? value as Record<string, unknown>
     : {};
-  return Object.fromEntries(
-    SRS_METADATA_KEYS.map((key) => [key, normalizeSrsText(source[key])]),
-  ) as SrsMetadata;
+  const metadata = {} as SrsMetadata;
+  for (const key of SRS_METADATA_KEYS) {
+    metadata[key] = normalizeSrsText(source[key]);
+  }
+  return metadata;
 }
 
 export async function generateSrsMetadata(projectId: number): Promise<SrsMetadata> {
