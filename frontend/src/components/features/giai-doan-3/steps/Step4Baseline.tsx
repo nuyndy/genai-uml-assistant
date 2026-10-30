@@ -117,6 +117,25 @@ export default function Step4Baseline({
           ))}
         </div>
       </Card>
+      {selectedBaselineId !== null && (
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900">Cập nhật quyết định baseline nháp</h3>
+              <p className="text-xs text-slate-500">Chỉ cập nhật trạng thái và lý do; snapshot dữ liệu không thay đổi.</p>
+            </div>
+            <div className="flex gap-2">
+              <SoftButton disabled={busy} onClick={() => setSelectedBaselineId(null)}>Hủy</SoftButton>
+              <PrimaryButton
+                disabled={busy || issues.some((item) => item.status !== "open" && !item.acceptance_reason?.trim())}
+                onClick={() => void onSaveIssues(selectedBaselineId, issues)}
+              >
+                Lưu quyết định
+              </PrimaryButton>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
