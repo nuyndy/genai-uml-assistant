@@ -25,6 +25,7 @@ class ActorUpdate(BaseModel):
 
 class ActorRecord(BaseModel):
     id: int
+    public_id: str | None = None
     project_id: int
     name: str
     description: str | None = None
@@ -66,6 +67,7 @@ class UseCaseUpdate(BaseModel):
 
 class UseCaseRecord(BaseModel):
     id: int
+    public_id: str | None = None
     specification_id: int
     name: str
     actor: str | None = None
@@ -235,6 +237,7 @@ class InteractionDiagramInput(BaseModel):
 
 class DiagramRecord(BaseModel):
     id: int
+    public_id: str | None = None
     project_id: int
     use_case_id: int | None
     type: DiagramType
@@ -276,6 +279,7 @@ class ClassDiagramSuggestion(BaseModel):
 
 class ClassEntityRecord(BaseModel):
     id: int
+    public_id: str | None = None
     project_id: int
     name: str
     attributes: list[str]
