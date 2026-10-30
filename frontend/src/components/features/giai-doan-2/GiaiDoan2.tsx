@@ -480,7 +480,6 @@ export default function GiaiDoan2({
         }))
       }
       onStepChange={onStepChange}
-      requirementTitle={(raw: any) => raw.name}
     />
   );
 
