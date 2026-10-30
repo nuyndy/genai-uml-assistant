@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from routers.uml import parse_plantuml
 from database.db import get_db
+from domain.identifiers import entity_key
 from database.models import (
     Actor,
     ClassEntity,
@@ -52,6 +53,22 @@ def _serialize(row: Any) -> dict[str, Any]:
         column.key: getattr(row, column.key)
         for column in inspect(row).mapper.column_attrs
     }
+    row_type = row.__tablename__
+    subtype = getattr(row, "type", None) if row_type == "specification" else None
+    if getattr(row, "id", None) is not None:
+        data["entity_key"] = entity_key(row_type, row.id, subtype=subtype)
+
+    # Trace links keep their legacy integer references for compatibility,
+    # while snapshots also carry stable, typed references for future tooling.
+    if isinstance(row, TraceLink):
+        try:
+            data["source_entity_key"] = entity_key(row.source_type, row.source_id)
+        except ValueError:
+            data["source_entity_key"] = None
+        try:
+            data["target_entity_key"] = entity_key(row.target_type, row.target_id)
+        except ValueError:
+            data["target_entity_key"] = None
     return jsonable_encoder(data)
 
 def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
