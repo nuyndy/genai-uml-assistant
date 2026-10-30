@@ -89,6 +89,7 @@ class UserStoryDraftBatch(BaseModel):
 
 class RequirementRecord(BaseModel):
     id: int
+    public_id: str | None = None
     project_id: int
     content: str
     status: str
@@ -106,6 +107,7 @@ class UserStoryUpdate(BaseModel):
 
 class UserStoryRecord(BaseModel):
     id: int
+    public_id: str | None = None
     role: str | None
     feature: str
     benefit: str | None
