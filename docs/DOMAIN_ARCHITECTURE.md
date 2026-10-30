@@ -138,3 +138,12 @@ Quy tắc xác định được bằng dữ liệu triển khai bằng code. AI 
 
 ## 11. Nội dung nguồn chưa quy định
 Chưa có quy định chi tiết về trường bắt buộc và cách đánh mã FR/NFR/US; quy tắc phân rã yêu cầu; danh mục/đo kiểm NFR; ma trận truy vết bắt buộc; phạm vi chính xác của từng baseline và vai trò duyệt. Không tự đặt các quy tắc này khi tái cấu trúc nền tảng; cần chốt trước khi triển khai schema/validation tương ứng.
+
+## 12. Cập nhật triển khai Giai đoạn 3 (2026-10-30)
+
+- Thứ tự giao diện Giai đoạn 3: rà soát/đồng bộ SRS → chỉnh sửa UML → kiểm tra nhất quán → xử lý sai lệch và duyệt baseline.
+- Khi mã UML được sửa hoặc lưu lại, kết quả kiểm tra trước đó bị vô hiệu hóa; phải chạy kiểm tra mới trước khi tạo baseline.
+- Sai lệch trong baseline nháp có thể được BA đánh dấu open, accepted hoặc waived. Accepted/waived bắt buộc có acceptance_reason; cập nhật quyết định không sửa snapshot.
+- Baseline đã duyệt không cho sửa quyết định sai lệch. Backend kiểm tra snapshot có còn khớp dữ liệu dự án trước khi duyệt.
+- Xuất SRS DOCX chính thức yêu cầu baseline đã duyệt; giao diện truyền đúng baseline_id để xuất đúng snapshot, không lấy dữ liệu nháp hiện tại.
+- Đây là trạng thái triển khai hiện tại, không thay thế các quy tắc domain ở trên. CI frontend vẫn còn các kiểm thử cũ cần được phân loại/cập nhật; không coi test suite frontend đã xanh.
