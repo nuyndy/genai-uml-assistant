@@ -118,7 +118,7 @@ export default function Step3UseCaseScenario({
                         aria-label={label}
                         rows={5}
                         className={`${textareaClass} min-h-[140px] resize-y ${wrapClass}`}
-                        value={scenario[field].join("\n")}
+                        value={(scenario[field] ?? []).join("\n")}
                         placeholder={field === "mainFlow" ? "1. Người dùng bắt đầu thao tác…\n2. Hệ thống kiểm tra dữ liệu…\n3. Hệ thống trả kết quả…" : field === "altFlows" ? "A1. Nếu người dùng chọn phương án khác…\nA2. Hệ thống xử lý nhánh thay thế…" : "E1. Nếu dữ liệu không hợp lệ…\nE2. Hệ thống thông báo lỗi và hướng xử lý…"}
                         disabled={busy}
                         onChange={(event) => updateScenario(activeUseCase.id, field, event.target.value.split("\n"))}
