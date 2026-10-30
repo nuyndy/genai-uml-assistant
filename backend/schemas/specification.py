@@ -51,6 +51,14 @@ class FunctionalSpecification(BaseModel):
     minimal_guarantee: str = ""
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
+    @model_validator(mode="after")
+    def require_core_fields(self) -> "FunctionalSpecification":
+        if not self.function_name.strip():
+            raise ValueError("Đặc tả chức năng phải có tên chức năng.")
+        if not self.description.strip():
+            raise ValueError("Đặc tả chức năng phải có mô tả.")
+        return self
+
 
 class FunctionalSpecificationBatch(BaseModel):
     items: list[FunctionalSpecification] = Field(min_length=1)
