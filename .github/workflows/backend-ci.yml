@@ -2,12 +2,12 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, luong_moi, "fix/consistency-audit-workflow"]
+    branches: [main, luong_moi, ba-centric, "fix/consistency-audit-workflow"]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
-    branches: [main, luong_moi]
+    branches: [main, luong_moi, ba-centric]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
