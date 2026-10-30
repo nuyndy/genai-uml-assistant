@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
 
 from services.spec_generator import NONFUNCTIONAL_GROUPS
 
@@ -49,6 +49,15 @@ class FunctionalSpecification(BaseModel):
     exception_flows: list[str] = Field(default_factory=list)
     post_conditions: list[str] = Field(default_factory=list)
     minimal_guarantee: str = ""
+    @field_validator("function_code")
+    @classmethod
+    def validate_function_code(cls, value: str) -> str:
+        # Empty values remain readable for legacy records; newly supplied codes
+        # must use the FR identifier namespace, never the former UC namespace.
+        if value and not __import__("re").fullmatch(r"FR-\\d{3,}", value):
+            raise ValueError("Mã đặc tả chức năng phải có dạng FR-001.")
+        return value
+
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
 
