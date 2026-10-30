@@ -210,6 +210,11 @@ def test_stage_two_full_api_flow_persists_project_uml_data(client, db_session):
         "services.ollama.generate_content",
         return_value=json.dumps(
             {
+                "actor": ["Khách hàng"],
+                "description": ["Khách hàng chọn sản phẩm và tạo đơn hàng."],
+                "preconditions": ["Khách hàng đã đăng nhập."],
+                "minimal_guarantees": ["Không tạo đơn hàng khi dữ liệu không hợp lệ."],
+                "postconditions": ["Đơn hàng được lưu hoặc hệ thống thông báo lỗi."],
                 "main_flow": ["Khách hàng chọn sản phẩm", "Hệ thống xác nhận đơn hàng"],
                 "alt_flow": ["Khách hàng thay đổi giỏ hàng"],
                 "exception_flow": ["Sản phẩm hết hàng"],
@@ -473,6 +478,11 @@ def test_stage_two_batch_extract_save_scenarios_and_diagrams(client, db_session)
         {
             "results": [{
                 "use_case_id": use_case_id,
+                "actor": ["Khách hàng"],
+                "description": ["Khách hàng tạo đơn hàng từ giỏ sản phẩm."],
+                "preconditions": ["Khách hàng đã đăng nhập."],
+                "minimal_guarantees": ["Không lưu đơn hàng khi có lỗi dữ liệu."],
+                "postconditions": ["Đơn hàng được lưu hoặc lỗi được thông báo."],
                 "main_flow": ["Chọn sản phẩm", "Xác nhận đơn"],
                 "alt_flow": ["Sửa giỏ hàng"],
                 "exception_flow": ["Sản phẩm hết hàng"],
@@ -540,6 +550,11 @@ def test_scenario_batch_fills_in_use_cases_the_ai_omitted(client, db_session):
         {
             "results": [{
                 "use_case_id": first.id,
+                "actor": ["Khách hàng"],
+                "description": ["Khách hàng chọn sản phẩm."],
+                "preconditions": ["Khách hàng đã đăng nhập."],
+                "minimal_guarantees": ["Không tạo đơn khi dữ liệu sai."],
+                "postconditions": ["Kết quả được thông báo."],
                 "main_flow": ["Chọn sản phẩm"],
                 "alt_flow": [],
                 "exception_flow": [],
@@ -549,6 +564,11 @@ def test_scenario_batch_fills_in_use_cases_the_ai_omitted(client, db_session):
     )
     single_fallback = json.dumps(
         {
+            "actor": ["Khách hàng"],
+            "description": ["Khách hàng yêu cầu hủy đơn hàng."],
+            "preconditions": ["Đơn hàng chưa được giao."],
+            "minimal_guarantees": ["Không hủy đơn đã giao."],
+            "postconditions": ["Trạng thái đơn hàng được cập nhật."],
             "main_flow": ["Mở chi tiết đơn"],
             "alt_flow": ["Xác nhận hủy"],
             "exception_flow": ["Đơn đã giao"],
