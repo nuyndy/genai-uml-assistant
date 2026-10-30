@@ -27,6 +27,7 @@ from schemas.requirement import (
     UserStoryRecord,
     UserStoryUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.ollama import AIServiceError, generate_json
 from services.requirement_prompts import build_user_story_prompt
 
