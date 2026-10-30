@@ -1794,6 +1794,7 @@ def restore_entity_revision(
                 EntityRevision.entity_id == entity_id,
             )
             .order_by(EntityRevision.version.desc())
+            .limit(1)
             .scalar()
         ),
     }
