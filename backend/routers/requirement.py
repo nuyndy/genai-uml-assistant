@@ -494,7 +494,7 @@ def save_requirement_user_story(
     requirement_id: int,
     data: UserStoryDraftContent,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     """Save one reviewed User Story and confirm its source requirement."""
     requirement = _requirement(db, requirement_id)
@@ -514,6 +514,9 @@ def save_requirement_user_story(
             story.benefit = data.benefit
             story.acceptance_criteria = data.acceptance_criteria
         requirement.status = "confirmed"
+        db.flush()
+        record_entity_revision(db, story, project_id=requirement.project_id, entity_type="user_story", user_id=current_user.id, change_type="create" if story.id is None else "update", change_note="Lưu User Story")
+        record_entity_revision(db, requirement, project_id=requirement.project_id, entity_type="raw_requirement", user_id=current_user.id, change_note="Xác nhận yêu cầu")
         db.commit()
         db.refresh(story)
     except SQLAlchemyError as exc:
@@ -691,7 +694,7 @@ def list_project_user_stories(
 def get_user_story(
     story_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     try:
         story = db.query(UserStory).filter(UserStory.id == story_id).first()
@@ -718,6 +721,10 @@ def update_user_story(
         story.feature = data.feature
         story.benefit = data.benefit
         story.acceptance_criteria = data.acceptance_criteria
+        requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first()
+        if requirement is None:
+            raise HTTPException(status_code=404, detail="Không tìm thấy yêu cầu gốc của User Story.")
+        record_entity_revision(db, story, project_id=requirement.project_id, entity_type="user_story", user_id=current_user.id, change_note="Cập nhật User Story")
         db.commit()
         db.refresh(story)
     except HTTPException:
