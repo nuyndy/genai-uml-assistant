@@ -185,9 +185,10 @@ def test_stage1_persists_requirement_analyzes_and_confirms(client, db_session):
         entity_type="requirement",
         entity_id=requirement_id,
     ).order_by(EntityRevision.version).all()
-    assert len(revisions) == 1
-    assert revisions[0].version == 1
-    assert revisions[0].content["content"]["purpose"] == "mua hàng nhanh hơn"
+    assert [revision.version for revision in revisions] == [1, 2]
+    assert revisions[0].change_type == "create"
+    assert revisions[1].change_type == "update"
+    assert revisions[1].content["content"]["purpose"] == "mua hàng nhanh hơn"
 
     confirmed = client.post(
         f"/api/requirements/{requirement_id}/confirm",
