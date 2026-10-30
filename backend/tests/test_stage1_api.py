@@ -76,7 +76,7 @@ def _requirement_payload(project_id):
     }
 
 
-def _functional_spec(function_code="UC01", function_name="Quản lý hồ sơ"):
+def _functional_spec(function_code="FR-001", function_name="Quản lý hồ sơ"):
     return {
         "function_code": function_code,
         "function_name": function_name,
@@ -265,13 +265,13 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
     assert regenerated.status_code == 409
     ollama.assert_called_once()
     assert ollama.call_args.kwargs["json_response"] is True
-    assert "Mã định danh chức năng: UC" in ollama.call_args.args[0]
-    assert "chưa có, hãy tự đề xuất" in ollama.call_args.args[0]
+    assert '"function_code": "FR-001"' in ollama.call_args.args[0]
+    assert "chưa có, hãy suy luận tiêu chí kiểm thử hợp lý" in ollama.call_args.args[0]
 
     specification_id = functional.json()["id"]
     invalid_edit = client.patch(
         f"/api/specifications/{specification_id}",
-        json={"content": {"function_code": "UC01"}},
+        json={"content": {"function_code": "FR-001"}},
         headers=headers,
     )
     assert invalid_edit.status_code == 422
