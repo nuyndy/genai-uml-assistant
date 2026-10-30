@@ -220,8 +220,8 @@ export default function GiaiDoan3({
         consistencyChecked: false,
         baselineApproved: false,
       }));
-      setConsistencyResult(verification);
-      setBaselineIssues(buildBaselineIssues(verification));
+      setConsistencyResult(null);
+      setBaselineIssues([]);
       setStage3Message(
         verification.consistent
           ? "AI đã sửa mã PlantUML và kiểm tra lại không còn sai lệch trong phạm vi mô hình lớp. Xem lại kết quả rồi chọn “Lưu chỉnh sửa” để lưu vào dự án."
@@ -252,8 +252,12 @@ export default function GiaiDoan3({
         setSavedDiagramId(created.id);
       }
       const saved = await updateDiagram(diagramId, state.diagramCode);
+      setConsistencyResult(null);
+      setBaselineIssues([]);
       setState((prev: any) => ({
         ...prev,
+        consistencyChecked: false,
+        baselineApproved: false,
         diagramCode: saved.source_code,
         previewImageUrl: saved.image_url ?? url,
       }));
@@ -271,7 +275,7 @@ export default function GiaiDoan3({
       {aiTaskLabel && <ProgressOverlay label={aiTaskLabel} />}
       <div className={`relative z-10 w-full max-w-none min-w-0 ${step === 1 || step === 4 ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 py-3 sm:px-6 lg:px-8" : "space-y-6 px-4 py-6 sm:px-6 lg:px-8"}`}>
         {step === 1 && <GiaiDoan1 projectId={projectId} projectName={projectName} state={state} setState={setState} step={5} onStepChange={() => undefined} />}
-        {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} />}
+        {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} onDiagramChange={() => { setConsistencyResult(null); setBaselineIssues([]); }} />}
         {step === 3 && <Step3KiemTraNhatQuan state={state} busy={busy} onConsistencyCheck={runConsistencyCheck} consistencyResult={consistencyResult} stage3Message={stage3Message} />}
         {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onApprove={handleApproveBaseline} />}
       </div>
