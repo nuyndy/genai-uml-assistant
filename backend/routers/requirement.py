@@ -122,7 +122,7 @@ def create_requirement(
     project_id: int,
     data: RequirementUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
     _require_project(db, project_id)
     requirement = RawRequirement(
@@ -132,6 +132,8 @@ def create_requirement(
     )
     try:
         db.add(requirement)
+        db.flush()
+        record_entity_revision(db, requirement, project_id=project_id, entity_type="raw_requirement", user_id=current_user.id, change_type="create", change_note="Tạo yêu cầu")
         db.commit()
         db.refresh(requirement)
     except SQLAlchemyError as exc:
@@ -438,13 +440,14 @@ def update_requirement(
     requirement_id: int,
     data: RequirementUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
     requirement = _requirement(db, requirement_id)
     if requirement.status != "draft":
         raise HTTPException(status_code=409, detail="Yêu cầu đã xác nhận, không thể sửa.")
     requirement.content = _content(data)
     try:
+        record_entity_revision(db, requirement, project_id=requirement.project_id, entity_type="raw_requirement", user_id=current_user.id, change_note="Cập nhật yêu cầu")
         db.commit()
         db.refresh(requirement)
     except SQLAlchemyError as exc:
