@@ -1432,7 +1432,7 @@ def create_actor(
     project_id: int,
     data: ActorCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ActorRecord:
     _require_project(db, project_id)
     try:
@@ -1448,6 +1448,17 @@ def create_actor(
             return ActorRecord.model_validate(actor)
         actor = Actor(project_id=project_id, name=data.name)
         db.add(actor)
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="actor",
+            entity_id=actor.id,
+            content={"name": actor.name, "description": actor.description, "role": actor.role, "main_businesses": actor.main_businesses},
+            change_type="create",
+            change_note="Tạo tác nhân",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(actor)
     except SQLAlchemyError as exc:
@@ -1595,7 +1606,7 @@ def create_use_case(
     specification_id: int,
     data: UseCaseCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     _project_for_specification(db, specification_id)
     try:
@@ -1627,6 +1638,29 @@ def create_use_case(
             exception_flow=_encode_lines([]),
         )
         db.add(use_case)
+        db.flush()
+        project_id = _project_for_specification(db, specification_id)
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="use_case",
+            entity_id=use_case.id,
+            content={
+                "specification_id": use_case.specification_id,
+                "name": use_case.name,
+                "actor": use_case.actor,
+                "description": use_case.description,
+                "preconditions": use_case.preconditions,
+                "minimal_guarantees": use_case.minimal_guarantees,
+                "postconditions": use_case.postconditions,
+                "main_flow": _decode_lines(use_case.main_flow),
+                "alt_flow": _decode_lines(use_case.alt_flow),
+                "exception_flow": _decode_lines(use_case.exception_flow),
+            },
+            change_type="create",
+            change_note="Tạo Use Case",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(use_case)
     except SQLAlchemyError as exc:
@@ -2321,7 +2355,7 @@ def create_class(
     project_id: int,
     data: ClassCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ClassEntityRecord:
     _require_project(db, project_id)
     _require_approved_specifications(db, project_id)
@@ -2338,6 +2372,17 @@ def create_class(
             methods=_encode_lines(data.methods),
         )
         db.add(entity)
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="class",
+            entity_id=entity.id,
+            content={"name": entity.name, "attributes": _decode_lines(entity.attributes), "methods": _decode_lines(entity.methods)},
+            change_type="create",
+            change_note="Tạo lớp",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(entity)
     except HTTPException:
