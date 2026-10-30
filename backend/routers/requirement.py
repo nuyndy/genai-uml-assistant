@@ -502,7 +502,7 @@ def delete_requirement(
             project_id=requirement.project_id,
             entity_type="requirement",
             entity_id=requirement.id,
-            content={"content": _load_content(requirement), "status": requirement.status},
+            content={"content": requirement.content, "status": requirement.status},
             change_type="delete",
             change_note="Xóa yêu cầu nháp",
             created_by=current_user.id,
