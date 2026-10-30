@@ -506,6 +506,35 @@ export function createProjectBaseline(
   );
 }
 
+export interface BaselineIssueDecision {
+  type: string;
+  status: "open" | "accepted" | "waived";
+  acceptance_reason?: string;
+  [key: string]: unknown;
+}
+
+/** Lưu quyết định BA cho các sai lệch của baseline nháp. */
+export function updateProjectBaselineIssues(
+  projectId: number,
+  baselineId: number,
+  issues: BaselineIssueDecision[],
+): Promise<{
+  id: number;
+  status: string;
+  issue_count: number;
+  unresolved_issue_count: number;
+  accepted_issue_count: number;
+  issues: BaselineIssueDecision[];
+}> {
+  return apiFetch(
+    `/api/projects/${projectId}/baselines/${baselineId}/issues`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ issues }),
+    },
+  );
+}
+
 /** Duyệt baseline; backend sẽ từ chối nếu còn vấn đề chưa xử lý. */
 export function approveProjectBaseline(
   projectId: number,
