@@ -537,7 +537,7 @@ def save_requirement_user_story(
 def confirm_requirement(
     requirement_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     requirement = _requirement(db, requirement_id)
     content = _load_content(requirement)
@@ -571,6 +571,9 @@ def confirm_requirement(
     requirement.status = "confirmed"
     try:
         db.add(story)
+        db.flush()
+        record_entity_revision(db, story, project_id=requirement.project_id, entity_type="user_story", user_id=current_user.id, change_type="create", change_note="Tạo User Story khi xác nhận yêu cầu")
+        record_entity_revision(db, requirement, project_id=requirement.project_id, entity_type="raw_requirement", user_id=current_user.id, change_note="Xác nhận yêu cầu")
         db.commit()
         db.refresh(story)
     except SQLAlchemyError as exc:
