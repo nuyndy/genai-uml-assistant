@@ -2,7 +2,7 @@ import json
 import time
 from unittest.mock import patch
 
-from database.models import Project, RawRequirement, Specification, User, UserStory
+from database.models import EntityRevision, Project, RawRequirement, Specification, User, UserStory
 from routers import auth
 
 
@@ -144,6 +144,7 @@ def test_stage1_persists_requirement_analyzes_and_confirms(client, db_session):
     requirement_id = response.json()["id"]
     stored = db_session.get(RawRequirement, requirement_id)
     assert stored is not None
+    assert stored.public_id
     assert stored.status == "draft"
     assert json.loads(stored.content)["target_object"] == "đơn hàng"
 
@@ -179,6 +180,14 @@ def test_stage1_persists_requirement_analyzes_and_confirms(client, db_session):
     db_session.refresh(stored)
     assert json.loads(stored.content)["purpose"] == "mua hàng nhanh hơn"
     assert stored.status == "draft"
+    revisions = db_session.query(EntityRevision).filter_by(
+        project_id=project.id,
+        entity_type="requirement",
+        entity_id=requirement_id,
+    ).order_by(EntityRevision.version).all()
+    assert len(revisions) == 1
+    assert revisions[0].version == 1
+    assert revisions[0].content["content"]["purpose"] == "mua hàng nhanh hơn"
 
     confirmed = client.post(
         f"/api/requirements/{requirement_id}/confirm",
