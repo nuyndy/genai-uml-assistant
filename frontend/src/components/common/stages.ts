@@ -77,35 +77,10 @@ export const STAGES: Record<StageId, StageDef> = {
     label: "Giai đoạn 3: Đồng bộ SRS và hoàn thiện sản phẩm",
     short: "SRS & Hoàn thiện",
     steps: [
-      {
-        id: 1,
-        label: "Quét và phát hiện sai lệch",
-        hint: "Kiểm tra mô hình UML đã duyệt, hiển thị các sai lệch phát hiện được",
-        icon: "⌕",
-      },
-      {
-        id: 2,
-        label: "Xử lý sai lệch",
-        hint: "Chỉnh sửa mô hình, lưu thay đổi và chạy kiểm tra lại",
-        icon: "⌨",
-      },
-      {
-        id: 3,
-        label: "Hoàn thiện tài liệu SRS",
-        hint: "Tải, rà soát và hoàn thiện SRS theo yêu cầu và mô hình đã đồng bộ",
-        icon: "▤",
-      },
+      { id: 1, label: "Rà soát và đồng bộ SRS", hint: "Rà soát nội dung SRS và xác nhận các đặc tả trước khi đối chiếu UML", icon: "▤" },
+      { id: 2, label: "Chỉnh sửa mô hình UML", hint: "Chỉnh sửa mã PlantUML, xem trước và lưu mô hình", icon: "⌨" },
+      { id: 3, label: "Kiểm tra nhất quán", hint: "Kiểm tra sai lệch giữa SRS, yêu cầu, mô hình và mã UML", icon: "⌕" },
+      { id: 4, label: "Xử lý sai lệch và duyệt baseline", hint: "BA quyết định xử lý hoặc chấp nhận sai lệch có lý do trước khi chốt baseline", icon: "✓" },
     ],
   },
-};
-
-export const STAGE_ORDER: StageId[] = [1, 2, 3];
-
-export interface StepRef {
-  stage: StageId;
-  step: number;
-}
-
-export function stageOf(stage: StageId): StageDef {
-  return STAGES[stage];
-}
+};\n\nexport const STAGE_ORDER
