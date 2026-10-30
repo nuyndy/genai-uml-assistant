@@ -444,11 +444,6 @@ export default function GiaiDoan1({
     }
   };
 
-  const selectedCoverageIndexes = Object.entries(selectedCoverageSuggestions)
-    .filter(([, selected]) => selected)
-    .map(([index]) => Number(index))
-    .filter((index) => !addedCoverageSuggestions.includes(index));
-
   const addCoverageSuggestion = async (index: number) => {
     if (!projectId || !coverageAnalysis || busy || addedCoverageSuggestions.includes(index)) return;
     const suggestion = coverageAnalysis.suggestions[index];
