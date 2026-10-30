@@ -37,7 +37,6 @@ interface Props {
 }
 
 const inputClass = "w-full min-w-0 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 disabled:bg-slate-100";
-const fieldClass = "block w-full min-w-0 resize-y rounded-md border border-slate-300 bg-white px-2 py-1 text-sm leading-5 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
 
 export default function Step1ActorUseCase({
   requirements: actors,
@@ -57,7 +56,6 @@ export default function Step1ActorUseCase({
   onDeleteUseCase,
   onLinkActor,
   onUnlinkActor,
-  onSaveActorDetails,
 }: Props) {
   const [newActor, setNewActor] = useState("");
   const [newUseCase, setNewUseCase] = useState("");
@@ -96,10 +94,6 @@ export default function Step1ActorUseCase({
       role: actor.role ?? "",
       mainBusinesses: actor.mainBusinesses ?? "",
     };
-  }
-
-  function updateActorField(actor: ActorItem, field: "description" | "role" | "mainBusinesses", value: string) {
-    setActorDetails((previous) => ({ ...previous, [actor.id]: { ...actorValue(actor), [field]: value } }));
   }
 
   return (
@@ -141,8 +135,6 @@ export default function Step1ActorUseCase({
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
             {actors.map((actor) => {
-              const detail = actorValue(actor);
-              const linkedUseCases = visibleRelations.filter((relation) => relation.actorId === actor.id);
               return <article key={actor.id} className="min-w-0 rounded-lg border border-emerald-400 bg-emerald-50 p-2">
                 <div className="flex min-w-0 items-start gap-2">
                   <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-200 text-emerald-950">
