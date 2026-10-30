@@ -123,7 +123,7 @@ def create_requirement(
     project_id: int,
     data: RequirementUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
     _require_project(db, project_id)
     requirement = RawRequirement(
@@ -133,6 +133,17 @@ def create_requirement(
     )
     try:
         db.add(requirement)
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="requirement",
+            entity_id=requirement.id,
+            content={"content": _load_content(requirement), "status": requirement.status},
+            change_type="create",
+            change_note="Tạo yêu cầu",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(requirement)
     except SQLAlchemyError as exc:
