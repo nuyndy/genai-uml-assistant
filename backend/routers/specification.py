@@ -93,7 +93,7 @@ def generate_specification(
     user_story_id: int,
     data: GenerateSpecificationInput = GenerateSpecificationInput(type="functional"),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> SpecificationRecord:
     story = _story(db, user_story_id)
     try:
@@ -141,6 +141,11 @@ def generate_specification(
         )
     try:
         db.add(specification)
+        db.flush()
+        requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first()
+        project_id = requirement.project_id if requirement else None
+        if project_id is not None:
+            record_entity_revision(db, specification, project_id=project_id, entity_type="specification", user_id=current_user.id, change_type="create" if existing is None else "update", change_note="Sinh đặc tả chức năng")
         db.commit()
         db.refresh(specification)
     except IntegrityError as exc:
@@ -474,7 +479,7 @@ def consolidate_project_functional_specifications(
 def generate_project_specifications_batch(
     project_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> list[SpecificationRecord]:
     _require_project(db, project_id)
     try:
@@ -530,6 +535,10 @@ def generate_project_specifications_batch(
                 version=1,
             )
             db.add(specification)
+            db.flush()
+            requirement = db.query(RawRequirement).filter(RawRequirement.id == story.requirement_id).first()
+            if requirement is not None:
+                record_entity_revision(db, specification, project_id=project_id, entity_type="specification", user_id=current_user.id, change_type="create", change_note="Sinh đặc tả chức năng theo lô")
             saved.append(specification)
         db.commit()
         for item in saved:
