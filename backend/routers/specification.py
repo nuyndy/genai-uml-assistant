@@ -779,6 +779,7 @@ def get_specification(
     )
     return SpecificationRecord(
         id=specification.id,
+        public_id=specification.public_id,
         user_story_id=specification.user_story_id,
         feature=story.feature if story else "Đặc tả phi chức năng",
         type=specification.type,
@@ -858,6 +859,7 @@ def list_project_specifications(
     return [
         SpecificationRecord(
             id=specification.id,
+            public_id=specification.public_id,
             user_story_id=specification.user_story_id,
             feature=feature or (json.loads(specification.content).get("function_name", "Đặc tả phi chức năng") if specification.type == "functional" else "Đặc tả phi chức năng"),
             type=specification.type,
