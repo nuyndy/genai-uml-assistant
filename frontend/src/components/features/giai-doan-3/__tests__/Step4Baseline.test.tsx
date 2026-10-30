@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ComponentProps } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import Step4Baseline from "../steps/Step4Baseline";
 import type { BaselineIssueDecision, ProjectBaseline } from "../../../common/services/umlService";
@@ -10,7 +11,7 @@ const issue: BaselineIssueDecision = {
   detail: "REQ-001 chưa liên kết với UC-001",
 };
 
-function setup(overrides: Partial<React.ComponentProps<typeof Step4Baseline>> = {}) {
+function setup(overrides: Partial<ComponentProps<typeof Step4Baseline>> = {}) {
   const props = {
     baselines: [] as ProjectBaseline[],
     issues: [issue],
