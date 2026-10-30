@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { renderDiagram } from "../../common/services/aiService";
 import {
-  getSpecificationDocument,
-  exportSpecificationDocument,
-} from "../../common/services/requirementService";
-import {
   generateClassDiagram,
   listProjectDiagrams,
   updateDiagram,
   listProjectBaselines,
-  createProjectBaseline,
-  approveProjectBaseline,
   checkProjectUmlConsistency,
   fixProjectUmlConsistency,
 } from "../../common/services/umlService";
@@ -40,7 +34,6 @@ export default function GiaiDoan3({
   const [aiTaskLabel, setAiTaskLabel] = useState("");
   const [savedDiagramId, setSavedDiagramId] = useState<number | null>(null);
   const [consistencyResult, setConsistencyResult] = useState<any>(null);
-  const [selectedBaselineId, setSelectedBaselineId] = useState<number | null>(null);
   const [stage3Message, setStage3Message] = useState("");
 
 
