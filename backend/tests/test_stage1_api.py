@@ -312,7 +312,7 @@ def test_stage1_generates_edits_versions_and_lists_specifications(client, db_ses
         )
     assert regenerated.status_code == 201
     assert json.loads(regenerated.json()["content"])["function_name"] == "Đặc tả do AI tạo lại"
-    assert regenerated.json()["version"] == 2
+    assert regenerated.json()["version"] == 3
     assert db_session.query(Specification).filter_by(id=specification_id).count() == 1
     ollama.assert_called_once()
 
