@@ -480,6 +480,7 @@ export default function GiaiDoan2({
         }))
       }
       onStepChange={onStepChange}
+      wrapClass={wrapClass}
     />
   );
 
