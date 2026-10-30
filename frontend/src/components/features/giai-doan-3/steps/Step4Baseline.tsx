@@ -10,13 +10,15 @@ interface Props {
   message: string;
   onIssuesChange: (issues: BaselineIssueDecision[]) => void;
   onCreate: (name: string, issues: BaselineIssueDecision[]) => Promise<void>;
+  onSaveIssues: (baselineId: number, issues: BaselineIssueDecision[]) => Promise<void>;
   onApprove: (baselineId: number) => Promise<void>;
 }
 
 export default function Step4Baseline({
-  baselines, issues, busy, hasChecked, message, onIssuesChange, onCreate, onApprove,
+  baselines, issues, busy, hasChecked, message, onIssuesChange, onCreate, onSaveIssues, onApprove,
 }: Props) {
   const [name, setName] = useState("");
+  const [selectedBaselineId, setSelectedBaselineId] = useState<number | null>(null);
   const unresolved = useMemo(() => issues.filter((item) => item.status === "open").length, [issues]);
   const accepted = issues.length - unresolved;
 
@@ -87,9 +89,23 @@ export default function Step4Baseline({
                 <p className="text-xs text-slate-500">Trạng thái: {baseline.status} · {baseline.open_issues?.length ?? 0} sai lệch</p>
               </div>
               {baseline.status === "draft" && (
-                <SoftButton disabled={busy || (baseline.open_issues ?? []).some((item: any) => item.status === "open")} onClick={() => void onApprove(baseline.id)}>
-                  Duyệt baseline
-                </SoftButton>
+                <div className="flex flex-wrap gap-2">
+                  <SoftButton
+                    disabled={busy}
+                    onClick={() => {
+                      setSelectedBaselineId(baseline.id);
+                      onIssuesChange((baseline.open_issues ?? []) as BaselineIssueDecision[]);
+                    }}
+                  >
+                    Chỉnh quyết định
+                  </SoftButton>
+                  <SoftButton
+                    disabled={busy || (baseline.open_issues ?? []).some((item: any) => item.status === "open" || ((item.status === "accepted" || item.status === "waived") && !String(item.acceptance_reason ?? item.reason ?? "").trim()))}
+                    onClick={() => void onApprove(baseline.id)}
+                  >
+                    Duyệt baseline
+                  </SoftButton>
+                </div>
               )}
             </div>
           ))}
