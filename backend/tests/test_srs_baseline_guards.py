@@ -174,3 +174,92 @@ def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(cli
         if item["relation_type"] == "constrained_by"
     )
     assert nfr_trace_snapshot["target_entity_key"] == entities["specification"][0]["entity_key"]
+
+
+def test_baseline_issue_decisions_require_reason_when_accepted(client, db_session):
+    project, headers = _project_and_headers(db_session)
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Baseline nháp",
+        status="draft",
+        snapshot={"project_id": project.id, "entities": {}},
+        open_issues=[],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+    db_session.refresh(baseline)
+
+    response = client.patch(
+        f"/api/projects/{project.id}/baselines/{baseline.id}/issues",
+        json={"issues": [{"type": "missing_trace", "status": "accepted"}]},
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+    assert "acceptance_reason" in response.json()["detail"]
+
+
+def test_ba_can_record_issue_acceptance_without_mutating_snapshot(client, db_session):
+    project, headers = _project_and_headers(db_session)
+    snapshot = {"project_id": project.id, "entities": {"actor": [{"id": 1}]}}
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Baseline nháp",
+        status="draft",
+        snapshot=snapshot,
+        open_issues=[{"type": "missing_trace", "status": "open"}],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+    db_session.refresh(baseline)
+
+    response = client.patch(
+        f"/api/projects/{project.id}/baselines/{baseline.id}/issues",
+        json={
+            "issues": [
+                {
+                    "type": "missing_trace",
+                    "status": "accepted",
+                    "acceptance_reason": "Ngoài phạm vi phiên bản bàn giao.",
+                }
+            ]
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["unresolved_issue_count"] == 0
+    assert body["accepted_issue_count"] == 1
+    stored = client.get(
+        f"/api/projects/{project.id}/baselines/{baseline.id}",
+        headers=headers,
+    ).json()
+    assert stored["snapshot"] == snapshot
+    assert stored["open_issues"][0]["status"] == "accepted"
+
+
+def test_approved_baseline_issue_decisions_are_immutable(client, db_session):
+    project, headers = _project_and_headers(db_session)
+    baseline = ProjectBaseline(
+        project_id=project.id,
+        version=1,
+        name="Baseline đã duyệt",
+        status="approved",
+        snapshot={"project_id": project.id, "entities": {}},
+        open_issues=[],
+    )
+    db_session.add(baseline)
+    db_session.commit()
+    db_session.refresh(baseline)
+
+    response = client.patch(
+        f"/api/projects/{project.id}/baselines/{baseline.id}/issues",
+        json={"issues": []},
+        headers=headers,
+    )
+
+    assert response.status_code == 409
+    assert "đã duyệt" in response.json()["detail"]
