@@ -37,7 +37,7 @@ function DocumentHeading({ children, level = 2 }: { children: ReactNode; level?:
     : <h3 id={String(children).trim()} className="mb-2 mt-5 scroll-mt-4 text-[15px] font-bold text-slate-900">{children}</h3>;
 }
 
-export default function Step1DongBoSRS({ srsLoaded, srsMarkdown, srsSynced, busy, onSyncSrs, stage3Message, state, projectName = "", metadata }: Props) {
+export default function Step1DongBoSRS({ srsLoaded, busy, onSyncSrs, state, projectName = "", metadata }: Props) {
   const documentRef = useRef<HTMLDivElement | null>(null);
   const actors = Array.isArray(state?.actors) ? state.actors : [];
   const useCases = Array.isArray(state?.useCases) ? state.useCases : [];
