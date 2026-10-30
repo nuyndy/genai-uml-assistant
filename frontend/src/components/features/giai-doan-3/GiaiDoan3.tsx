@@ -78,11 +78,27 @@ export default function GiaiDoan3({
     setStage3Message("");
     try {
       const created = await createProjectBaseline(projectId, name, issues);
-      if (issues.length > 0) await updateProjectBaselineIssues(projectId, created.id, issues);
       await loadBaselines();
       setStage3Message(`Đã tạo baseline nháp v${created.version}. Snapshot được lưu riêng; cần xử lý hết sai lệch trước khi duyệt.`);
     } catch (error) {
       setStage3Message(error instanceof Error ? error.message : "Không thể tạo baseline.");
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
+
+  const handleSaveBaselineIssues = async (baselineId: number, issues: BaselineIssueDecision[]) => {
+    setBusy(true);
+    setAiTaskLabel("Đang lưu quyết định sai lệch...");
+    setStage3Message("");
+    try {
+      await updateProjectBaselineIssues(projectId, baselineId, issues);
+      await loadBaselines();
+      setBaselineIssues(issues);
+      setStage3Message("Đã lưu quyết định của BA. Snapshot baseline vẫn được giữ nguyên.");
+    } catch (error) {
+      setStage3Message(error instanceof Error ? error.message : "Không thể lưu quyết định sai lệch.");
     } finally {
       setBusy(false);
       setAiTaskLabel("");
@@ -277,7 +293,7 @@ export default function GiaiDoan3({
         {step === 1 && <GiaiDoan1 projectId={projectId} projectName={projectName} state={state} setState={setState} step={5} onStepChange={() => undefined} />}
         {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} onDiagramChange={() => { setConsistencyResult(null); setBaselineIssues([]); }} />}
         {step === 3 && <Step3KiemTraNhatQuan state={state} busy={busy} onConsistencyCheck={runConsistencyCheck} consistencyResult={consistencyResult} stage3Message={stage3Message} />}
-        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onApprove={handleApproveBaseline} />}
+        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onSaveIssues={handleSaveBaselineIssues} onApprove={handleApproveBaseline} />}
       </div>
     </div>
   );
