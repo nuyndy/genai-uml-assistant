@@ -40,3 +40,19 @@ Run `005_functional_consolidation_checkpoint.sql` once to enable resumable funct
 
 
 Run `006_functional_consolidation_progress.sql` after migration 005 to add live status fields for the FR consolidation overlay. The frontend polls the status endpoint and displays the current batch, completed batches, and the current backend activity (for example, waiting for Ollama, validating traceability, or saving results).
+
+## Migration 007 — remove startup schema changes
+
+Run `007_move_startup_ddl_to_migration.sql` once after migrations 001–006
+and before deploying the backend version that no longer performs compatibility
+DDL during application startup.
+
+This migration adds the legacy Actor and Use Case columns with
+`ADD COLUMN IF NOT EXISTS` and removes the obsolete unique index that
+prevented multiple project-level specifications. It does not delete or rewrite
+application rows.
+
+For a fresh database, SQLAlchemy may already have created these columns;
+the migration remains safe because the additions are conditional. Keep
+`Base.metadata.create_all()` for creating missing tables in a fresh
+environment only. Do not add schema-altering SQL to application startup.
