@@ -41,6 +41,12 @@ vi.mock("../common/services/umlService", () => ({
   generateClasses: vi.fn(),
   generateClassDiagram: vi.fn(),
   listProjectDiagrams: vi.fn().mockResolvedValue([]),
+  listProjectBaselines: vi.fn().mockResolvedValue([]),
+  createProjectBaseline: vi.fn(),
+  approveProjectBaseline: vi.fn(),
+  updateProjectBaselineIssues: vi.fn(),
+  checkProjectUmlConsistency: vi.fn(),
+  fixProjectUmlConsistency: vi.fn(),
 }));
 
 /**
@@ -200,46 +206,39 @@ describe("Giai đoạn 2", () => {
   });
 });
 
-describe("Giai đoạn 3", () => {
-  it("sub-stepper hiển thị đúng 4 tên bước", () => {
+describe("Giai đoạn 3: SRS, UML và baseline", () => {
+  it("sub-stepper hiển thị đúng thứ tự 4 bước mới", () => {
     render(<Stepper stage={3} step={1} maxUnlockedStep={4} />);
     [
-      "Đồng bộ SRS và UML",
-      "Chỉnh sửa và cập nhật",
+      "Rà soát và đồng bộ SRS",
+      "Chỉnh sửa mô hình UML",
       "Kiểm tra nhất quán",
-      "Duyệt baseline và xuất",
-    ].forEach((n) => expect(screen.getByText(n)).toBeTruthy());
+      "Xử lý sai lệch và duyệt baseline",
+    ].forEach((name) => expect(screen.getByText(name)).toBeTruthy());
   });
 
-  it("Bước 1 hiện thành phần biểu đồ từ Giai đoạn 2", () => {
+  it("Bước 2 cho phép chỉnh sửa và lưu mã PlantUML", () => {
     const initial = emptyWorkflow();
-    initial.actors = [{ id: 1, name: "Khách hàng" }];
-    initial.umlClasses = [
-      { id: 1, name: "Order", attributes: ["id: int"], methods: ["create()"] },
-    ];
-    initial.relations = [{ id: 1, from: "Khách hàng", to: "Order", type: "association" }];
+    initial.diagramCode = "@startuml\\nclass Order\\n@enduml";
     render(<Harness initial={initial} stage={3} step={2} />);
-    // "Khách hàng" xuất hiện ở cả ô tác nhân và ô quan hệ "Từ".
-    expect(screen.getAllByDisplayValue("Khách hàng").length).toBeGreaterThan(0);
-    // "Order" xuất hiện ở cả ô tên lớp và ô quan hệ "Đến".
-    expect(screen.getAllByDisplayValue("Order").length).toBeGreaterThan(0);
-    expect(screen.getByDisplayValue("id: int")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Lưu chỉnh sửa" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sửa bằng AI" })).toBeTruthy();
   });
 
-  it("Bước 3 hiển thị kết quả kiểm tra nhất quán khi phát hiện sai lệch", () => {
+  it("Bước 3 yêu cầu chạy kiểm tra nhất quán", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={3} />);
     expect(screen.getByText("Chưa chạy kiểm tra nhất quán.")).toBeTruthy();
     expect(screen.getByText("Kiểm tra UML")).toBeTruthy();
   });
 
-  it("Bước 4 chọn được định dạng PNG/SVG", () => {
+  it("Bước 4 không cho tạo baseline nếu chưa kiểm tra", () => {
     render(<Harness initial={emptyWorkflow()} stage={3} step={4} />);
-    expect(screen.getByRole("button", { name: "PNG" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "SVG" })).toBeTruthy();
+    expect(screen.getByText(/hoàn tất kiểm tra nhất quán/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Tạo baseline nháp" })).toBeDisabled();
   });
 
   it("không dùng dấu gạch ngang dài trong văn bản hiển thị", () => {
-    render(<Harness initial={emptyWorkflow()} stage={3} step={1} />);
+    render(<Harness initial={emptyWorkflow()} stage={3} step={4} />);
     expect(document.body.textContent).not.toContain("—");
   });
 });
