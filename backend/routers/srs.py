@@ -30,6 +30,7 @@ from schemas.specification import (
 )
 from services.ollama import AIServiceError, generate_content, generate_json, strip_code_fence
 from services.spec_generator import build_nonfunctional_spec_prompt
+from services.entity_revision import record_entity_revision
 from services.srs_export import markdown_to_docx
 
 router = APIRouter(
@@ -324,7 +325,7 @@ def save_srs_document_meta(
     project_id: int,
     data: SrsDocumentMetaInput,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     _require_project(db, project_id)
     try:
@@ -335,6 +336,8 @@ def save_srs_document_meta(
         else:
             for key, value in data.model_dump().items():
                 setattr(meta, key, value)
+        db.flush()
+        record_entity_revision(db, meta, project_id=project_id, entity_type="srs_document", user_id=current_user.id, change_type="create" if meta.id is not None else "update", change_note="Lưu nội dung SRS")
         db.commit()
         db.refresh(meta)
     except SQLAlchemyError as exc:
