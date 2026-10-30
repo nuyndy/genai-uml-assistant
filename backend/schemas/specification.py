@@ -54,7 +54,7 @@ class FunctionalSpecification(BaseModel):
     def validate_function_code(cls, value: str) -> str:
         # Empty values remain readable for legacy records; newly supplied codes
         # must use the FR identifier namespace, never the former UC namespace.
-        if value and not __import__("re").fullmatch(r"FR-\\d{3,}", value):
+        if value and not __import__("re").fullmatch(r"FR-\d{3,}", value):
             raise ValueError("Mã đặc tả chức năng phải có dạng FR-001.")
         return value
 
