@@ -6,6 +6,7 @@ interface Props {
   baselines: ProjectBaseline[];
   issues: BaselineIssueDecision[];
   busy: boolean;
+  hasChecked: boolean;
   message: string;
   onIssuesChange: (issues: BaselineIssueDecision[]) => void;
   onCreate: (name: string, issues: BaselineIssueDecision[]) => Promise<void>;
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export default function Step4Baseline({
-  baselines, issues, busy, message, onIssuesChange, onCreate, onApprove,
+  baselines, issues, busy, hasChecked, message, onIssuesChange, onCreate, onApprove,
 }: Props) {
   const [name, setName] = useState("");
   const unresolved = useMemo(() => issues.filter((item) => item.status === "open").length, [issues]);
@@ -28,7 +29,9 @@ export default function Step4Baseline({
             <p className="mt-1 text-sm text-slate-600">Mỗi sai lệch cần được xử lý hoặc BA chấp nhận/miễn trừ kèm lý do. Snapshot baseline được giữ nguyên sau khi tạo.</p>
           </div>
           {message && <Notice tone="info">{message}</Notice>}
-          {issues.length === 0 ? (
+          {!hasChecked ? (
+            <Notice tone="info">Hãy hoàn tất kiểm tra nhất quán ở Bước 3 trước khi tạo baseline.</Notice>
+          ) : issues.length === 0 ? (
             <Notice tone="success">Chưa có sai lệch từ lần kiểm tra gần nhất. Hãy kiểm tra nhất quán ở Bước 3 trước khi tạo baseline.</Notice>
           ) : (
             <div className="space-y-3">
@@ -68,7 +71,7 @@ export default function Step4Baseline({
           )}
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
             <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên baseline (ví dụ: Phiên bản bàn giao 1)" className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            <PrimaryButton disabled={busy || issues.some((item) => item.status !== "open" && !item.acceptance_reason?.trim())} onClick={() => void onCreate(name.trim() || "Baseline bàn giao", issues)}>
+            <PrimaryButton disabled={busy || !hasChecked || issues.some((item) => item.status !== "open" && !item.acceptance_reason?.trim())} onClick={() => void onCreate(name.trim() || "Baseline bàn giao", issues)}>
               {busy ? "Đang tạo..." : "Tạo baseline nháp"}
             </PrimaryButton>
           </div>
