@@ -27,6 +27,7 @@ from schemas.requirement import (
     UserStoryRecord,
     UserStoryUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.ollama import AIServiceError, generate_json
 from services.requirement_prompts import build_user_story_prompt
 
@@ -438,13 +439,23 @@ def update_requirement(
     requirement_id: int,
     data: RequirementUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
     requirement = _requirement(db, requirement_id)
     if requirement.status != "draft":
         raise HTTPException(status_code=409, detail="Yêu cầu đã xác nhận, không thể sửa.")
     requirement.content = _content(data)
     try:
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="requirement",
+            entity_id=requirement.id,
+            content={"content": _load_content(requirement), "status": requirement.status},
+            change_type="update",
+            change_note="Cập nhật yêu cầu",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(requirement)
     except SQLAlchemyError as exc:
@@ -708,7 +719,7 @@ def update_user_story(
     story_id: int,
     data: UserStoryUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserStoryRecord:
     try:
         story = db.query(UserStory).filter(UserStory.id == story_id).first()
@@ -718,6 +729,28 @@ def update_user_story(
         story.feature = data.feature
         story.benefit = data.benefit
         story.acceptance_criteria = data.acceptance_criteria
+        requirement = db.query(RawRequirement).filter(
+            RawRequirement.id == story.requirement_id
+        ).first()
+        if requirement is None:
+            raise HTTPException(status_code=409, detail="Không tìm thấy yêu cầu gốc của User Story.")
+        record_entity_revision(
+            db,
+            project_id=requirement.project_id,
+            entity_type="user_story",
+            entity_id=story.id,
+            content={
+                "requirement_id": story.requirement_id,
+                "role": story.role,
+                "feature": story.feature,
+                "benefit": story.benefit,
+                "acceptance_criteria": story.acceptance_criteria,
+                "technical_notes": story.technical_notes,
+            },
+            change_type="update",
+            change_note="Cập nhật User Story",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(story)
     except HTTPException:
