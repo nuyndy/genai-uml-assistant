@@ -57,6 +57,7 @@ function renderEditor() {
   const onChangeSpecification = vi.fn();
   render(
     <SrsWordEditor
+      projectName="Dự án kiểm thử"
       metadata={metadata}
       functional={[{ ...functionalRecord, value: functionalValue } as never]}
       nonFunctional={[{ ...nonFunctionalRecord, value: nonFunctionalValue } as never]}
