@@ -666,3 +666,46 @@ def test_batch_spec_generation_only_creates_missing_functional_specs(client, db_
     assert response.json()[0]["type"] == "functional"
     assert again.json() == []
     ollama.assert_called_once()
+
+
+
+def test_requirement_revision_history_and_restore(client, db_session):
+    project, headers = _setup_project(db_session)
+    created = client.post(
+        f"/api/projects/{project.id}/requirements",
+        json=_requirement_payload(project.id),
+        headers=headers,
+    )
+    assert created.status_code == 201
+    requirement_id = created.json()["id"]
+
+    updated_payload = _requirement_payload(project.id)
+    updated_payload["purpose"] = "theo dõi và quản lý đơn hàng"
+    updated = client.patch(
+        f"/api/requirements/{requirement_id}",
+        json=updated_payload,
+        headers=headers,
+    )
+    assert updated.status_code == 200
+
+    history_url = (
+        f"/api/projects/{project.id}/entities/raw_requirement/"
+        f"{requirement_id}/revisions"
+    )
+    history = client.get(history_url, headers=headers)
+    assert history.status_code == 200
+    revisions = history.json()
+    assert [item["version"] for item in revisions] == [2, 1]
+
+    restored = client.post(
+        f"{history_url}/1/restore",
+        json={"change_note": "Khôi phục nội dung ban đầu"},
+        headers=headers,
+    )
+    assert restored.status_code == 200
+    assert restored.json()["restored_from_version"] == 1
+    assert restored.json()["current_version"] == 3
+
+    latest_history = client.get(history_url, headers=headers)
+    assert latest_history.status_code == 200
+    assert latest_history.json()[0]["change_type"] == "restore"
