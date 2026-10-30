@@ -152,31 +152,6 @@ function App() {
   // Cho phép chuyển tự do giữa 3 giai đoạn; không khóa điều hướng theo dữ liệu.
   const maxUnlockedStage = (): StageId => 3;
 
-  /** Giải thích rõ điều kiện còn thiếu để người dùng không bị khóa mà không biết lý do. */
-  const stageLockReason = (): string => {
-    if (!stage1Complete) {
-      if (!workflow.userStoryId) return "Giai đoạn 2 đang khóa: dự án chưa có User Story.";
-      if (workflow.userStoryId === null) return "Giai đoạn 2 đang khóa: dự án chưa có User Story.";
-      if (!hasFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần có ít nhất một đặc tả chức năng (FR).";
-      if (!hasNonFunctionalSpecification) return "Giai đoạn 2 đang khóa: cần có đặc tả phi chức năng (NFR).";
-      return "Giai đoạn 2 đang khóa: dữ liệu Giai đoạn 1 chưa hoàn tất đồng bộ.";
-    }
-    if (!stage2Complete) {
-      if (workflow.actors.length === 0 || workflow.usecases.length === 0)
-        return "Giai đoạn 3 đang khóa: cần có Actor và Use Case ở Giai đoạn 2, Bước 1.";
-      if (!allUseCasesHaveScenarios)
-        return "Giai đoạn 3 đang khóa: cần lưu kịch bản cho mọi Use Case ở Giai đoạn 2, Bước 2.";
-      if (!workflow.useCaseDiagramUrl || !workflow.useCaseDiagramCode?.trim())
-        return "Giai đoạn 3 đang khóa: cần có biểu đồ Use Case ở Giai đoạn 2, Bước 3.";
-      if (workflow.umlClasses.length === 0 || !workflow.classDiagramUrl || !workflow.classDiagramCode?.trim())
-        return "Giai đoạn 3 đang khóa: cần có Domain Model và Class Diagram ở Giai đoạn 2, Bước 4.";
-      if (!allUseCasesHaveInteractionDiagrams)
-        return "Giai đoạn 3 đang khóa: cần có biểu đồ tương tác cho mọi Use Case ở Giai đoạn 2, Bước 5.";
-      return "Giai đoạn 3 đang khóa: dữ liệu UML chưa hoàn tất đồng bộ.";
-    }
-    return "";
-  };
-
   // 0) Cổng đăng nhập: chưa đăng nhập thì chặn toàn bộ app.
   if (loading) {
     return (
