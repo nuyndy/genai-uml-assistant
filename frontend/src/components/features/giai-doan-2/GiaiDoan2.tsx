@@ -92,19 +92,6 @@ interface ClassDraft {
 
 const UML_LOAD_TIMEOUT_MS = 15000;
 
-function allScenariosReady(useCases: WorkflowState["usecases"], scenarios: WorkflowState["scenarios"]): boolean {
-  return useCases.length > 0 && useCases.every((useCase) => {
-    const scenario = scenarios[useCase.id];
-    return Boolean(scenario && (scenario.mainFlow.length > 0 || scenario.altFlows.length > 0 || scenario.exceptions.length > 0));
-  });
-}
-
-function allInteractionsReady(useCases: WorkflowState["usecases"], interactions: WorkflowState["interactions"]): boolean {
-  return useCases.length > 0 && useCases.every((useCase) =>
-    interactions.some((diagram) => diagram.usecaseId === useCase.id && Boolean(diagram.imageUrl) && Boolean(diagram.sourceCode?.trim())),
-  );
-}
-
 function explainError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Đã xảy ra lỗi không xác định.";
 }
