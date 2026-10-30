@@ -48,7 +48,7 @@ def _owned_project(
         raise HTTPException(status_code=404, detail="Không tìm thấy project hoặc bạn không có quyền truy cập.")
     return project
 
-def _serialize(row: Any) -> dict[str, Any]:
+def _serialize(row: Any, db: Session | None = None) -> dict[str, Any]:
     data = {
         column.key: getattr(row, column.key)
         for column in inspect(row).mapper.column_attrs
@@ -61,14 +61,20 @@ def _serialize(row: Any) -> dict[str, Any]:
     # Trace links keep their legacy integer references for compatibility,
     # while snapshots also carry stable, typed references for future tooling.
     if isinstance(row, TraceLink):
-        try:
-            data["source_entity_key"] = entity_key(row.source_type, row.source_id)
-        except ValueError:
-            data["source_entity_key"] = None
-        try:
-            data["target_entity_key"] = entity_key(row.target_type, row.target_id)
-        except ValueError:
-            data["target_entity_key"] = None
+        def linked_key(entity_type: str, entity_id: int) -> str | None:
+            subtype = None
+            if entity_type == "specification" and db is not None:
+                specification = db.query(Specification).filter(
+                    Specification.id == entity_id
+                ).first()
+                subtype = specification.type if specification is not None else None
+            try:
+                return entity_key(entity_type, entity_id, subtype=subtype)
+            except ValueError:
+                return None
+
+        data["source_entity_key"] = linked_key(row.source_type, row.source_id)
+        data["target_entity_key"] = linked_key(row.target_type, row.target_id)
     return jsonable_encoder(data)
 
 def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
@@ -91,7 +97,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
             .all()
         )
         snapshot["entities"][model.__tablename__] = [
-            _serialize(row) for row in rows
+            _serialize(row, db) for row in rows
         ]
     
     # Lấy User Story thuộc các yêu cầu của dự án.
@@ -140,7 +146,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
     )
 
     snapshot["entities"]["specification"] = [
-        _serialize(row) for row in project_specs
+        _serialize(row, db) for row in project_specs
     ]
     
     spec_ids = [row.id for row in project_specs]
@@ -152,7 +158,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if spec_ids else []
     )
     snapshot["entities"]["use_case"] = [
-        _serialize(row) for row in use_cases
+        _serialize(row, db) for row in use_cases
     ]
     use_case_ids = [row.id for row in use_cases]
     relations = (
@@ -163,7 +169,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if use_case_ids else []
     )
     snapshot["entities"]["uc_actor_relation"] = [
-        _serialize(row) for row in relations
+        _serialize(row, db) for row in relations
     ]
     requirement_ids = [
         row.id
@@ -179,7 +185,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if requirement_ids else []
     )
     snapshot["entities"]["user_story"] = [
-        _serialize(row) for row in stories
+        _serialize(row, db) for row in stories
     ]
     class_ids = [
         row.id
@@ -198,7 +204,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if class_ids else []
     )
     snapshot["entities"]["class_relation"] = [
-        _serialize(row) for row in class_relations
+        _serialize(row, db) for row in class_relations
     ]
     diagram_ids = [
         row.id
@@ -214,7 +220,7 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
         if diagram_ids else []
     )
     snapshot["entities"]["diagram_revision"] = [
-        _serialize(row) for row in revisions
+        _serialize(row, db) for row in revisions
     ]
     return snapshot
 @router.post("/{project_id}/baselines")
@@ -1507,7 +1513,7 @@ def create_trace_link(
         db.add(link)
         db.commit()
         db.refresh(link)
-        return _serialize(link)
+        return _serialize(link, db)
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -1531,7 +1537,7 @@ def list_trace_links(
         .order_by(TraceLink.id)
         .all()
     )
-    return [_serialize(row) for row in rows]
+    return [_serialize(row, db) for row in rows]
 @router.delete("/{project_id}/trace-links/{link_id}")
 def delete_trace_link(
     project_id: int,
