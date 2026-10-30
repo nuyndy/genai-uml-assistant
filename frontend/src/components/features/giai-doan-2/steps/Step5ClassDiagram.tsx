@@ -6,11 +6,7 @@ import {
   PrimaryButton,
   GhostButton,
   EmptyState,
-  DiagramPreview,
-  FieldLabel,
-  RemoveButton,
   inputClass,
-  singleLineClass,
 } from "../../../common/ui/primitives";
 import type { UmlClass } from "../../../common/types/workflow";
 
@@ -25,8 +21,6 @@ interface Props {
   umlClasses: UmlClass[];
   classDiagramUrl: string | null;
   classDiagramCode: string | null;
-  editingClassId: number | null;
-  setEditingClassId: (id: number | null) => void;
   setEditingClassDraft?: (id: number, draft: ClassDraft) => void;
   onSaveClass: (id: number, draft: ClassDraft) => Promise<void>;
   onDeleteClass: (id: number) => Promise<void>;
@@ -35,7 +29,6 @@ interface Props {
   onSaveClassDiagramCode?: (code: string) => Promise<void>;
   busy: boolean;
   projectId?: number;
-  wrapClass: string;
 }
 
 export default function Step5ClassDiagram({
@@ -43,8 +36,6 @@ export default function Step5ClassDiagram({
   umlClasses,
   classDiagramUrl,
   classDiagramCode,
-  editingClassId,
-  setEditingClassId,
   setEditingClassDraft,
   onSaveClass,
   onDeleteClass,
@@ -53,7 +44,6 @@ export default function Step5ClassDiagram({
   onSaveClassDiagramCode,
   busy,
   projectId,
-  wrapClass,
 }: Props) {
   const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
   const [zoom, setZoom] = useState(1);
@@ -74,24 +64,6 @@ export default function Step5ClassDiagram({
     setDraft(next);
     setEditingClassDraft?.(item.id, next);
     void onSaveClass(item.id, next);
-  };
-
-  const updateMember = (item: UmlClass, kind: "attributes" | "methods", index: number, value: string) => {
-    const current: ClassDraft = {
-      name: item.name,
-      attributes: [...item.attributes],
-      methods: [...item.methods],
-    };
-    current[kind][index] = value;
-    setDraft(current);
-    setEditingClassDraft?.(item.id, current);
-  };
-
-  const saveMemberDraft = (item: UmlClass) => {
-    const current = draft.name || draft.attributes.length || draft.methods.length
-      ? draft
-      : { name: item.name, attributes: [...item.attributes], methods: [...item.methods] };
-    void onSaveClass(item.id, current);
   };
 
   const deleteMember = (item: UmlClass, kind: "attributes" | "methods", index: number) => {
@@ -118,11 +90,6 @@ export default function Step5ClassDiagram({
 
   const regenerate = () => {
     void onRegenerateClasses();
-  };
-
-  const remove = (item: UmlClass) => {
-    if (!window.confirm(`Xoá lớp “${item.name}”?`)) return;
-    void onDeleteClass(item.id);
   };
 
   return (
@@ -249,7 +216,7 @@ export default function Step5ClassDiagram({
               {classDiagramUrl ? <div className="flex min-h-full w-max min-w-full items-center justify-center"><img src={classDiagramUrl} alt="Biểu đồ lớp" draggable={false} style={{ width: `${zoom * 100}%`, height: "auto", maxWidth: "none", flexShrink: 0 }} className="block rounded-md bg-white object-contain shadow-sm" /></div> : <div className="flex min-h-[360px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 text-center"><p className="text-sm text-slate-500">Chưa có biểu đồ</p><div className="mt-3"><PrimaryButton disabled={busy || !projectId} onClick={regenerate}>Sinh biểu đồ</PrimaryButton></div></div>}
             </div>
           </section>
-          {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex min-h-0 flex-1 flex-col gap-2 bg-[#102d24] p-3"><textarea aria-label="Mã PlantUML biểu đồ lớp" value={codeDraft} onChange={(event) => setCodeDraft(event.target.value)} spellCheck={false} disabled={busy} className="uml-code-panel min-h-0 flex-1 resize-y overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none" /><div className="w-full [&>button]:w-full"><PrimaryButton block disabled={busy || !codeDraft.trim() || !onSaveClassDiagramCode} onClick={() => { if (onSaveClassDiagramCode) void onSaveClassDiagramCode(codeDraft).then(() => setCodeDraft(codeDraft)); }}>{busy ? "Đang lưu và render..." : "Lưu mã và render lại"}</PrimaryButton></div></div></section>}
+          {showCode && <section className="flex h-[min(68vh,760px)] min-h-[360px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex min-h-0 flex-1 flex-col gap-2 bg-[#102d24] p-3"><textarea aria-label="Mã PlantUML biểu đồ lớp" value={codeDraft} onChange={(event) => setCodeDraft(event.target.value)} spellCheck={false} disabled={busy} className="uml-code-panel min-h-0 flex-1 resize-y overflow-auto border-0 bg-transparent p-2 font-mono text-xs leading-5 text-emerald-100 outline-none" /><div className="w-full [&>button]:w-full"><PrimaryButton disabled={busy || !codeDraft.trim() || !onSaveClassDiagramCode} onClick={() => { if (onSaveClassDiagramCode) void onSaveClassDiagramCode(codeDraft).then(() => setCodeDraft(codeDraft)); }}>{busy ? "Đang lưu và render..." : "Lưu mã và render lại"}</PrimaryButton></div></div></section>}
         </div>
       </Card>}
 
@@ -257,111 +224,3 @@ export default function Step5ClassDiagram({
   );
 }
 
-function ClassEditor({
-  draft,
-  busy,
-  onChange,
-  onSave,
-  onCancel,
-  onDelete,
-}: {
-  draft: ClassDraft;
-  busy: boolean;
-  onChange: (next: ClassDraft) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div className="space-y-4 rounded-xl border border-slate-200 bg-transparent p-4">
-      <div className="min-w-0">
-        <FieldLabel>Tên lớp</FieldLabel>
-        <input
-          value={draft.name}
-          onChange={(event) => onChange({ ...draft, name: event.target.value })}
-          aria-label="Tên lớp"
-          className={singleLineClass}
-        />
-      </div>
-      <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="min-w-0">
-          <FieldLabel hint={`${draft.attributes.length} thuộc tính`}>Thuộc tính</FieldLabel>
-          <LineListEditor
-            items={draft.attributes}
-            onChange={(lines) => onChange({ ...draft, attributes: lines })}
-            placeholder="Ví dụ: - maDonHang: string"
-            addLabel="+ Thêm thuộc tính"
-            removeLabel="Xóa thuộc tính"
-          />
-        </div>
-        <div className="min-w-0">
-          <FieldLabel hint={`${draft.methods.length} phương thức`}>Phương thức</FieldLabel>
-          <LineListEditor
-            items={draft.methods}
-            onChange={(lines) => onChange({ ...draft, methods: lines })}
-            placeholder="Ví dụ: + taoDonHang(): void"
-            addLabel="+ Thêm phương thức"
-            removeLabel="Xóa phương thức"
-          />
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <GhostButton disabled={busy} onClick={onDelete}>
-          Xoá lớp
-        </GhostButton>
-        <div className="flex flex-wrap items-center gap-3">
-          <GhostButton onClick={onCancel}>Huỷ</GhostButton>
-          <PrimaryButton disabled={busy || !draft.name.trim()} onClick={onSave}>
-            {busy ? "Đang lưu..." : "Lưu lớp"}
-          </PrimaryButton>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LineListEditor({
-  items,
-  onChange,
-  placeholder,
-  addLabel,
-  removeLabel,
-}: {
-  items: string[];
-  onChange: (next: string[]) => void;
-  placeholder: string;
-  addLabel: string;
-  removeLabel: string;
-}) {
-  const rows = items.length > 0 ? items : [""];
-  return (
-    <div className="space-y-2">
-      {rows.map((value, index) => (
-        <div key={index} className="flex min-w-0 items-start gap-2">
-          <textarea
-            rows={2}
-            value={value}
-            placeholder={placeholder}
-            onChange={(event) =>
-              onChange(rows.map((item, i) => (i === index ? event.target.value : item)))
-            }
-            className={`${inputClass} min-h-16 resize-y whitespace-pre-wrap break-words [overflow-wrap:anywhere]`}
-          />
-          {rows.length > 1 && (
-            <RemoveButton
-              label={removeLabel}
-              onClick={() => onChange(rows.filter((_, i) => i !== index))}
-            />
-          )}
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => onChange([...rows, ""])}
-        className="inline-flex h-9 items-center gap-1 rounded-lg px-1 text-sm font-medium text-emerald-600 transition hover:text-emerald-800"
-      >
-        {addLabel}
-      </button>
-    </div>
-  );
-}
