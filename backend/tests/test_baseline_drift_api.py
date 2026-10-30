@@ -1,7 +1,7 @@
 """Regression tests for baseline drift reporting API."""
 import time
 
-from database.models import Project, ProjectBaseline, RawRequirement, User
+from database.models import Project, ProjectBaseline, RawRequirement, Specification, SpecificationApproval, User
 from routers import auth
 
 
@@ -18,6 +18,38 @@ def _project_and_headers(db_session, email="baseline-drift@example.com"):
     db_session.commit()
     token = auth._sign({"uid": user.id, "exp": time.time() + 60})
     return project, {"Authorization": f"Bearer {token}"}
+
+
+def test_drift_endpoint_reports_specification_approval_changes(client, db_session):
+    project, headers = _project_and_headers(db_session, "approval-drift@example.com")
+    specification = Specification(
+        project_id=project.id,
+        type="functional",
+        content='{"function_name": "Đăng nhập"}',
+        version=1,
+    )
+    db_session.add(specification)
+    db_session.flush()
+    approval = SpecificationApproval(specification_id=specification.id, status="draft")
+    db_session.add(approval)
+    db_session.commit()
+
+    created = client.post(
+        f"/api/projects/{project.id}/baselines",
+        json={"name": "Approval snapshot"},
+        headers=headers,
+    )
+    assert created.status_code == 200
+
+    approval.status = "approved"
+    db_session.commit()
+    drift = client.get(
+        f"/api/projects/{project.id}/baselines/{created.json()['id']}/drift",
+        headers=headers,
+    )
+
+    assert drift.status_code == 200
+    assert "specification_approval" in drift.json()["changed_entity_types"]
 
 
 def test_drift_endpoint_reports_new_requirement(client, db_session):
