@@ -527,7 +527,8 @@ def save_requirement_user_story(
             .order_by(UserStory.id.desc())
             .first()
         )
-        if story is None:
+        is_new_story = story is None
+        if is_new_story:
             story = UserStory(requirement_id=requirement.id, **data.model_dump())
             db.add(story)
         else:
@@ -550,7 +551,7 @@ def save_requirement_user_story(
                 "acceptance_criteria": story.acceptance_criteria,
                 "technical_notes": story.technical_notes,
             },
-            change_type="create" if story not in db.dirty else "update",
+            change_type="create" if is_new_story else "update",
             change_note="Lưu User Story đã duyệt",
             created_by=current_user.id,
         )
