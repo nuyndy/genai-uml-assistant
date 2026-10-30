@@ -312,7 +312,7 @@ export default function Step4DacTa({
                   <div className="flex flex-wrap items-center gap-1.5">
                     <StatusBadge tone={nonFunctionalSpecification ? "success" : "warn"}>{nonFunctionalSpecification ? "Đã tạo đặc tả" : "Chưa có đặc tả"}</StatusBadge>
                     {nonFunctionalSpecification && <StatusBadge tone={nonFunctionalSpecification.approval_status === "approved" ? "success" : "warn"}>{nonFunctionalSpecification.approval_status === "approved" ? "Đã duyệt" : "Chưa duyệt"}</StatusBadge>}
-                    {nonFunctionalSpecification && <StatusBadge tone="neutral">Phiên bản {nonFunctionalSpecification.version}</StatusBadge>}
+                    {nonFunctionalSpecification && <StatusBadge tone="muted">Phiên bản {nonFunctionalSpecification.version}</StatusBadge>}
                   </div>
                 </div>
               </header>
