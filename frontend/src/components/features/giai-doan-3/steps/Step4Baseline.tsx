@@ -16,7 +16,6 @@ export default function Step4Baseline({
   baselines, issues, busy, message, onIssuesChange, onCreate, onApprove,
 }: Props) {
   const [name, setName] = useState("");
-  const latest = baselines[0];
   const unresolved = useMemo(() => issues.filter((item) => item.status === "open").length, [issues]);
   const accepted = issues.length - unresolved;
 
