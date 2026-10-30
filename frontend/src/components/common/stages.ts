@@ -83,4 +83,6 @@ export const STAGES: Record<StageId, StageDef> = {
       { id: 4, label: "Xử lý sai lệch và duyệt baseline", hint: "BA quyết định xử lý hoặc chấp nhận sai lệch có lý do trước khi chốt baseline", icon: "✓" },
     ],
   },
-};\n\nexport const STAGE_ORDER
+};
+
+export const STAGE_ORDER
