@@ -85,4 +85,13 @@ export const STAGES: Record<StageId, StageDef> = {
   },
 };
 
-export const STAGE_ORDER
+export const STAGE_ORDER: StageId[] = [1, 2, 3];
+
+export interface StepRef {
+  stage: StageId;
+  step: number;
+}
+
+export function stageOf(stage: StageId): StageDef {
+  return STAGES[stage];
+}
