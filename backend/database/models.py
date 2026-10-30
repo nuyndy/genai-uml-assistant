@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index
 from sqlalchemy.sql import func
 from database.db import Base
