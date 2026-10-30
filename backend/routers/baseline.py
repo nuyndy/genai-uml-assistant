@@ -1099,6 +1099,97 @@ def get_baseline_review_status(
     }
 
 
+@router.patch("/{project_id}/baselines/{baseline_id}/issues")
+def update_baseline_issues(
+    project_id: int,
+    baseline_id: int,
+    payload: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Cho phép BA cập nhật quyết định cho từng sai lệch trên baseline nháp.
+
+    Snapshot không bị thay đổi; chỉ danh sách quyết định xử lý được cập nhật.
+    """
+    _owned_project(project_id, db, current_user)
+    issues = payload.get("issues")
+    if not isinstance(issues, list):
+        raise HTTPException(
+            status_code=422,
+            detail="Trường issues phải là một danh sách.",
+        )
+
+    allowed_statuses = {"open", "accepted", "waived"}
+    normalized_issues = []
+    for index, issue in enumerate(issues):
+        if not isinstance(issue, dict):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Sai lệch ở vị trí {index} phải là object.",
+            )
+        status = str(issue.get("status") or "open").strip().lower()
+        if status not in allowed_statuses:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Trạng thái sai lệch không hợp lệ: {status}.",
+            )
+        item = dict(issue)
+        item["status"] = status
+        if status in {"accepted", "waived"}:
+            reason = str(
+                item.get("acceptance_reason") or item.get("reason") or ""
+            ).strip()
+            if not reason:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        f"Sai lệch ở vị trí {index} cần acceptance_reason "
+                        "khi được chấp nhận hoặc miễn trừ."
+                    ),
+                )
+            item["acceptance_reason"] = reason
+        normalized_issues.append(item)
+
+    row = (
+        db.query(ProjectBaseline)
+        .filter(
+            ProjectBaseline.id == baseline_id,
+            ProjectBaseline.project_id == project_id,
+        )
+        .with_for_update()
+        .first()
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy baseline.")
+    if row.status != "draft":
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể thay đổi quyết định sai lệch của baseline đã duyệt.",
+        )
+
+    row.open_issues = normalized_issues
+    try:
+        db.commit()
+        db.refresh(row)
+    except SQLAlchemyError:
+        db.rollback()
+        logger.exception("Could not update baseline issue decisions")
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể cập nhật quyết định xử lý sai lệch.",
+        )
+
+    unresolved, accepted = _partition_baseline_issues(row.open_issues)
+    return {
+        "id": row.id,
+        "status": row.status,
+        "issue_count": len(row.open_issues),
+        "unresolved_issue_count": len(unresolved),
+        "accepted_issue_count": len(accepted),
+        "issues": row.open_issues,
+    }
+
+
 @router.post("/{project_id}/baselines/{baseline_id}/approve")
 def approve_baseline(
     project_id: int,
