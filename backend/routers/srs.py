@@ -324,17 +324,36 @@ def save_srs_document_meta(
     project_id: int,
     data: SrsDocumentMetaInput,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     _require_project(db, project_id)
     try:
         meta = db.query(SrsDocument).filter(SrsDocument.project_id == project_id).first()
-        if meta is None:
+        is_new = meta is None
+        if is_new:
             meta = SrsDocument(project_id=project_id, **data.model_dump())
             db.add(meta)
         else:
             for key, value in data.model_dump().items():
                 setattr(meta, key, value)
+        db.flush()
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="srs_document",
+            entity_id=meta.id,
+            content={
+                "intro_purpose": meta.intro_purpose,
+                "intro_scope": meta.intro_scope,
+                "intro_definitions": meta.intro_definitions,
+                "overview_user_classes": meta.overview_user_classes,
+                "overview_environment": meta.overview_environment,
+                "appendix_notes": meta.appendix_notes,
+            },
+            change_type="create" if is_new else "update",
+            change_note="Lưu thông tin tài liệu SRS",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(meta)
     except SQLAlchemyError as exc:
