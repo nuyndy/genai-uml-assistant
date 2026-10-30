@@ -66,6 +66,7 @@ export function Demo() {
       return (
         <GiaiDoan1
           projectId={projectId}
+          projectName="Dự án xem trước"
           state={wf}
           setState={setWf}
           step={step}
