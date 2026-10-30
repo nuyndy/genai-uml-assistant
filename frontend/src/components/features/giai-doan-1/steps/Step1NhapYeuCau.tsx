@@ -11,18 +11,10 @@ interface Props {
   busy: boolean;
   loaded: boolean;
   error: string;
-  coverageAnalysis: RequirementCoverageAnalysis | null;
-  loadingCoverage: boolean;
-  addedCoverageSuggestions: number[];
-  selectedCoverageSuggestions: Record<number, boolean>;
-  selectedCoverageIndexes: number[];
   onChangeNewField: (field: keyof RequirementInput, value: string) => void;
   onChangeNewList: (field: "preConditions" | "businessRules", value: string[]) => void;
   onAddRequirement: () => void;
   onRemoveRequirement: (id: number) => void;
-  onCheckCoverage: () => void;
-  onToggleCoverageSuggestion: (index: number, selected: boolean) => void;
-  onAddSelectedCoverage: () => void;
   requirementTitle: (raw: RawRequirement) => string;
 }
 
