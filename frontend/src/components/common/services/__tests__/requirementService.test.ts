@@ -6,6 +6,7 @@ import {
   createProjectRequirementsBatch,
   createRequirement,
   generateProjectSpecificationsBatch,
+  exportApprovedBaselineSrs,
   previewProjectUserStories,
 } from "../requirementService";
 import { setToken } from "../authService";
@@ -132,5 +133,27 @@ describe("createRequirement", () => {
         business_rules: [],
       }),
     ).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe("exportApprovedBaselineSrs", () => {
+  it("exports the exact approved baseline snapshot by ID", async () => {
+    const blob = new Blob(["docx"]);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === "content-disposition" ? 'attachment; filename="baseline-4.docx"' : null },
+      blob: async () => blob,
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await exportApprovedBaselineSrs(9, 4);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/projects/9/specification-document/export?baseline_id=4",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(result.filename).toBe("baseline-4.docx");
+    expect(result.blob).toBe(blob);
   });
 });
