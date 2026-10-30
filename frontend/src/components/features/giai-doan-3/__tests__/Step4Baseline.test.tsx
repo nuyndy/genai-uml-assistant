@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import Step4Baseline from "../steps/Step4Baseline";
 import type { BaselineIssueDecision, ProjectBaseline } from "../../../common/services/umlService";
@@ -25,7 +25,20 @@ function setup(overrides: Partial<ComponentProps<typeof Step4Baseline>> = {}) {
     onExport: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
-  render(<Step4Baseline {...props} />);
+  function StatefulHarness() {
+    const [issues, setIssues] = useState(props.issues);
+    return (
+      <Step4Baseline
+        {...props}
+        issues={issues}
+        onIssuesChange={(next) => {
+          setIssues(next);
+          props.onIssuesChange(next);
+        }}
+      />
+    );
+  }
+  render(<StatefulHarness />);
   return props;
 }
 
