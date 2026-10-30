@@ -37,6 +37,7 @@ class Project(Base):
 
 class RawRequirement(Base):
     __tablename__ = "raw_requirement"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
@@ -59,6 +60,7 @@ class RawRequirement(Base):
 
 class UserStory(Base):
     __tablename__ = "user_story"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
 
     id = Column(Integer, primary_key=True, index=True)
     requirement_id = Column(
@@ -75,6 +77,7 @@ class UserStory(Base):
 
 class Specification(Base):
     __tablename__ = "specification"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     user_story_id = Column(Integer, ForeignKey("user_story.id"), nullable=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=True, index=True)
@@ -96,6 +99,7 @@ class Specification(Base):
 
 class SrsDocument(Base):
     __tablename__ = "srs_document"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False, unique=True)
     intro_purpose = Column(Text, nullable=False, default="")
@@ -109,6 +113,7 @@ class SrsDocument(Base):
 
 class UseCase(Base):
     __tablename__ = "use_case"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
     name = Column(String, nullable=False)
@@ -124,6 +129,7 @@ class UseCase(Base):
 
 class Actor(Base):
     __tablename__ = "actor"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     name = Column(String, nullable=False)
@@ -134,6 +140,7 @@ class Actor(Base):
 
 class UcActorRelation(Base):
     __tablename__ = "uc_actor_relation"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     use_case_id = Column(Integer, ForeignKey("use_case.id"), nullable=False)
     actor_id = Column(Integer, ForeignKey("actor.id"), nullable=False)
@@ -142,6 +149,7 @@ class UcActorRelation(Base):
 
 class ClassEntity(Base):
     __tablename__ = "class_entity"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     name = Column(String, nullable=False)
@@ -151,6 +159,7 @@ class ClassEntity(Base):
 
 class ClassRelation(Base):
     __tablename__ = "class_relation"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     class_a_id = Column(Integer, ForeignKey("class_entity.id"), nullable=False)
     class_b_id = Column(Integer, ForeignKey("class_entity.id"), nullable=False)
@@ -159,6 +168,7 @@ class ClassRelation(Base):
 
 class Diagram(Base):
     __tablename__ = "diagram"
+    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), nullable=False, unique=True)
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     use_case_id = Column(Integer, ForeignKey("use_case.id"), nullable=True)
