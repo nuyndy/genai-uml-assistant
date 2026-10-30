@@ -142,7 +142,9 @@ def test_stage1_persists_requirement_analyzes_and_confirms(client, db_session):
     )
     assert response.status_code == 201
     requirement_id = response.json()["id"]
+    assert response.json()["public_id"]
     stored = db_session.get(RawRequirement, requirement_id)
+    assert response.json()["public_id"] == stored.public_id
     assert stored is not None
     assert stored.public_id
     assert stored.status == "draft"
