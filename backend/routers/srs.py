@@ -330,6 +330,7 @@ def save_srs_document_meta(
     _require_project(db, project_id)
     try:
         meta = db.query(SrsDocument).filter(SrsDocument.project_id == project_id).first()
+        is_new = meta is None
         if meta is None:
             meta = SrsDocument(project_id=project_id, **data.model_dump())
             db.add(meta)
@@ -337,7 +338,7 @@ def save_srs_document_meta(
             for key, value in data.model_dump().items():
                 setattr(meta, key, value)
         db.flush()
-        record_entity_revision(db, meta, project_id=project_id, entity_type="srs_document", user_id=current_user.id, change_type="create" if meta.id is not None else "update", change_note="Lưu nội dung SRS")
+        record_entity_revision(db, meta, project_id=project_id, entity_type="srs_document", user_id=current_user.id, change_type="create" if is_new else "update", change_note="Lưu nội dung SRS")
         db.commit()
         db.refresh(meta)
     except SQLAlchemyError as exc:
