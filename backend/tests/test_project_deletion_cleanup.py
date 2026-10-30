@@ -150,7 +150,7 @@ def test_delete_project_removes_all_dependent_records(client, db_session):
         headers={"Authorization": f"Bearer {token}"},
     )
 
-    assert response.status_code == 204
+    assert response.status_code == 204, response.text
     db_session.expire_all()
     assert db_session.get(Project, project_id) is None
     for model in (
