@@ -4,9 +4,7 @@ import {
   Card,
   SoftButton,
   PrimaryButton,
-  GhostButton,
   EmptyState,
-  inputClass,
 } from "../../../common/ui/primitives";
 import type { UmlClass } from "../../../common/types/workflow";
 
@@ -23,7 +21,6 @@ interface Props {
   classDiagramCode: string | null;
   setEditingClassDraft?: (id: number, draft: ClassDraft) => void;
   onSaveClass: (id: number, draft: ClassDraft) => Promise<void>;
-  onDeleteClass: (id: number) => Promise<void>;
   onRegenerateClasses: () => Promise<void> | void;
   onConfirmClassDiagram: () => void;
   onSaveClassDiagramCode?: (code: string) => Promise<void>;
@@ -38,14 +35,12 @@ export default function Step5ClassDiagram({
   classDiagramCode,
   setEditingClassDraft,
   onSaveClass,
-  onDeleteClass,
   onRegenerateClasses,
   onConfirmClassDiagram,
   onSaveClassDiagramCode,
   busy,
   projectId,
 }: Props) {
-  const [draft, setDraft] = useState<ClassDraft>({ name: "", attributes: [], methods: [] });
   const [zoom, setZoom] = useState(1);
   const [showCode, setShowCode] = useState(false);
   const [codeDraft, setCodeDraft] = useState(classDiagramCode ?? "");
@@ -61,7 +56,6 @@ export default function Step5ClassDiagram({
   };
 
   const updateInline = (item: UmlClass, next: ClassDraft) => {
-    setDraft(next);
     setEditingClassDraft?.(item.id, next);
     void onSaveClass(item.id, next);
   };
@@ -83,7 +77,6 @@ export default function Step5ClassDiagram({
       methods: [...item.methods],
     };
     next[kind].push("");
-    setDraft(next);
     setEditingClassDraft?.(item.id, next);
     void onSaveClass(item.id, next);
   };
