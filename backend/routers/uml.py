@@ -2051,7 +2051,7 @@ def update_use_case(
     use_case_id: int,
     data: UseCaseUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     use_case = _use_case(db, use_case_id)
     project_id = _project_for_use_case(db, use_case_id)
