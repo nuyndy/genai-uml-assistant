@@ -27,6 +27,10 @@ specifications with their project, and create the editable SRS metadata table.
 The migration keeps the latest functional specification per story and re-points
 existing use cases to it before removing older duplicate rows.
 
+Run `003_add_diagram_revision.sql` once after `002_add_srs_specifications.sql`. This creates diagram revision history and backfills the current version of every existing diagram as its initial `baseline` revision. Do not skip this migration on an existing database: `Base.metadata.create_all()` can create the table, but it does not backfill historical diagram rows.
+
+Run `004_add_baseline_traceability_glossary.sql` once to create the glossary, trace-link, project-baseline, and generic entity-revision tables. The backend model metadata can create missing tables on startup, but applying the SQL migration explicitly keeps database setup deterministic and applies the documented constraints and indexes.
+
 PDF export requires `reportlab` and an installed Unicode TrueType font such as
 DejaVu Sans or Arial for Vietnamese text.
 
