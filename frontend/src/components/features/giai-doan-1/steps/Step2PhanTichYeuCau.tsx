@@ -1,5 +1,5 @@
 import { Card, SoftButton, EmptyState } from "../../../common/ui/primitives";
-import type { RequirementCoverageAnalysis, RequirementRecord } from "../../../common/services/requirementService";
+import type { RequirementCoverageAnalysis, RequirementCoverageSuggestion, RequirementRecord } from "../../../common/services/requirementService";
 import type { RawRequirement } from "../../../common/types/workflow";
 
 interface Props {
@@ -47,7 +47,6 @@ function Metric({ label, value, detail, tone = "neutral" }: {
 
 export default function Step2PhanTichYeuCau({
   requirements,
-  requirementValues,
   coverageAnalysis,
   loadingCoverage,
   addedCoverageSuggestions,
@@ -56,8 +55,6 @@ export default function Step2PhanTichYeuCau({
   onCheckCoverage,
   onToggleCoverageSuggestion,
   busy,
-  requirementTitle,
-  wrapClass: inheritedWrapClass,
 }: Props) {
   const draftRequirements = requirements.filter((item) => item.status === "draft");
   const confirmedCount = requirements.filter((item) => item.status === "confirmed").length;
