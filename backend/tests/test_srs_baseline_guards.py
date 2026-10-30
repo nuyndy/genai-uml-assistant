@@ -113,3 +113,45 @@ def test_srs_preview_marks_draft_baseline_as_non_official(client, db_session):
     body = response.json()
     assert body["baseline_status"] == "draft"
     assert body["is_official"] is False
+
+def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(client, db_session):
+    from database.models import Actor, RawRequirement, TraceLink
+
+    project, headers = _project_and_headers(db_session)
+    requirement = RawRequirement(
+        project_id=project.id,
+        content="Khách hàng đặt đơn hàng",
+        status="draft",
+    )
+    actor = Actor(project_id=project.id, name="Khách hàng")
+    db_session.add_all([requirement, actor])
+    db_session.flush()
+    trace = TraceLink(
+        project_id=project.id,
+        source_type="raw_requirement",
+        source_id=requirement.id,
+        target_type="actor",
+        target_id=actor.id,
+        relation_type="involves",
+    )
+    db_session.add(trace)
+    db_session.commit()
+
+    response = client.post(
+        f"/api/projects/{project.id}/baselines",
+        json={"name": "Baseline có mã ổn định"},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    baseline_id = response.json()["id"]
+    snapshot = client.get(
+        f"/api/projects/{project.id}/baselines/{baseline_id}",
+        headers=headers,
+    ).json()["snapshot"]
+    entities = snapshot["entities"]
+    assert entities["raw_requirement"][0]["entity_key"].startswith("REQ-")
+    assert entities["actor"][0]["entity_key"].startswith("ACT-")
+    trace_snapshot = entities["trace_link"][0]
+    assert trace_snapshot["source_entity_key"] == entities["raw_requirement"][0]["entity_key"]
+    assert trace_snapshot["target_entity_key"] == entities["actor"][0]["entity_key"]
