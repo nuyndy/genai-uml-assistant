@@ -70,7 +70,7 @@ describe("Step4Baseline", () => {
     } as ProjectBaseline;
     const props = setup({ baselines: [draft] });
     fireEvent.click(screen.getByRole("button", { name: "Chỉnh quyết định" }));
-    expect(screen.getByText(/Snapshot dữ liệu không thay đổi/)).toBeTruthy();
+    expect(screen.getByText(/snapshot dữ liệu không thay đổi/i)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Lưu quyết định" }));
     expect(props.onSaveIssues).toHaveBeenCalledWith(7, [issue]);
   });
