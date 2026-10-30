@@ -35,7 +35,7 @@ def test_generate_content_calls_local_ollama_and_requests_json():
         # temperature 0 và seed cố định để đầu ra JSON ổn định giữa các lần chạy.
         "options": {"temperature": 0.0, "seed": 0},
     }
-    assert urlopen.call_args.kwargs["timeout"] == 300
+    assert urlopen.call_args.kwargs["timeout"] == 900
     assert result == '{"is_complete": true}'
 
 
