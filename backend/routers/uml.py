@@ -2483,6 +2483,7 @@ def update_class(
         raise HTTPException(status_code=500, detail="Không thể cập nhật lớp.") from exc
     return ClassEntityRecord(
         id=entity.id,
+        public_id=entity.public_id,
         project_id=entity.project_id,
         name=entity.name,
         attributes=_decode_lines(entity.attributes),
@@ -2798,6 +2799,7 @@ def generate_classes(
     return [
         ClassEntityRecord(
             id=item.id,
+            public_id=item.public_id,
             project_id=item.project_id,
             name=item.name,
             attributes=_decode_lines(item.attributes),
