@@ -1,4 +1,4 @@
-﻿import json
+import json
 import re
 import logging
 from fastapi.encoders import jsonable_encoder
@@ -11,6 +11,10 @@ from sqlalchemy.orm import Session
 from routers.uml import parse_plantuml
 from database.db import get_db
 from domain.identifiers import entity_key
+from domain.traceability import (
+    TRACE_ENTITY_TYPE_ALIASES,
+    canonical_trace_entity_type,
+)
 from database.models import (
     Actor,
     ClassEntity,
@@ -536,19 +540,7 @@ def _check_trace_links_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any]
     if not isinstance(entities, dict):
         return [{"type": "invalid_snapshot", "message": "Snapshot thiếu entities hợp lệ."}]
 
-    type_aliases = {
-        "requirement": "raw_requirement",
-        "raw_requirement": "raw_requirement",
-        "user_story": "user_story",
-        "specification": "specification",
-        "use_case": "use_case",
-        "actor": "actor",
-        "class": "class_entity",
-        "class_entity": "class_entity",
-        "diagram": "diagram",
-        "glossary_term": "glossary_term",
-        "srs_document": "srs_document",
-    }
+    type_aliases = TRACE_ENTITY_TYPE_ALIASES
     ids_by_type = {
         entity_type: {
             item.get("id")
@@ -1422,8 +1414,11 @@ def create_trace_link(
             status_code=422,
             detail="Cần source_type, source_id, target_type và target_id.",
         )
-    source_type = str(payload["source_type"]).lower()
-    target_type = str(payload["target_type"]).lower()
+    try:
+        source_type = canonical_trace_entity_type(payload["source_type"])
+        target_type = canonical_trace_entity_type(payload["target_type"])
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
     try:
         source_id = int(payload["source_id"])
         target_id = int(payload["target_id"])
@@ -1433,13 +1428,11 @@ def create_trace_link(
         raise HTTPException(status_code=422, detail="Không thể tự liên kết phần tử.")
     # Each type maps to a table and a project-scope check.
     model_map = {
-        "requirement": RawRequirement,
         "raw_requirement": RawRequirement,
         "user_story": UserStory,
         "specification": Specification,
         "use_case": UseCase,
         "actor": Actor,
-        "class": ClassEntity,
         "class_entity": ClassEntity,
         "diagram": Diagram,
         "glossary_term": GlossaryTerm,
