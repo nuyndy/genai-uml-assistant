@@ -263,6 +263,7 @@ def _format_specification(specification: Specification, *, index: int) -> str:
 def _use_case_record(use_case: UseCase) -> UseCaseRecord:
     return UseCaseRecord(
         id=use_case.id,
+        public_id=use_case.public_id,
         specification_id=use_case.specification_id,
         name=use_case.name,
         actor=use_case.actor,
@@ -2393,6 +2394,7 @@ def create_class(
         raise HTTPException(status_code=500, detail="Không thể tạo lớp.") from exc
     return ClassEntityRecord(
         id=entity.id,
+        public_id=entity.public_id,
         project_id=entity.project_id,
         name=entity.name,
         attributes=_decode_lines(entity.attributes),
@@ -2423,6 +2425,7 @@ def list_project_classes(
     return [
         ClassEntityRecord(
             id=item.id,
+            public_id=item.public_id,
             project_id=item.project_id,
             name=item.name,
             attributes=_decode_lines(item.attributes),
@@ -3095,6 +3098,7 @@ def get_project_uml_state(
         classes=[
             ClassEntityRecord(
                 id=item.id,
+                public_id=item.public_id,
                 project_id=item.project_id,
                 name=item.name,
                 attributes=_decode_lines(item.attributes),
