@@ -115,7 +115,7 @@ def test_srs_preview_marks_draft_baseline_as_non_official(client, db_session):
     assert body["is_official"] is False
 
 def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(client, db_session):
-    from database.models import Actor, RawRequirement, TraceLink
+    from database.models import Actor, RawRequirement, Specification, TraceLink
 
     project, headers = _project_and_headers(db_session)
     requirement = RawRequirement(
@@ -124,7 +124,12 @@ def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(cli
         status="draft",
     )
     actor = Actor(project_id=project.id, name="Khách hàng")
-    db_session.add_all([requirement, actor])
+    specification = Specification(
+        project_id=project.id,
+        type="non_functional",
+        content="{}",
+    )
+    db_session.add_all([requirement, actor, specification])
     db_session.flush()
     trace = TraceLink(
         project_id=project.id,
@@ -134,7 +139,15 @@ def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(cli
         target_id=actor.id,
         relation_type="involves",
     )
-    db_session.add(trace)
+    nfr_trace = TraceLink(
+        project_id=project.id,
+        source_type="actor",
+        source_id=actor.id,
+        target_type="specification",
+        target_id=specification.id,
+        relation_type="constrained_by",
+    )
+    db_session.add_all([trace, nfr_trace])
     db_session.commit()
 
     response = client.post(
@@ -155,3 +168,9 @@ def test_baseline_snapshot_includes_stable_keys_for_entities_and_trace_links(cli
     trace_snapshot = entities["trace_link"][0]
     assert trace_snapshot["source_entity_key"] == entities["raw_requirement"][0]["entity_key"]
     assert trace_snapshot["target_entity_key"] == entities["actor"][0]["entity_key"]
+    assert entities["specification"][0]["entity_key"].startswith("NFR-")
+    nfr_trace_snapshot = next(
+        item for item in entities["trace_link"]
+        if item["relation_type"] == "constrained_by"
+    )
+    assert nfr_trace_snapshot["target_entity_key"] == entities["specification"][0]["entity_key"]
