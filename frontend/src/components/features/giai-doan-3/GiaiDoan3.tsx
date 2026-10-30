@@ -273,7 +273,7 @@ export default function GiaiDoan3({
         {step === 1 && <GiaiDoan1 projectId={projectId} projectName={projectName} state={state} setState={setState} step={5} onStepChange={() => undefined} />}
         {step === 2 && <Step2ChinhSuaCapNhat state={state} setState={setState} consistencyResult={consistencyResult} stage3Message={stage3Message} busy={busy} onConsistencyCheck={runConsistencyCheck} onSaveDiagram={handleRenderAndSave} onFixWithAI={handleFixWithAI} />}
         {step === 3 && <Step3KiemTraNhatQuan state={state} busy={busy} onConsistencyCheck={runConsistencyCheck} consistencyResult={consistencyResult} stage3Message={stage3Message} />}
-        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onApprove={handleApproveBaseline} />}
+        {step === 4 && <Step4Baseline baselines={baselines} issues={baselineIssues} busy={busy} hasChecked={consistencyResult !== null} message={stage3Message} onIssuesChange={setBaselineIssues} onCreate={handleCreateBaseline} onApprove={handleApproveBaseline} />}
       </div>
     </div>
   );
