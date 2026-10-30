@@ -33,6 +33,7 @@ from schemas.specification import (
     SpecificationRecord,
     SpecificationUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.spec_generator import build_functional_spec_prompt, build_consolidated_functional_specs_prompt
 from services.ollama import AIServiceError, generate_json
 
@@ -632,7 +633,7 @@ def update_specification(
     specification_id: int,
     data: SpecificationUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> SpecificationRecord:
     specification = _specification(db, specification_id)
     try:
@@ -659,6 +660,30 @@ def update_specification(
             approval.status = "draft"
             approval.approved_by = None
             approval.approved_at = None
+        project_id = specification.project_id
+        if project_id is None and specification.user_story_id is not None:
+            story = db.query(UserStory).filter(
+                UserStory.id == specification.user_story_id
+            ).first()
+            requirement = (
+                db.query(RawRequirement).filter(
+                    RawRequirement.id == story.requirement_id
+                ).first()
+                if story is not None else None
+            )
+            project_id = requirement.project_id if requirement is not None else None
+        if project_id is None:
+            raise HTTPException(status_code=409, detail="Không xác định được dự án của đặc tả.")
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="specification",
+            entity_id=specification.id,
+            content={"type": specification.type, "content": json.loads(specification.content), "version": specification.version},
+            change_type="update",
+            change_note="Cập nhật đặc tả",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(specification)
     except SQLAlchemyError as exc:
