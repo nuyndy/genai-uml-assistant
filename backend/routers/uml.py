@@ -55,6 +55,7 @@ from schemas.uml import (
     UseCaseScenarioBatchResult,
     UseCaseUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.ollama import AIServiceError, generate_content, generate_json, strip_code_fence
 from services.plantuml import PlantUMLRenderError, render_plantuml
 from services.plantuml_parser import parse_plantuml
@@ -1476,7 +1477,7 @@ def update_actor(
     actor_id: int,
     data: ActorUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ActorRecord:
     try:
         actor = db.query(Actor).filter(Actor.id == actor_id).first()
@@ -1499,6 +1500,16 @@ def update_actor(
             actor.role = data.role
         if data.main_businesses is not None:
             actor.main_businesses = data.main_businesses
+        record_entity_revision(
+            db,
+            project_id=actor.project_id,
+            entity_type="actor",
+            entity_id=actor.id,
+            content={"name": actor.name, "description": actor.description, "role": actor.role, "main_businesses": actor.main_businesses},
+            change_type="update",
+            change_note="Cập nhật tác nhân",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(actor)
     except HTTPException:
@@ -2045,7 +2056,7 @@ def update_use_case(
     use_case_id: int,
     data: UseCaseUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     use_case = _use_case(db, use_case_id)
     project_id = _project_for_use_case(db, use_case_id)
@@ -2076,6 +2087,27 @@ def update_use_case(
             use_case.alt_flow = _encode_lines(data.alt_flow)
         if data.exception_flow is not None:
             use_case.exception_flow = _encode_lines(data.exception_flow)
+        record_entity_revision(
+            db,
+            project_id=project_id,
+            entity_type="use_case",
+            entity_id=use_case.id,
+            content={
+                "specification_id": use_case.specification_id,
+                "name": use_case.name,
+                "actor": use_case.actor,
+                "description": use_case.description,
+                "preconditions": use_case.preconditions,
+                "minimal_guarantees": use_case.minimal_guarantees,
+                "postconditions": use_case.postconditions,
+                "main_flow": _decode_lines(use_case.main_flow),
+                "alt_flow": _decode_lines(use_case.alt_flow),
+                "exception_flow": _decode_lines(use_case.exception_flow),
+            },
+            change_type="update",
+            change_note="Cập nhật kịch bản Use Case",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(use_case)
     except HTTPException:
@@ -2360,7 +2392,7 @@ def update_class(
     class_id: int,
     data: ClassUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ClassEntityRecord:
     try:
         entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
@@ -2383,6 +2415,16 @@ def update_class(
             entity.attributes = _encode_lines(data.attributes)
         if data.methods is not None:
             entity.methods = _encode_lines(data.methods)
+        record_entity_revision(
+            db,
+            project_id=entity.project_id,
+            entity_type="class",
+            entity_id=entity.id,
+            content={"name": entity.name, "attributes": _decode_lines(entity.attributes), "methods": _decode_lines(entity.methods)},
+            change_type="update",
+            change_note="Cập nhật lớp",
+            created_by=current_user.id,
+        )
         db.commit()
         db.refresh(entity)
     except HTTPException:
