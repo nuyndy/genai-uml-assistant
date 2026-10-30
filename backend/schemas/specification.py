@@ -109,6 +109,7 @@ class SpecificationDocumentExportInput(BaseModel):
 
 class SpecificationRecord(BaseModel):
     id: int
+    public_id: str | None = None
     user_story_id: int | None
     feature: str
     type: SpecificationType
