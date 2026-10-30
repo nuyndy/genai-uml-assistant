@@ -55,6 +55,7 @@ from schemas.uml import (
     UseCaseScenarioBatchResult,
     UseCaseUpdate,
 )
+from services.entity_revision import record_entity_revision
 from services.ollama import AIServiceError, generate_content, generate_json, strip_code_fence
 from services.plantuml import PlantUMLRenderError, render_plantuml
 from services.plantuml_parser import parse_plantuml
@@ -1431,7 +1432,7 @@ def create_actor(
     project_id: int,
     data: ActorCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ActorRecord:
     _require_project(db, project_id)
     try:
@@ -1447,6 +1448,8 @@ def create_actor(
             return ActorRecord.model_validate(actor)
         actor = Actor(project_id=project_id, name=data.name)
         db.add(actor)
+        db.flush()
+        record_entity_revision(db, actor, project_id=project_id, entity_type="actor", user_id=current_user.id, change_type="create", change_note="Tạo tác nhân")
         db.commit()
         db.refresh(actor)
     except SQLAlchemyError as exc:
@@ -1476,7 +1479,7 @@ def update_actor(
     actor_id: int,
     data: ActorUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ActorRecord:
     try:
         actor = db.query(Actor).filter(Actor.id == actor_id).first()
@@ -1499,6 +1502,7 @@ def update_actor(
             actor.role = data.role
         if data.main_businesses is not None:
             actor.main_businesses = data.main_businesses
+        record_entity_revision(db, actor, project_id=actor.project_id, entity_type="actor", user_id=current_user.id, change_note="Cập nhật tác nhân")
         db.commit()
         db.refresh(actor)
     except HTTPException:
@@ -1584,9 +1588,9 @@ def create_use_case(
     specification_id: int,
     data: UseCaseCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UseCaseRecord:
-    _project_for_specification(db, specification_id)
+    project_id = _project_for_specification(db, specification_id)
     try:
         specification = db.query(Specification).filter(
             Specification.id == specification_id
@@ -1616,6 +1620,8 @@ def create_use_case(
             exception_flow=_encode_lines([]),
         )
         db.add(use_case)
+        db.flush()
+        record_entity_revision(db, use_case, project_id=project_id, entity_type="use_case", user_id=current_user.id, change_type="create", change_note="Tạo Use Case")
         db.commit()
         db.refresh(use_case)
     except SQLAlchemyError as exc:
@@ -1871,7 +1877,7 @@ def _generate_scenario_for(
 def generate_use_case_scenario(
     use_case_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UseCaseRecord:
     use_case = _use_case(db, use_case_id)
     project_id = _project_for_use_case(db, use_case_id)
@@ -2076,6 +2082,7 @@ def update_use_case(
             use_case.alt_flow = _encode_lines(data.alt_flow)
         if data.exception_flow is not None:
             use_case.exception_flow = _encode_lines(data.exception_flow)
+        record_entity_revision(db, use_case, project_id=project_id, entity_type="use_case", user_id=current_user.id, change_note="Cập nhật Use Case/kịch bản")
         db.commit()
         db.refresh(use_case)
     except HTTPException:
@@ -2289,7 +2296,7 @@ def create_class(
     project_id: int,
     data: ClassCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ClassEntityRecord:
     _require_project(db, project_id)
     _require_approved_specifications(db, project_id)
@@ -2306,6 +2313,8 @@ def create_class(
             methods=_encode_lines(data.methods),
         )
         db.add(entity)
+        db.flush()
+        record_entity_revision(db, entity, project_id=project_id, entity_type="class_entity", user_id=current_user.id, change_type="create", change_note="Tạo lớp")
         db.commit()
         db.refresh(entity)
     except HTTPException:
@@ -2360,7 +2369,7 @@ def update_class(
     class_id: int,
     data: ClassUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ClassEntityRecord:
     try:
         entity = db.query(ClassEntity).filter(ClassEntity.id == class_id).first()
@@ -2383,6 +2392,7 @@ def update_class(
             entity.attributes = _encode_lines(data.attributes)
         if data.methods is not None:
             entity.methods = _encode_lines(data.methods)
+        record_entity_revision(db, entity, project_id=entity.project_id, entity_type="class_entity", user_id=current_user.id, change_note="Cập nhật lớp")
         db.commit()
         db.refresh(entity)
     except HTTPException:
