@@ -173,6 +173,7 @@ def generate_specification(
         raise HTTPException(status_code=500, detail="Không thể lưu đặc tả.") from exc
     return SpecificationRecord(
         id=specification.id,
+        public_id=specification.public_id,
         user_story_id=story.id,
         feature=story.feature,
         type="functional",
@@ -474,6 +475,7 @@ def consolidate_project_functional_specifications(
     return [
         SpecificationRecord(
             id=record.id,
+            public_id=record.public_id,
             user_story_id=None,
             feature=normalized_items[index].function_name,
             type="functional",
@@ -561,6 +563,7 @@ def generate_project_specifications_batch(
     return [
         SpecificationRecord(
             id=item.id,
+            public_id=item.public_id,
             user_story_id=item.user_story_id,
             feature=features[item.user_story_id],
             type=item.type,
@@ -715,6 +718,7 @@ def update_specification(
     )
     return SpecificationRecord(
         id=specification.id,
+        public_id=specification.public_id,
         user_story_id=specification.user_story_id,
         feature=story.feature if story else "Đặc tả phi chức năng",
         type=specification.type,
@@ -746,6 +750,7 @@ def list_user_story_specifications(
     return [
         SpecificationRecord(
             id=item.id,
+            public_id=item.public_id,
             user_story_id=item.user_story_id,
             feature=story.feature,
             type=item.type,
