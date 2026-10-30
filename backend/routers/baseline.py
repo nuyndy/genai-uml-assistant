@@ -125,8 +125,21 @@ def _project_snapshot(db: Session, project_id: int) -> dict[str, Any]:
     snapshot["entities"]["specification"] = [
         _serialize(row) for row in project_specs
     ]
-    
+
+    # Trạng thái duyệt đặc tả là một phần của trạng thái nghiệp vụ đã chốt.
+    # Nếu approval bị thu hồi/thay đổi, baseline phải ghi nhận drift dù nội dung
+    # đặc tả không đổi.
     spec_ids = [row.id for row in project_specs]
+    approvals = (
+        db.query(SpecificationApproval)
+        .filter(SpecificationApproval.specification_id.in_(spec_ids))
+        .order_by(SpecificationApproval.id)
+        .all()
+        if spec_ids else []
+    )
+    snapshot["entities"]["specification_approval"] = [
+        _serialize(row) for row in approvals
+    ]
     use_cases = (
         db.query(UseCase)
         .filter(UseCase.specification_id.in_(spec_ids))
