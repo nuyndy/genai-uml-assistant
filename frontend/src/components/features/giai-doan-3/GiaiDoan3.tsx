@@ -5,6 +5,11 @@ import {
   listProjectDiagrams,
   updateDiagram,
   listProjectBaselines,
+  createProjectBaseline,
+  approveProjectBaseline,
+  updateProjectBaselineIssues,
+  type ProjectBaseline,
+  type BaselineIssueDecision,
   checkProjectUmlConsistency,
   fixProjectUmlConsistency,
 } from "../../common/services/umlService";
@@ -12,8 +17,19 @@ import ProgressOverlay from "../../common/ProgressOverlay";
 import GiaiDoan1 from "../giai-doan-1/GiaiDoan1";
 import Step2ChinhSuaCapNhat from "./steps/Step2ChinhSuaCapNhat";
 import Step3KiemTraNhatQuan from "./steps/Step3KiemTraNhatQuan";
+import Step4Baseline from "./steps/Step4Baseline";
 
-interface Props {
+
+function buildBaselineIssues(result: any): BaselineIssueDecision[] {
+  return [
+    ...(result.missing_in_database ?? []).map((detail: string, index: number) => ({ type: "missing_in_database", id: `db-${index}`, title: "Thiếu trong dữ liệu đã lưu", detail, status: "open" as const })),
+    ...(result.missing_in_plantuml ?? []).map((detail: string, index: number) => ({ type: "missing_in_plantuml", id: `puml-${index}`, title: "Thiếu trong PlantUML", detail, status: "open" as const })),
+    ...(result.missing_relations ?? []).map((item: any, index: number) => ({ type: "missing_relation", id: `mr-${index}`, title: "Thiếu quan hệ", detail: `${item.from} → ${item.to} (${item.type})`, status: "open" as const })),
+    ...(result.extra_relations ?? []).map((item: any, index: number) => ({ type: "extra_relation", id: `er-${index}`, title: "Quan hệ thừa", detail: `${item.from} → ${item.to} (${item.type})`, status: "open" as const })),
+    ...(result.cross_stage_issues ?? []).map((detail: string, index: number) => ({ type: "cross_stage", id: `cross-${index}`, title: "Vấn đề liên kết xuyên giai đoạn", detail, status: "open" as const })),
+  ];
+}
+\ninterface Props {
   projectId: number;
   projectName: string;
   state: any;
@@ -35,10 +51,14 @@ export default function GiaiDoan3({
   const [savedDiagramId, setSavedDiagramId] = useState<number | null>(null);
   const [consistencyResult, setConsistencyResult] = useState<any>(null);
   const [stage3Message, setStage3Message] = useState("");
+  const [baselines, setBaselines] = useState<ProjectBaseline[]>([]);
+  const [baselineIssues, setBaselineIssues] = useState<BaselineIssueDecision[]>([]);
 
 
   const loadBaselines = async () => {
     const items = await listProjectBaselines(projectId);
+    setBaselines(items);
+    setBaselineIssues((items[0]?.open_issues as BaselineIssueDecision[] | undefined) ?? []);
     const approved = items.find((item) => item.status === "approved");
     setState((prev: any) => ({
       ...prev,
@@ -49,6 +69,41 @@ export default function GiaiDoan3({
   // Bước 3 của Giai đoạn 3 dùng trực tiếp màn hình Bước 5 Giai đoạn 1,
   // vì vậy dữ liệu SRS và trạng thái lưu được quản lý bởi GiaiDoan1.
 
+
+  const handleCreateBaseline = async (name: string, issues: BaselineIssueDecision[]) => {
+    setBusy(true);
+    setAiTaskLabel("Đang tạo snapshot baseline...");
+    setStage3Message("");
+    try {
+      const created = await createProjectBaseline(projectId, name, issues);
+      if (issues.length > 0) await updateProjectBaselineIssues(projectId, created.id, issues);
+      await loadBaselines();
+      setStage3Message(`Đã tạo baseline nháp v${created.version}. Snapshot được lưu riêng; cần xử lý hết sai lệch trước khi duyệt.`);
+    } catch (error) {
+      setStage3Message(error instanceof Error ? error.message : "Không thể tạo baseline.");
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
+
+  const handleApproveBaseline = async (baselineId: number) => {
+    setBusy(true);
+    setAiTaskLabel("Đang kiểm tra điều kiện và duyệt baseline...");
+    setStage3Message("");
+    try {
+      await approveProjectBaseline(projectId, baselineId);
+      await loadBaselines();
+      setState((prev: any) => ({ ...prev, baselineApproved: true }));
+      setStage3Message("Baseline đã được duyệt. Có thể xuất tài liệu chính thức từ baseline này.");
+    } catch (error) {
+      setStage3Message(error instanceof Error ? error.message : "Không thể duyệt baseline. Hãy kiểm tra các điều kiện còn thiếu.");
+    } finally {
+      setBusy(false);
+      setAiTaskLabel("");
+    }
+  };
+
   const runConsistencyCheck = async () => {
     setBusy(true);
     setAiTaskLabel("Đang kiểm tra nhất quán UML...");
@@ -56,6 +111,7 @@ export default function GiaiDoan3({
     try {
       const result = await checkProjectUmlConsistency(projectId, state.diagramCode);
       setConsistencyResult(result);
+      setBaselineIssues(buildBaselineIssues(result));
       setState((prev: any) => ({
         ...prev,
         consistencyChecked: true,
@@ -77,7 +133,7 @@ export default function GiaiDoan3({
               : `Mã lớp không có sai lệch trực tiếp, nhưng còn ${crossStageIssues} vấn đề liên kết dữ liệu xuyên Giai đoạn 1–3.`
       );
       await loadBaselines();
-      if (step === 2 && result.consistent) {
+      if (step === 3 && result.consistent) {
         setStage3Message("Đã khắc phục hết sai lệch. Đang quay lại Bước 1 để xác nhận kết quả.");
         onStepChange(1);
       }
