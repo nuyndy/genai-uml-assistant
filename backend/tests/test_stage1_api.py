@@ -76,7 +76,7 @@ def _requirement_payload(project_id):
     }
 
 
-def _functional_spec(function_code="UC01", function_name="Quản lý hồ sơ"):
+def _functional_spec(function_code="FR-001", function_name="Quản lý hồ sơ"):
     return {
         "function_code": function_code,
         "function_name": function_name,
@@ -650,7 +650,7 @@ def test_batch_spec_generation_only_creates_missing_functional_specs(client, db_
 
     with patch(
         "services.ollama.generate_content",
-        return_value=json.dumps(_functional_spec("UC02", "Xuất báo cáo"), ensure_ascii=False),
+        return_value=json.dumps(_functional_spec("FR-002", "Xuất báo cáo"), ensure_ascii=False),
     ) as ollama:
         response = client.post(
             f"/api/projects/{project.id}/user-stories/generate-specs-batch",
