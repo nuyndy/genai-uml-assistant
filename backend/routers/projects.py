@@ -1,35 +1,19 @@
-import logging
-
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from database.db import get_db
-from database.models import (
-    Actor,
-    ClassEntity,
-    ClassRelation,
-    Diagram,
-    DiagramRevision,
-    EntityRevision,
-    GlossaryTerm,
-    Project,
-    ProjectBaseline,
-    RawRequirement,
-    Specification,
-    SpecificationApproval,
-    SrsDocument,
-    TraceLink,
-    UcActorRelation,
-    UseCase,
-    User,
-    UserStory,
+from application.projects import (
+    ProjectApplicationError,
+    ProjectNotFoundError,
+    create_project as create_project_use_case,
+    delete_project as delete_project_use_case,
+    list_projects as list_projects_use_case,
 )
+from database.db import get_db
+from database.models import User
 from routers.auth import get_current_user
 from schemas.project import ProjectCreate, ProjectRecord
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
-logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=list[ProjectRecord])
@@ -38,15 +22,10 @@ def list_projects(
     current_user: User = Depends(get_current_user),
 ) -> list[ProjectRecord]:
     try:
-        return (
-            db.query(Project)
-            .filter(Project.user_id == current_user.id)
-            .order_by(Project.id.asc())
-            .all()
-        )
-    except SQLAlchemyError as exc:
-        logger.exception("Could not list projects")
-        raise HTTPException(status_code=500, detail="Không thể đọc dự án.") from exc
+        projects = list_projects_use_case(db, current_user.id)
+        return [ProjectRecord.model_validate(project) for project in projects]
+    except ProjectApplicationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.post("", response_model=ProjectRecord, status_code=201)
@@ -55,16 +34,15 @@ def create_project(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ProjectRecord:
-    project = Project(name=data.name, user_id=current_user.id)
     try:
-        db.add(project)
-        db.commit()
-        db.refresh(project)
-    except SQLAlchemyError as exc:
-        db.rollback()
-        logger.exception("Could not create project")
-        raise HTTPException(status_code=500, detail="Không thể tạo dự án.") from exc
-    return ProjectRecord.model_validate(project)
+        project = create_project_use_case(
+            db,
+            user_id=current_user.id,
+            name=data.name,
+        )
+        return ProjectRecord.model_validate(project)
+    except ProjectApplicationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -74,125 +52,16 @@ def delete_project(
     current_user: User = Depends(get_current_user),
 ) -> Response:
     try:
-        project = (
-            db.query(Project)
-            .filter(Project.id == project_id, Project.user_id == current_user.id)
-            .first()
+        delete_project_use_case(
+            db,
+            project_id=project_id,
+            user_id=current_user.id,
         )
-        if project is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Không tìm thấy dự án hoặc bạn không có quyền truy cập.",
-            )
-
-        requirement_ids = [
-            row[0]
-            for row in db.query(RawRequirement.id)
-            .filter(RawRequirement.project_id == project_id)
-            .all()
-        ]
-        story_ids = [
-            row[0]
-            for row in db.query(UserStory.id)
-            .filter(UserStory.requirement_id.in_(requirement_ids))
-            .all()
-        ] if requirement_ids else []
-        # Bao gồm cả đặc tả gắn trực tiếp với project (NFR) và đặc tả
-        # gắn với User Story để xóa approval/use case đúng thứ tự.
-        specification_query = db.query(Specification.id).filter(
-            Specification.project_id == project_id
-        )
-        if story_ids:
-            specification_query = specification_query.union(
-                db.query(Specification.id).filter(
-                    Specification.user_story_id.in_(story_ids)
-                )
-            )
-        specification_ids = [row[0] for row in specification_query.all()]
-        use_case_ids = [
-            row[0]
-            for row in db.query(UseCase.id)
-            .filter(UseCase.specification_id.in_(specification_ids))
-            .all()
-        ] if specification_ids else []
-        class_ids = [
-            row[0]
-            for row in db.query(ClassEntity.id)
-            .filter(ClassEntity.project_id == project_id)
-            .all()
-        ]
-
-        # Xóa các bảng phụ thuộc trước bản ghi cha để không phụ thuộc vào
-        # việc DB có bật thực thi ON DELETE CASCADE hay không.
-        db.query(DiagramRevision).filter(
-            DiagramRevision.diagram_id.in_(
-                db.query(Diagram.id).filter(Diagram.project_id == project_id)
-            )
-        ).delete(synchronize_session=False)
-        db.query(TraceLink).filter(
-            TraceLink.project_id == project_id
-        ).delete(synchronize_session=False)
-        db.query(ProjectBaseline).filter(
-            ProjectBaseline.project_id == project_id
-        ).delete(synchronize_session=False)
-        db.query(GlossaryTerm).filter(
-            GlossaryTerm.project_id == project_id
-        ).delete(synchronize_session=False)
-        db.query(EntityRevision).filter(
-            EntityRevision.project_id == project_id
-        ).delete(synchronize_session=False)
-        if specification_ids:
-            db.query(SpecificationApproval).filter(
-                SpecificationApproval.specification_id.in_(specification_ids)
-            ).delete(synchronize_session=False)
-        db.query(Diagram).filter(Diagram.project_id == project_id).delete(
-            synchronize_session=False
-        )
-        db.query(SrsDocument).filter(SrsDocument.project_id == project_id).delete(
-            synchronize_session=False
-        )
-        if use_case_ids:
-            db.query(UcActorRelation).filter(
-                UcActorRelation.use_case_id.in_(use_case_ids)
-            ).delete(synchronize_session=False)
-        if class_ids:
-            db.query(ClassRelation).filter(
-                (ClassRelation.class_a_id.in_(class_ids))
-                | (ClassRelation.class_b_id.in_(class_ids))
-            ).delete(synchronize_session=False)
-        if use_case_ids:
-            db.query(UseCase).filter(UseCase.id.in_(use_case_ids)).delete(
-                synchronize_session=False
-            )
-        if specification_ids:
-            db.query(Specification).filter(
-                Specification.id.in_(specification_ids)
-            ).delete(synchronize_session=False)
-        if story_ids:
-            db.query(UserStory).filter(UserStory.id.in_(story_ids)).delete(
-                synchronize_session=False
-            )
-        if requirement_ids:
-            db.query(RawRequirement).filter(
-                RawRequirement.id.in_(requirement_ids)
-            ).delete(synchronize_session=False)
-        db.query(Actor).filter(Actor.project_id == project_id).delete(
-            synchronize_session=False
-        )
-        if class_ids:
-            db.query(ClassEntity).filter(ClassEntity.id.in_(class_ids)).delete(
-                synchronize_session=False
-            )
-        db.delete(project)
-        db.commit()
-    except HTTPException:
-        db.rollback()
-        raise
-    except SQLAlchemyError as exc:
-        db.rollback()
-        logger.exception("Could not delete project and its dependent records")
+    except ProjectNotFoundError as exc:
         raise HTTPException(
-            status_code=500,
-            detail="Không thể xóa dự án và dữ liệu liên quan.",
+            status_code=404,
+            detail="Không tìm thấy dự án hoặc bạn không có quyền truy cập.",
         ) from exc
+    except ProjectApplicationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     return Response(status_code=status.HTTP_204_NO_CONTENT)
