@@ -121,3 +121,18 @@ def resolve_project_id(
         )
 
     return None
+
+
+def user_owns_project(db: Session, *, project_id: int, user_id: int) -> bool:
+    """Check project ownership without exposing persistence details to routers."""
+    from database.models import Project
+
+    return (
+        db.query(Project.id)
+        .filter(
+            Project.id == project_id,
+            Project.user_id == user_id,
+        )
+        .first()
+        is not None
+    )
