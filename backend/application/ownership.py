@@ -5,6 +5,7 @@ from database.models import (
     ClassEntity,
     ClassRelation,
     Diagram,
+    Project,
     RawRequirement,
     Specification,
     UcActorRelation,
@@ -125,8 +126,6 @@ def resolve_project_id(
 
 def user_owns_project(db: Session, *, project_id: int, user_id: int) -> bool:
     """Check project ownership without exposing persistence details to routers."""
-    from database.models import Project
-
     return (
         db.query(Project.id)
         .filter(
