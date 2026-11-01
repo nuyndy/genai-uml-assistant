@@ -7,6 +7,16 @@ from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from application.requirements import (
+    RequirementConflictError,
+    RequirementNotFoundError,
+    RequirementPersistenceError,
+    create_requirement as create_requirement_use_case,
+    delete_requirement as delete_requirement_use_case,
+    get_requirement_record,
+    list_requirements,
+    update_requirement as update_requirement_use_case,
+)
 from database.db import get_db
 from database.models import Project, RawRequirement, Specification, TraceLink, User, UserStory
 from routers.auth import get_current_user
@@ -125,34 +135,23 @@ def create_requirement(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
-    _require_project(db, project_id)
-    requirement = RawRequirement(
-        project_id=project_id,
-        content=_content(data),
-        status="draft",
-    )
     try:
-        db.add(requirement)
-        db.flush()
-        record_entity_revision(
+        requirement = create_requirement_use_case(
             db,
-            project_id=requirement.project_id,
-            entity_type="requirement",
-            entity_id=requirement.id,
-            content={"content": _load_content(requirement), "status": requirement.status},
-            change_type="create",
-            change_note="Tạo yêu cầu",
-            created_by=current_user.id,
+            project_id=project_id,
+            data=data,
+            user_id=current_user.id,
         )
-        db.commit()
-        db.refresh(requirement)
-    except SQLAlchemyError as exc:
-        db.rollback()
+    except RequirementNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RequirementPersistenceError as exc:
         logger.exception("Could not save requirement")
-        raise HTTPException(status_code=500, detail="Không thể lưu yêu cầu.") from exc
-    return {"id": requirement.id, "public_id": requirement.public_id, "status": requirement.status}
-
-
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {
+        "id": requirement.id,
+        "public_id": requirement.public_id,
+        "status": requirement.status,
+    }
 @router.post(
     "/api/projects/{project_id}/requirements/coverage-check",
     response_model=RequirementCoverageAnalysis,
@@ -305,69 +304,29 @@ def list_project_requirements(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> list[RequirementRecord]:
-    _require_project(db, project_id)
     try:
-        requirements = (
-            db.query(RawRequirement)
-            .filter(RawRequirement.project_id == project_id)
-            .order_by(RawRequirement.id.asc())
-            .all()
-        )
+        return list_requirements(db, project_id)
+    except RequirementNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SQLAlchemyError as exc:
         logger.exception("Could not read project requirements")
         raise HTTPException(
-            status_code=500, detail="Không thể đọc yêu cầu của dự án."
+            status_code=500,
+            detail="Không thể đọc yêu cầu của dự án.",
         ) from exc
-    try:
-        return [
-            RequirementRecord(
-                id=requirement.id,
-                public_id=requirement.public_id,
-                project_id=requirement.project_id,
-                content=requirement.content,
-                status=requirement.status,
-                user_story=UserStoryRecord.model_validate(story) if story else None,
-            )
-            for requirement in requirements
-            for story in [
-                db.query(UserStory)
-                .filter(UserStory.requirement_id == requirement.id)
-                .order_by(UserStory.id.desc())
-                .first()
-            ]
-        ]
-    except SQLAlchemyError as exc:
-        logger.exception("Could not read project requirement user stories")
-        raise HTTPException(status_code=500, detail="Không thể đọc user story của yêu cầu.") from exc
-
-
 @router.get("/api/requirements/{requirement_id}", response_model=RequirementRecord)
 def get_requirement(
     requirement_id: int,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> RequirementRecord:
-    requirement = _requirement(db, requirement_id)
     try:
-        story = (
-            db.query(UserStory)
-            .filter(UserStory.requirement_id == requirement.id)
-            .order_by(UserStory.id.desc())
-            .first()
-        )
+        return get_requirement_record(db, requirement_id)
+    except RequirementNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SQLAlchemyError as exc:
-        logger.exception("Could not read requirement user story")
-        raise HTTPException(status_code=500, detail="Không thể đọc user story.") from exc
-    return RequirementRecord(
-        id=requirement.id,
-        public_id=requirement.public_id,
-        project_id=requirement.project_id,
-        content=requirement.content,
-        status=requirement.status,
-        user_story=UserStoryRecord.model_validate(story) if story else None,
-    )
-
-
+        logger.exception("Could not read requirement")
+        raise HTTPException(status_code=500, detail="Không thể đọc yêu cầu.") from exc
 @router.post(
     "/api/requirements/{requirement_id}/analyze",
     response_model=RequirementAnalysis,
@@ -455,75 +414,40 @@ def update_requirement(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, int | str]:
-    requirement = _requirement(db, requirement_id)
-    if requirement.status != "draft":
-        raise HTTPException(status_code=409, detail="Yêu cầu đã xác nhận, không thể sửa.")
-    requirement.content = _content(data)
     try:
-        record_entity_revision(
+        requirement = update_requirement_use_case(
             db,
-            project_id=requirement.project_id,
-            entity_type="requirement",
-            entity_id=requirement.id,
-            content={"content": _load_content(requirement), "status": requirement.status},
-            change_type="update",
-            change_note="Cập nhật yêu cầu",
-            created_by=current_user.id,
+            requirement_id=requirement_id,
+            data=data,
+            user_id=current_user.id,
         )
-        db.commit()
-        db.refresh(requirement)
-    except SQLAlchemyError as exc:
-        db.rollback()
+    except RequirementNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RequirementConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RequirementPersistenceError as exc:
         logger.exception("Could not update requirement")
-        raise HTTPException(status_code=500, detail="Không thể cập nhật yêu cầu.") from exc
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     return {"id": requirement.id, "status": requirement.status}
-
-
 @router.delete("/api/requirements/{requirement_id}", status_code=204)
 def delete_requirement(
     requirement_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    requirement = _requirement(db, requirement_id)
-    if requirement.status != "draft":
-        raise HTTPException(status_code=409, detail="Chỉ được xóa yêu cầu ở trạng thái draft.")
     try:
-        has_story = db.query(UserStory.id).filter(
-            UserStory.requirement_id == requirement_id
-        ).first()
-        if has_story:
-            raise HTTPException(
-                status_code=409,
-                detail="Không thể xóa yêu cầu đang được tham chiếu bởi user story.",
-            )
-        record_entity_revision(
+        delete_requirement_use_case(
             db,
-            project_id=requirement.project_id,
-            entity_type="requirement",
-            entity_id=requirement.id,
-            content={"content": requirement.content, "status": requirement.status},
-            change_type="delete",
-            change_note="Xóa yêu cầu nháp",
-            created_by=current_user.id,
+            requirement_id=requirement_id,
+            user_id=current_user.id,
         )
-        # Xóa trace link trỏ đến yêu cầu trước khi xóa bản ghi.
-        db.query(TraceLink).filter(
-            or_(
-                ((TraceLink.source_type.in_(("requirement", "raw_requirement"))) & (TraceLink.source_id == requirement_id)),
-                ((TraceLink.target_type.in_(("requirement", "raw_requirement"))) & (TraceLink.target_id == requirement_id)),
-            )
-        ).delete(synchronize_session=False)
-        db.delete(requirement)
-        db.commit()
-    except HTTPException:
-        raise
-    except SQLAlchemyError as exc:
-        db.rollback()
-        logger.exception("Could not delete raw requirement")
-        raise HTTPException(status_code=500, detail="Không thể xóa yêu cầu.") from exc
-
-
+    except RequirementNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RequirementConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RequirementPersistenceError as exc:
+        logger.exception("Could not delete requirement")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 @router.post("/api/requirements/{requirement_id}/user-story", response_model=UserStoryRecord)
 def save_requirement_user_story(
     requirement_id: int,
