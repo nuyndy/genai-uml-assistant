@@ -1,5 +1,6 @@
 import json
-import time
+
+import pytest
 
 from application.requirements import (
     RequirementConflictError,
@@ -9,7 +10,6 @@ from application.requirements import (
     update_requirement,
 )
 from database.models import Project, RawRequirement, User
-from routers import auth
 from schemas.requirement import RequirementUpdate
 
 
@@ -104,23 +104,17 @@ def test_confirmed_requirement_cannot_be_updated_or_deleted(db_session):
     created.status = "confirmed"
     db_session.commit()
 
-    try:
+    with pytest.raises(RequirementConflictError):
         update_requirement(
             db_session,
             requirement_id=created.id,
             data=_payload("Không được phép sửa"),
             user_id=user.id,
         )
-        assert False, "Expected RequirementConflictError"
-    except RequirementConflictError:
-        pass
 
-    try:
+    with pytest.raises(RequirementConflictError):
         delete_requirement(
             db_session,
             requirement_id=created.id,
             user_id=user.id,
         )
-        assert False, "Expected RequirementConflictError"
-    except RequirementConflictError:
-        pass
